@@ -1,7 +1,7 @@
 /*
    Kickshaw - A Menu Editor for Openbox
 
-   Copyright (c) 2010-2013        Marcus Schaetzle
+   Copyright (c) 2010-2017        Marcus Schaetzle
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -34,19 +34,17 @@ extern GtkWidget *remove_icon;
 extern gchar *txt_fields[];
 extern GSList *menu_ids;
 
-extern const gint NUMBER_OF_EXECUTE_OPTS;
 extern gchar *execute_options[];
-
-extern const gint NUMBER_OF_STARTUPNOTIFY_OPTS;
 extern gchar *startupnotify_options[];
 
 extern gint font_size;
 
 extern void activate_change_done (void);
-extern gchar *check_if_invisible_ancestor_exists (GtkTreeModel *local_model, GtkTreePath *path);
-extern GtkWidget *create_dialog (GtkWidget **dialog, gchar *dialog_title, gchar *stock_id, gchar *button_txt_1, 
-				 gchar *button_txt_2, gchar *button_txt_3, gchar *label_txt, gboolean show_immediately);
-extern gchar *get_modified_date_for_icon (gchar *icon_path);
+extern guint8 check_if_invisible_ancestor_exists (GtkTreeModel *local_model, GtkTreePath *local_path);
+extern GtkWidget *create_dialog (GtkWidget **dialog, gchar *dialog_title, gchar *icon_name, gchar *label_txt, 
+				 gchar *button_txt_1, gchar *button_txt_2, gchar *button_txt_3, 
+				 gboolean show_immediately);
+extern gchar *get_modification_time_for_icon (gchar *icon_path);
 extern void get_toplevel_iter_from_path (GtkTreeIter *local_iter, GtkTreePath *local_path);
 extern void remove_menu_id (gchar *menu_id);
 extern void remove_rows (gchar *origin);

@@ -1,7 +1,7 @@
 /*
    Kickshaw - A Menu Editor for Openbox
 
-   Copyright (c) 2010-2013        Marcus Schaetzle
+   Copyright (c) 2010-2017        Marcus Schaetzle
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -23,7 +23,6 @@
 #define free_and_reassign(string, new_value) { g_free (string); string = new_value; }
 #define streq(string1, string2) (g_strcmp0 ((string1), (string2)) == 0)
 
-extern GtkWidget *window;
 extern GtkTreeStore *treestore;
 extern GtkTreeModel *model;
 extern GtkWidget *treeview;
@@ -35,8 +34,6 @@ extern GSList *menu_ids;
 
 extern GdkPixbuf *invalid_icon_imgs[];
 
-extern gchar *filename;
-
 extern gboolean autosort_options;
 extern gboolean change_done;
 
@@ -44,26 +41,24 @@ extern gint font_size;
 
 extern gint handler_id_row_selected;
 
-extern void activate_change_done (void);
-extern gchar *check_if_invisible_ancestor_exists (GtkTreeModel *local_model, GtkTreePath *path);
+extern guint8 check_if_invisible_ancestor_exists (GtkTreeModel *local_model, GtkTreePath *local_path);
 extern gchar *choose_icon (void);
-extern void clear_global_static_data (void);
-extern GtkWidget *create_dialog (GtkWidget **dialog, gchar *dialog_title, gchar *stock_id, gchar *button_txt_1, 
-				 gchar *button_txt_2, gchar *button_txt_3, gchar *label_txt, gboolean show_immediately);
-extern void create_file_dialog (GtkWidget **dialog, gchar *dialog_title);
+extern void clear_global_data (void);
+extern gboolean continue_despite_unsaved_changes (void);
+extern GtkWidget *create_dialog (GtkWidget **dialog, gchar *dialog_title, gchar *icon_name, gchar *label_txt, 
+								 gchar *button_txt_1, gchar *button_txt_2, gchar *button_txt_3, 
+								 gboolean show_immediately);
+extern void create_file_dialog (GtkWidget **dialog, gboolean open);
 extern void create_list_of_icon_occurrences (void);
 extern gchar *extract_substring_via_regex (gchar *string, gchar *regex_str);
-extern void get_toplevel_iter_from_path (GtkTreeIter *local_iter, GtkTreePath *local_path);
-extern GtkWidget *new_label_with_formattings (gchar *label_txt);
+extern gchar *get_modification_time_for_icon (gchar *icon_path);
+extern GtkWidget *new_label_with_formattings (gchar *label_txt, gboolean wrap);
 extern void remove_rows (gchar *origin);
 extern void row_selected (void);
 extern void set_filename_and_window_title (gchar *new_filename);
 extern void show_errmsg (gchar *errmsg_raw_txt);
-extern gboolean sort_loop_after_sorting_activation (GtkTreeModel *local_model, GtkTreePath G_GNUC_UNUSED *local_path,
-						    GtkTreeIter *local_iter);
-extern gchar *get_modified_date_for_icon (gchar *icon_path);
-G_GNUC_NULL_TERMINATED extern gboolean streq_any (const gchar *string, ...);
-extern void unref_icon (GdkPixbuf **icon, gboolean set_to_NULL);
-extern gboolean unsaved_changes (void);
+extern gboolean sort_loop_after_sorting_activation (GtkTreeModel *foreach_model, GtkTreePath *foreach_path,
+													GtkTreeIter *foreach_iter);
+extern gboolean streq_any (const gchar *string, ...) G_GNUC_NULL_TERMINATED;
 
 #endif

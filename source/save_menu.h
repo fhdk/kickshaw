@@ -1,7 +1,7 @@
 /*
    Kickshaw - A Menu Editor for Openbox
 
-   Copyright (c) 2010-2013        Marcus Schaetzle
+   Copyright (c) 2010-2017        Marcus Schaetzle
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -20,10 +20,9 @@
 #ifndef __save_menu_h
 #define __save_menu_h
 
-#define free_and_reassign(string, new_value) { g_free (string); string = new_value; }
+#define not_NULL_and_not_empty(string) (string && *string)
 #define streq(string1, string2) (g_strcmp0 ((string1), (string2)) == 0)
 
-extern GtkWidget *window;
 extern GtkTreeModel *model;
 
 extern GtkWidget *mb_file_menu_items[];
@@ -33,10 +32,10 @@ extern gchar *filename;
 
 extern gboolean change_done;
 
-extern void create_file_dialog (GtkWidget **dialog, gchar *dialog_title);
+extern void create_file_dialog (GtkWidget **dialog, gboolean open);
 extern void free_elements_of_static_string_array (gchar **string_array, gint8 number_of_fields, gboolean set_to_NULL);
 extern void set_filename_and_window_title (gchar *new_filename);
 extern void show_errmsg (gchar *errmsg_raw_txt);
-G_GNUC_NULL_TERMINATED extern gboolean streq_any (const gchar *string, ...);
+extern gboolean streq_any (const gchar *string, ...) G_GNUC_NULL_TERMINATED;
 
 #endif

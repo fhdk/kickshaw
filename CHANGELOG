@@ -1,0 +1,828 @@
+   Kickshaw - A Menu Editor for Openbox
+
+   Copyright (c) 2010-2017        Marcus Schaetzle
+
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 2 of the License, or
+   (at your option) any later version.
+
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along 
+   with Kickshaw. If not, see http://www.gnu.org/licenses/.
+
+
+---
+
+0.5.2 2017-12-11
+  * Error message for the case that there is no window system running 
+    is now sent to stderr.
+  * Minor/cosmetical fixes/changes.
+
+0.5.1 2017-12-10
+  * Bugfix (regression) - If the column checkboxes in the find grid had a
+    red background color because a search was done without choosing at 
+    least one column and the find grid was closed afterwards, the
+    background color was not removed. The same goes for the entry field.
+  * Fixed memory leaks.
+
+0.5.0 2017-12-09
+
+  * Bugfix (regression) - Entries of single fields completed with "return" 
+    and not by clicking on the "Done" button are working properly again.
+  * Bugfix (regression) - Visualisation of menus/items without label 
+    from the dialog is working again.
+  * Bugfix (regression) - Invalid attributes are rejected again.
+  * Leading and trailing whitespace of text of options is now removed.
+  * The dialog texts for fixing invisible and unintegrated menus do no 
+    longer exceed the requested width.
+  * Corrected position of GNU macros.
+  * Code optimisation, minor/cosmetical changes and removal of redundant 
+    code.
+
+0.5 RC3 2017-12-04
+
+  * If an option with an invalid value is found during the loading 
+    process, the error message now includes line, line no. and the item to 
+    which this option belongs to.
+  * Indentations inside the menu file are now done with tabulators.
+  * The accelerators for expanding and collapsing the treeview have been 
+    changed to <Ctrl><Shift><X> and <C> so they don't interfere with 
+    the common shortcuts <Ctrl><X> and <C>. Accelerators for Move Top,
+    Move Up, Move Down, Move Bottom and Remove have been added.
+  * If the selection of columns, the setting for case matching or for   
+    the usage of regular expressions is changed during a search and the 
+    results include matches inside currently hidden columns, these 
+    columns are now shown, as it was already the case when the search 
+    term was entered.
+  * If the icon theme is changed and the tree view contains the system 
+    icons indicating a wrong path for an icon file (=system icon for 
+    "question") and/or an unrecognisable image format (=system icon for 
+    "missing image"), these icons are updated to the new icon theme.
+  * Added some conditional compilation to prevent compiler warnings 
+    because of deprecated GTK functions. Deprecation warnings should 
+    no longer appear, since the development of GTK3 has come to an end in 
+    favor of GTK4.
+  * Bugfix (regression) - For some editing actions the list of search 
+    results was reset after the sensivity of tool- and menu bar items 
+    had been reset, which could result in a wrong sensivity for the back 
+    and forth buttons inside the find grid after an editing action.
+  * Bugfix (regression) - If an invalid value for an option was corrected 
+    during the loading process, the menu could not be saved back directly 
+    after loading was finished, "Save as" had to be used instead prior to 
+    a first change done to the menu.
+  * Bugfix - Fixed possible crash that could occur when a label of a 
+    separator was erased.
+  * Bugfix - During the loading process, pipe menus without label received 
+    an erroneous "invisible item" element visibility status if they had no 
+    invisible parents. Menu ids of such pipe menus positioned at toplevel 
+    were shown as "(null)" inside the dialog that warned about menus and 
+    items without a label. The same erroneous designation happened... 
+    ...if a row had a descendant with such a labelless pipe menu and that 
+       row was dragged and the pipe menu had no invisible parent after the 
+       dragging. 
+    ...If a visualisation was done of another menu element and there was 
+       a labelless pipe menu with an invisible ancestor affected by this, 
+       in a way that its ancestor received a label.
+  * Bugfix - If an invalid value for an enabled or prompt value appeared 
+    inside an unlabeled item, the corresponding error message showed the 
+    item label as '(null)' instead of leaving it out.
+  * Bugfix - If an invalid icon path is corrected or an invalid icon file 
+    is replaced with a valid one during the loading process, the menu can 
+    now be saved back directly after loading is finished.
+  * Bugfix - If several rows were selected and another row with an icon 
+    was rightclicked, the context menu showed a "Remove icons" item in 
+    addition to the "Remove icon" one.
+  * Bugfix - If, after an error had occured during the creation of an 
+    icon, another icon file was chosen and a creation of an icon was also 
+    impossible, the path was not updated in the headline above the error 
+    message. The original path is now only replaced if an icon creation 
+    is successful; if the situation above occures the new chosen file 
+    path will no longer replace the old one if a creation of an icon 
+    proves unsuccessful from it.
+  * Bugfix - If a text was entered for a single startupnotify field
+    after the entry field had been left blank before and the entry field 
+    had thus been coloured red, the same startupnotify field would show 
+    up coloured if choosen again.
+  * Fixed memory leaks.
+  * Code optimisation, minor/cosmetical changes and removal of redundant 
+    code.
+
+0.5 RC2 2013-09-28
+
+  * Added some global keyboard accelerators.
+  * Entry of empty labels for menus, pipe menus and items is now blocked, 
+    since this would result in an invisible menu element. This also fixes 
+    the bug that after the entry of an empty label the element visibility 
+    was not updated. Menus with invisible elements can still be loaded.
+  * A new separator does not have a label by default now, since a separator 
+    is always visible anyway.
+  * If entry fields/buttons for a new action or option are shown, the 
+    (first) field/button now grabs the focus.
+  * If opening a new menu fails and there is still one currently in memory, 
+    the latter is no longer cleared. 
+  * If deprecated "execute" options have been found and automatically 
+    converted to "command" options, the program now makes clear that these 
+    changes haven't been written back to file yet. The "save" button/menu 
+    item is activated then so the user can save the file without applying 
+    any other changes.
+  * If the font size is changed, the columns are now autoresized so in case 
+    there are icons and the font size is reduced, the resulting space 
+    between the icons and the following text is removed.
+  * Empty strings as search results are no longer considered to be a valid 
+    match.
+  * Removed GTK version check (This was added back again in the final 0.5, 
+    since there is actually code that needs a GTK version GTK > 3.0).
+  * Bugfix - The actions for "Visualise" and "Visualise recursively" from 
+    the menu bar were inverted.
+  * Bugfix - If several rows were selected and another row was 
+    rightclicked, in some cases the context menu didn't have the full set 
+    of choices that was supposed to be displayed.
+  * Bugfix - If a menu can't be saved via "Save as" due to an error that 
+    occured during saving process, the filename is no longer replaced with 
+    the chosen one.
+  * Bugfix (regression) - After a submenu/-item had been dragged out of an 
+    invisible unintegrated menu to toplevel, this menu/item was marked as 
+    invisible even if it had a label.
+  * Bugfix - Unintegrated pipe menus were not saved.
+  * Bugfix - If a menu that included items with empty icon paths was 
+    loaded, these paths were not saved back again.
+  * Bugfix - If a row and at least one of its descendants were selected, 
+    the descendant was always called "child" regardless of the hierarchy. 
+    If an option of an action other than "Execute" and an option 
+    of "startupnotify" were selected at the same time, the action was 
+    mistakenly displayed as "Execute" action in the statusbar.
+  * Bugfix - If the "new action/option" combo box is shown and a search 
+    was still active, the treeview is redrawn so the highlighting of 
+    search results disappears immediately (it disappeared only when the 
+    mouse went over the respective rows).
+  * Bugfix - If the path of an icon image had become invalid and thus 
+    the icon was replaced with the "invalid icon path" icon, the 
+    modification date was not erased internally.
+  * Bugfix - If a menu is saved, the menu bar "save" item is now also 
+    greyed out.
+  * Bugfix - If at least one row that was eligible for recursive 
+    visualisation was selected and at least another one that wasn't, the 
+    menu bar item "Visualise recursively" was activated, but "Visualise"
+    wasn't.
+  * Bugfix - If an invisible menu, pipe menu, item or separator was 
+    visualised, the sensivity of the menu bar item for visualisation 
+    was not updated.
+  * Fixed memory leaks.
+  * Code optimisation, minor/cosmetical changes and removal of redundant 
+    code. More comments were added to the source code to help with the 
+    comprehension of it.
+
+0.5 RC 2013-08-22
+
+  New functionality:
+
+  * Automatic reconfiguration of Openbox if the menu is saved at the 
+    standard location (~/.config/openbox/menu.xml) and kickshaw is 
+    currently run under Openbox. 
+  * Added a timer function that checks for moved/deleted/renamed icon
+    files and for a change of font size.
+    If an icon gets moved/deleted/renamed during program runtime the icon 
+    inside the treestore will replaced with a broken icon image. If the 
+    treestore contains a broken icon image, but during program runtime 
+    an external change makes icon path pointing to a valid icon, the 
+    broken icon will replaced with the proper icon image.
+    If font size is changed during program runtime, the icon images 
+    will be recreated to fit to the new font size.
+  * The deprecated <execute> tag is now automatically converted to a 
+    <command> tag.
+  * "--version" passed as an argument will now display the program 
+    version.
+
+  Misc improvements and changes
+
+  * Usage of a real XML-Parser (GLib's Simple XML Subset Parser) for 
+    enhanced flexibility and reliability.
+  * Menus inside root-menu are now supported, too, in previous versions 
+    their sub-content had to be defined outside the root-menu, in the 
+    way shown for example by the provided sample menu.
+  * Duplicate menu IDs are now already prevented at loading stage.
+  * Menu field texts are now escaped by the program so the user 
+    doesn't have to bother about this.
+  * The display of found search terms has been improved, instead of 
+    highlighting the whole content of a cell with a found occurrence, 
+    only the exact section matching the search term is now highlighted.
+  * Not just invisible toplevel menus are now highlighted, this applies 
+    now to all menus, pipe menus, items and separators regardless their 
+    position inside the menu (highlighting still can be deactivated).
+  * Interactive search provided by GTK has been deactivated, since 
+    kickshaw provides its own search functionality.
+  * SVG image files are no longer filtered out by the "add icon" file
+    chooser dialog, since the support for SVG icons was added by 
+    Openbox 3.5.1.
+  * There are now two different system icons indicating icon creation 
+    failures, one for invalid icon paths and one for icon files that 
+    are corrupted or otherwise unusable. Furthermore they are singled 
+    out by two red exclamation marks behind them to make them easily 
+    distinguishable from normal icons.
+  * The program no longer exits after it detected an error inside the 
+    menu file, it now reverts to a initial state with an empty menu.
+  * Restricted display of headlines for context menus to cases where 
+    two different kinds of options are available, resulting in a cleaner 
+    look. Exception: the mouse is right-clicked outside the tree.
+  * Made key file standard compliant.
+  * Choosing an action won't block the treeview anymore, some events 
+    and widgets are still deactivated in this case though, because 
+    they contradict the choice (i.e. removing rows). If another row 
+    is selected, the action/option combobox is automatically closed 
+    and the old status is reestablished.
+  * Set the initial focus to the treeview so the "New menu" tool button 
+    is no longer focused after the start of the program. The text entry 
+    field of the find box now grabs focus when it is displayed, enabling 
+    an immediate input.
+  * To maintain the default settings equal to the ones of Openbox, a new 
+    "enabled" option of a "startupnotify" option is now set to "no".
+  * Allowed saving empty menus again, since they don't evoke an error 
+    inside Openbox. 
+  * Added a note for "make uninstall" that the settings file has to be 
+    removed manually. Extended messages for problems with the settings 
+    file (the location of the file and whether it was during writing or 
+    reading).
+  * Code optimisation, minor/cosmetical changes and removal of redundant 
+    code.
+
+  Bugfixes:
+
+  * For load menu part:
+    - Corrected wrong error message for the case that an XML tag is put 
+      before an opening <openbox_menu> tag.
+    - If a menu contained no toplevel menus, which means that just 
+      the root menu was populated with elements, and the first root 
+      menu element was a separator, the separator was wrongly reported 
+      to be at an iappropriate position.
+    - A self-closing action tag that was placed after an action tag of 
+      the same kind was wrongly reported to be at an inappropriate 
+      position.
+    - If a completely empty menu is loaded, ie. a menu with nothing 
+      between the <openbox_menu> tags, the appropriate error message is 
+      now displayed ("Root Menu not found!").
+    - An open find box is now closed, since remaining search results 
+      from the previous menu could result in a crash when using the 
+      activated results navigation buttons. This fix applies to new 
+      menus, too.
+  * If a subrow of another row and a toplevel row was dragged, it 
+    resulted in a crash, if the subrow was placed on top of the other one.
+  * If a broken icon path is replaced by a valid one during the loading 
+    phase, the broken icon path is now replaced by the valid one inside 
+    the treestore and thus shown inside the treeview.
+  * During the saving process the iter of a selected row was modified, 
+    which could result in undesired behaviour and/or error messages 
+    if something was done with this selected row.
+  * (Regession) If dragging is disabled for one or more reasons shown in 
+    the status bar, a new selection resets the dragging status to 
+    draggable again before a new check is done whether a blocking should 
+    be applied again.
+  * Removal of all children from a node now works also if the node is 
+    collapsed.
+  * It was possible to drag a menu and an item that was placed in a 
+    submenu of the former at the same time, since only the first sublevel 
+    of a menu was checked for selections. Now every descendant (if exists) 
+    of a selected row is checked if it is also selected.
+  * Removed some possibilities to place a dragged row at an inappropriate 
+    position.
+  * Font size is now also parsed correctly if the font name consists of 
+    more than one word (this bug resulted in wrong icon sizes).
+  * If a menu ID was changed twice in a row via the entry field without 
+    selecting another row in between, the program was crashing. 
+  * If several rows were selected and one of their cells was edited 
+    directly inside the treeview, a crash resulted.
+  * In the case that after the deletion of rows a selection remains 
+    active, during a drag and drop action all rows are unselected after 
+    the old source rows have been removed.
+  * Icon Pixbuf wasn't reset to NULL after an icon has been added to the 
+    menu (now irrelevant, since the code was rewritten).
+  * After a new menu has been loaded, sensitivity of menu bar items and 
+    tool buttons is now reset (for example "Collapse all nodes" is greyed 
+    out).
+  * If a new Execute action was added below a selected Exit or 
+    SessionLogout action the prompt option of startupnotify (if it was 
+    used) was not added to the treeview and -store. A similar situation 
+    appeared when a new Execute action was added below a selected Restart 
+    action, in this case the command option of startupnotify was not added.
+    (Both scenarios are very unlikely to affect someone, because such an 
+    order of actions makes no sense so almost nobody would use it. But 
+    since actions can be added in free order, this has been fixed anyway.)
+  * If a new startupnotify option was added, the startupnotify node was 
+    collapsed and autosorting of options was deactivated, then the new 
+    option wasn't selected.
+  * If autosorting was disabled and an option of Execute was chosen for 
+    addition, in certain cases they were added as last element instead 
+    of being inserted after the selected position.
+  * If a new icon is added via entering its path into the icon path entry 
+    field, the "remove icon" button is now activated.
+  * If all rows were deleted (not via the "New menu" button), the 
+    "Save as..." button wasn't deactivated afterwards.
+  * If several icons were removed at the same time, the internal variable 
+    for an applied change wasn't set, so the "save" tool button was not 
+    unlocked in case there was a file name set.
+  * If one of the columns "Menu ID" or "Execute" was hidden and a search 
+    found a match in one of them on toplevel, these columns were not 
+    expanded to visualise this find.
+  * If both the entry field and the column check boxes of the find grid 
+    were highlighted because of a missing choice and either the "match 
+    case" or "regular expression" check box was clicked afterwards, 
+    the highlighting of the column check boxes was reverted.
+  * Settings file is now closed after it had been opened for reading.
+  * Fixed memory leaks.
+  * The problem of undesired dragging that occured when a row was simply
+    clicked but not yet dragged (probably on slower machines) has been 
+    solved.
+
+0.5 Beta 3 2011-12-18
+  * Bugfix (regression) - Inserting a Reconfigre action via the context 
+    menu is working again.
+  * Bugfix - If an empty item (closed with "/>") is follöwed by another 
+    item, the position of the latter is no longer reported as erroneous.
+  * Bugfix - Added autoresizing of columns if icons are (de)activated, 
+    since otherwise icons are not shown if they were deactivated at start 
+    time and their display is activated later on.
+  * Bugfix - If a search with an empty entry was started (resulting in the 
+    entry field being marked to indicate that a search term is obligatory) 
+    and the "All columns" button was activated and deactivated again, all 
+    rows and columns were marked as hits, this behaviour has been reverted 
+    so no rows and columns are marked now in this case.
+  * Minor changes.
+
+0.5 Beta 2 2011-12-11
+  * Created special text layout for error messages regarding an invalid 
+    menu.
+  * More (and more differentiated) error messages for invalid menus. 
+  * Bugfix - Line numbers were not reset for the root menu parsing stage.
+  * Code optimisation, minor/cosmetical changes and removal of redundant 
+    code.
+
+0.5 Beta 2011-12-08
+  * Ported application to GTK 3.
+  * Added search functionality (incl. processing of regular expressions).
+  * Added support for icons (introduced first in Openbox 3.5.0).
+  * Added checks for XML-validty and Openbox menu format compliance.
+  * If there are multiple elements inside an xml tag of an openbox menu 
+    file, they can now be arranged in any order.
+  * Added "Remove children" option to the menu bar and context menu.
+  * Added "Move top/bottom" menu items to the menu bar.
+  * The application window can now be shrinked.
+  * Bugfix - Safer xml parsing. Kickshaw will no longer get "confused" 
+    because of menu files that contain lines such as 
+    '<menu id="<separator ">'.
+  * If two rows are selected and another one (not one of these two) is 
+    rightclicked, the two previously selected ones are now unselected, 
+    the new one is selected and the context menu for it is shown. If 
+    a row is selected and afterwards a blank area outside the treeview 
+    is rightclicked, the row is unselected and the context menu is shown 
+    that would have been shown if the blank area would have been clicked 
+    without having previously selected a row.
+  * If the last visible row was clicked and it had more entry fields 
+    than a previous clicked one, the former one was overlapped by the 
+    uppopping entry fields. This is now avoided by scrolling the treeview 
+    to this row after the popup of the entry fields.
+  * Code optimisation, minor/cosmetical changes and removal of redundant 
+    code.
+
+0.4.9 2011-12-08
+  * Bugfix - A variable for a currently active action is now only set if 
+    this action is not closed immediately (this is usually the case with 
+    a Reconfigure action). If another action was started after such an 
+    immediately closed one, a memory leak appeared, this has been fixed.
+
+0.4.8 2011-11-10
+  * Bugfix - Pipe menus from root menu are now parsed properly.
+  * Bugfix - Icon paths inside an item tag are now ignored and no longer 
+    corrupt the label text (support for icons is introduced in version 
+    0.5).
+  * Bugfix - Memory leak fixed.
+  * Bugfix - Missing line break added in the list of unused root menus 
+    (missing only when there was just one unused root menu).
+
+0.4.7 2011-11-07
+  * Bugfix (regression) - If the display status of grid lines had been 
+    changed the settings file was no longer updated.
+
+0.4.6 2011-11-06
+  * Bugfix (regression) - Fixed corruption of file name.
+
+0.4.5 2011-10-21
+  * Bugfix - Memory leak that occured when a file was already open and a 
+    new one was opened afterwards fixed.
+
+0.4.4 2011-10-10
+  * Removal of redundant code.
+
+0.4.3 2011-10-10
+  * Bugfix - The table for the entry fields that is shown when a row is 
+    selected was defined with a redundant row, this bug had no effect on 
+    the program and its appearance.
+
+0.4.2 2011-09-25
+  * Bugfix - Setting of sensivity of collpase/expand toolbar buttons and 
+    menu items is now also working correctly if rows are selected that 
+    are part of an expanded treeview.
+  * If an obligatory entry field had not been filled out, but it later 
+    received a proper content, the background color of this field was set 
+    from rose to white (not visible until this entry field was shown 
+    again), now it is simply reset to the previous state, so it does not 
+    override a theme that uses another color than white.
+
+0.4.1 2011-09-24
+  * Removal of redundant code.
+
+0.4 2011-09-18
+  * Boolean values are now shown as toggle buttons directly inside the 
+    treeview and can be changed by toggling these buttons.
+  * Added a view option to (de)activate tree lines. Tree lines are now 
+    shown by default.
+  * It's now possible to remove rows via the "Delete" key.
+  * When adding an action, mandatory fields can no longer be left empty, 
+    if "Done" is pressed, these fields are now marked with a rose 
+    background. The same applies for options of startupnotify when they 
+    were chosen via the combo box.
+  * If there is only one entry field to be filled out for a new menu 
+    element, it is now enough to press the "Enter" key to finish 
+    entering, it is no longer necessary to click the "Done" button.
+  * Safer check for non-existing root menu. The program does no longer 
+    exit after it displays the error message that no root menu has been 
+    found.
+  * When a menu is loaded, prompt options of an Exit or SessionLogout 
+    action with a value other than "yes" or "no" will no longer be 
+    accepted, the user is asked to choose one of the possible values.
+  * The "Save" option in the menu bar is now deactivated as well if a 
+    menu (without changes during the loading process) was loaded or a 
+    new menu was created. Save (As) is also deactivated in the case a 
+    new menu was created or there are currently no rows.
+  * It is now possible to add new rows into unused menus. The status of 
+    the latter is regularised in this case.
+  * Expand and collapse all nodes tool bar buttons and menu bar entries 
+    are now disabled if the menu is empty or there are no subrows.
+    The above-mentioned changes also apply for the case that no menu.xml 
+    file exists in ~/.config/openbox, kickshaw starts as before with an 
+    empty menu. The tool bar buttons are also enabled or disabled 
+    according to whether all nodes are collapsed, at least one but not 
+    all are expanded or all are expanded.
+  * For new basic menu elements (menu, pipe menu, item and separator) 
+    the label is now uniformly set as "New xxx" (xxx = type).
+  * If it is chosen to create a new menu and the prior menu has been 
+    emptied, there is now a note inside the appearing warning message 
+    that empty menus won't be saved anyway.
+  * Error messages are now presented in bold text.
+  * The make file has been modified to work also on BSD. It now also 
+    contains options for optimisation, extra warnings and pedantic check 
+    for compliance with the C99 standard (incl. GNU extensions).
+  * Bugfix - Menu IDs of submenus were deleted inside the interal list 
+    during a drag and drop process. Menu IDs are now recorded in the 
+    internal list also for unused menus, preventing double menu IDs of 
+    unused and regular or invisible menus. If invisible menus are 
+    deleted during the loading process, their menu IDs are now also
+    erased from the internal list.
+  * Bugfix - If invisible menus were found during the loading process 
+    and it was chosen to delete them, the paths of Execute actions of 
+    these menus were not removed properly from the internal list.
+  * Bugfix - It the last menu element was an item and the second to last 
+    a menu, the menu file was not created properly.
+  * Bugfix - startupnotify is now inserted with option block as type.
+  * Bugfix - If nothing had been selected before and the context menu 
+    was activated, the function for the latter always received a value 
+    of zero currently selected rows, resulting in inappropriate options 
+    inside the context menu.
+  * Bugfix - If a drag and drop process was finished, it was not set 
+    internally that a change occured so the save button was not unlocked 
+    if the drag and drop process was the first action done after a menu 
+    was loaded. There was also no update on the selection status, which 
+    led to the situation that the possible options for the old position 
+    were still shown for the new position, which could result in a crash 
+    when trying to activate one of them.
+  * Bugfix - If a menu, item or separator was assigned a value for its 
+    label that was equal to that of an action or option identifier 
+    crashes or severe malfunctions occured.
+  * Bugfix - Toplevel pipe menus are now assigned as "regular" for their 
+    toplevel menu status if they are not unused or invisble.
+  * Bugfix - Obligatory sentinels were missing in a few function calls.
+  * Bugfix - Removed the label in front of the combo box that is shown 
+    when several actions or options are possible because it was actually 
+    superfluous and not flexible ("Action" was shown even if it was an 
+    option of an action).
+  * Bugfix - General additions to the program to avoid memory leaks.
+  * Code optimisation, minor/cosmetical changes and removal of redundant 
+    code.
+
+0.4 RC 2 2011-07-31
+
+  * If a menu ID was edited, an already existing ID entered and the same 
+    row clicked afterwards, after the error message a drag and drop 
+    process was started due to interfering code, this situation is now 
+    avoided.
+  * Bugfix - When (pipe) menus were dragged, their menu IDs of the source 
+    rows were deleted, but not replaced for the new rows.
+  * Code optimisation, minor/cosmetical changes and removal of redundant 
+    code.
+
+0.4 RC 2011-07-30
+
+  * If a menu file is overwritten, a backup file is now created, its name 
+    is the old file name plus an attached tilde.
+  * Options in the edit menu (not only the corresponding ones in the 
+    toolbar) are now deactivated as well if they don't make sense (for 
+    example "move down" when the last row is selected).
+  * If rows are moved via drag and drop and one or more of them are nodes, 
+    the expansion status of these nodes and all subnodes are now kept.
+  * If a new action is chosen to be added to an item, instead of blocking 
+    the whole treeview only further selections are blocked, since this 
+    has the advantage that the selection can be still displayed.
+  * Actions or options of actions are now inserted throughout at the 
+    current selection position, with the remaining execption when they 
+    are added directly at the parent node.
+  * Recursive expansion of selected nodes is now always possible as long 
+    as not every subnode has been expanded so far. In addition an 
+    exclusive expansion of all immediate children can now always be 
+    chosen as long as this kind of expansion is not already active.
+  * The workaround for the problem that a multiple selection of rows 
+    disappeared when the rows were dragged interfered with editable cells 
+    in a way that the editing of such cells was much harder to activate. 
+    This interference is now avoided.
+  * Bugfix - If the content of cells is changed via the entry fields 
+    displayed at the bottom, the "save" button is now activated in any 
+    case.
+  * Bugfix - command and prompt options of an Execute action can no 
+    longer be moved into other Execute actions if there are already 
+    options of the same kind.
+  * Bugfix - If at least one unused or invisible menu is selected and 
+    the context menu is opened, the correct general text "Regularise 
+    menu statuses" is now displayed instead of "Generate empty menus".
+  * Code optimisation and removal of redundant code.
+
+0.4 Beta 4 2011-07-23
+
+  * Added multirow drag and drop.
+  * Added a status bar for drag and drop information.
+  * Added a GTK version check (GTK 2.>=18 req.)
+  * Bugfix - the check for menus that dragged into themselves is now also 
+    in effect when the menus are moved more than a level deeper in a tree 
+    (this bug was irrelevant, since the check for an irrelevant position 
+    led to a break before).
+  * Bugfix (regression) - if an action or startupnotify was selected, 
+    toggling the status of an "enabled" option was afterwards no longer 
+    possible.
+  * Minor code optimisations, removal of redundant code and cosmetical 
+    changes.
+
+0.4 Beta 3 2011-07-17
+
+  * The identifiers in .kickshawrc are now identical to the texts of the 
+    menu items, so settings that were changed from the defaults have to 
+    be redone.
+  * Bugfix - Memory of string disassembling array was not freed after use.
+  * Some code rewriting, most of it resulting in more compact code.
+
+0.4 Beta 2 2011-07-15
+
+  * It is now possible to drop rows onto other rows, they are added as a 
+    new last child of the row they are dropped upon.
+  * When a new file is created or loaded after a previous one, the treeview 
+    columns are now autosized. The same applies to collapsing rows via the 
+    context menu.
+  * Bugfix - Moving an option to an action that has already the same option 
+    is now prevented. It is now also being prevented that a prompt option 
+    with a value other than "yes" and "no" is moved into an "Exit" or 
+    "SessionLogout" action.
+  * Bugfix - Options are now autosorted when having been moved via drag and 
+    drop and if autosorting is activated.
+  * Bugfix - Unused or invisible menus are being dealt with properly now 
+    when they are part of a drag and drop process.
+  * Bugfix - Prompt options can now be moved into SessionLogout actions.
+    (This bug was irrelevant, since dropping onto empty rows had not been 
+    implemented yet.)
+  * Bugfix - Memory of string disassembling array was not freed after use.
+  * The README file had not been updated with the drag_and_drop file.
+  * Code optimisation, minor changes and removal of redundant code.
+
+0.4 Beta 2011-07-13
+
+  * Solved the problem that dropping was done one row before the marked 
+    dropped zone if the dragged row was shown with more than its upper half 
+    above the marking.
+  * Added expand/collapse row in context menu for convenience.
+  * Moved the settings file from ~/.config/openbox/menu_editor_settings 
+    to ~/.kickshawrc, since this is no file created by Openbox itself and 
+    the settings file is easier to detect this way.
+  * Code optimsation and removal of redundant code.
+
+0.4 Alpha 2011-07-11
+
+  * Added drag and drop functionality. Limitation for now: if multiple 
+    elements are selected, only the first one is moved.
+  * Minor code rewriting and optimisation.
+  * Renamed application to "kickshaw".
+
+0.3.14 2011-07-08
+
+  * Bugfix - If not located on a toplevel, a separator without a label still 
+    received a label="" in the xml file because of outdated code that had 
+    not been removed until now.
+  * Code optimisation, also removal of redundant code.
+
+0.3.13 2011-07-07
+
+  * Bugfix - If a boolean field inside the tree view was selected, a variable 
+    was set internally that a change was done, even without one actually done, 
+    so a question would appear when leaving the program or creating a new/
+    opening another file whether to continue dispite unsaved changes.
+    The same applies for text fields, if there has been no change or the same 
+    value was entered, the variable is no longer set.
+
+0.3.12 2011-07-06
+
+  * Bugfix - If a Menu ID cell was edited directly in the tree view, the 
+    new value was shown, but the old value was still kept internally in the 
+    list of Menu ID, which could result in double Menu IDs if new ones were
+    added.
+  * Some code rewriting and optimisation.
+
+0.3.11 2010-12-06
+
+  * Bugfix - If all root menus without content were selected for deletion
+    during the loading phase of the menu and one of these menus was next
+    to another one, the second one was not deleted because the rows were
+    not deleted via the row references method.
+  * If menus without corresponding entries in the root menu and/or root 
+    menus without content are initialised or deleted, the menu can now be 
+    saved directly right from the start with the save toolbar button without 
+    using the save as toolbutton as "workaraound", since the menu has 
+    already been changed.
+  * Minor/cosmetical changes.
+
+0.3.10 2010-12-05
+
+  * Faster check if a given value exists in a list of strings (streq_any 
+    function), returns TRUE immediately now if it has been found.
+  * Compressed code for sorting of execute and startupnotify options.
+  * Minor/cosmetical changes.
+
+0.3.9 2010-11-28
+
+  * Bugfix - If a menu was saved a second time, the root menu wasn't created 
+    correctly, because some variables were not properly reset after the first 
+    save.
+  * Bugfix - The removal of the "(No label)" indicator wasn't done at one 
+    place in the code so separators without label were not written correctly.
+  * Bugfix - If a cell has been edited, the entry fields are now immediately 
+    updated. The "save" toolbutton is now shown if this modification was done 
+    as first modification after the start of the program.
+
+0.3.8 2010-11-20
+
+  * Removed the "(No label)" indicator for separators without a label to 
+    make it equal with the other elements and since this is obvious in the 
+    tree view anyway.
+
+0.3.7 2010-11-20
+
+  * Cleaner look for the context menu.
+  * Added the possibility to regularise the status of several unused or 
+    invisible toplevel menus via the context menu.
+  * Minor code cleanup.
+
+0.3.6 2010-11-18
+
+  * Added the possibilty to regularise an unused or invisible toplevel menu
+    via the context menu.
+  * Removed the possibility to change a toplevel menu status to invisible 
+    or unused. Even though this can be done by editing the menu xml file by 
+    hand, this is something that would usually not be considered as a useful 
+    option inside a program.
+  * Bugfix - Menus that are inserted as a sub element of a toplevel menu no 
+    longer unnecessarily receive a value for the toplevel menu status. 
+  * Minor/cosmetical changes and code cleanup.
+
+0.3.5 2010-11-18
+
+  * Labels of unused toplevel menus can no longer be edited. It is also 
+    impossible now to insert rows into an unused toplevel menu. To enable
+    these operations, an unused toplevel menu has now to be explicitly 
+    converted into a visible or an invisible toplevel menu.
+  * Code cleanup.
+
+0.3.4 2010-11-17
+
+  * Added the option to draw rows in alternating colours (the currently 
+    activated GTK theme has to support this).
+  * Added the possiblity to keep the highlighting for unused and invisible
+    toplevel menus if the toplevel menu status column is shown.
+  * If highlighting for unused and invisible toplevel menus is activated, 
+    the contrast between both menu types is now sharper.
+  * Minor/cosmetical changes.
+
+0.3.3 2010-11-17
+
+  * Changed "show grid" sub menu to radio buttons because there is always 
+    only exactly one possible choice.
+
+0.3.2 2010-11-16
+
+  * Bugfix - If a row was deleted and had at least one child that was not 
+    selected for deletion and was a menu or pipe menu, the menu ID of this 
+    child was not removed.
+  * Bugfix - If the statuses of several toplevel menus were changed to 
+    unused at the same time by multiple selection and at least one of the 
+    menus had children, the list of the to be deleted children wasn't reset 
+    after the children of the first toplevel menu that had any of them 
+    were deleted. 
+    Code of this section has been rewritten and is now much more compact.
+  * Bugfix (regression) - If a new grid display option is selected after a 
+    previous choice, the check mark of the new choice is displayed in the 
+    menu again.
+  * Bugfix - Allocated RAM for tree selection and row reference lists is 
+    now freed throughout the program.
+  * Minor/cosmetical changes and code cleanup.
+
+0.3.1 2010-11-14
+
+  * If a menu element is deleted from a menu that has not been previously
+    edited, the "deleted" toolbar button will be deactivated, since there 
+    is no current selection after the deletion.
+
+0.3 2010-11-12
+
+  * Code optimisations, incl. faster cell rendering.
+
+0.3 Beta 2 2010-11-11
+
+  * Empty Execute and startupnotify actions are now expanded if options are 
+    added to them.
+  * Bugfix (regression) - Reinserted default dummy value for action combo 
+    box, otherwise an insertion of a Reconfigure action before a first use 
+    of the combo box leads to a crash.
+  * Bugfix (regression) - If one option of Execute was missing and a button 
+    to add the missing option was clicked, a combo box without content was 
+    shown instead of inserting the option.
+
+0.3 Beta 2010-11-11
+
+  * New functionality: Editable cells
+  * Bugfix - When no menu had been found after the start of the program, a 
+    rightclick on the empty treeview resulted in a crash.
+
+0.2.3 2010-11-10
+
+  * Bugfix (regression) - Insertion of Execute options by combo box works 
+    again.
+
+0.2.2 2010-11-09
+
+  * Bugfix (regression) - Check for double Menu IDs works again.
+
+0.2.1 2010-11-09
+
+  * Bugfix (regression) - It was not possible to insert pipe menus, the last
+    chosen element was inserted again instead.
+
+0.2 2010-11-07
+
+  * Makefile now contains install and uninstall options.
+
+0.2 Beta 2 2010-11-06
+
+  * Slightly enhanced makefile that supports several jobs at the same time 
+    (make -j option) and clean option.
+  * Switched to a much shorter way to check if X is running which also works on BSDs.
+  * FreeBSD binaries for x86 and amd64 added.
+
+0.2 Beta 2010-11-04
+
+  * Added context menus.
+  * Removed the possibilty to add menu elements at toplevel when several 
+    menu elements are selected, since this is no action that would be 
+    considered when selecting multiple elements and could even be confusing.
+  * Fixed several bugs.
+
+0.1 2010-11-02
+
+  * Minor optimisation.
+
+0.1 Beta 2 2010-10-31
+
+  * Fixed wrong selection after addition of new actions.
+
+0.1 Beta 2010-10-29
+
+  * Minor/cosmetical changes.
+
+0.1 Alpha 2 Revised 2010-10-27
+
+  * Split up code for a better overview.
+  * Included a simple makefile for easier compiling.
+
+0.1 Alpha 2 2010-10-25
+
+  * Fixed realloc crash that happened when a menu was loaded on x86 machines.
+  * Faster xml parsing.
+
+0.1 Alpha 2010-10-24
+
+  * Initial release.

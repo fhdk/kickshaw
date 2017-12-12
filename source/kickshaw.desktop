@@ -1,5 +1,5 @@
 [Desktop Entry]
-Version=0.5
+Version=0.5.2
 Name=Kickshaw
 Comment=Openbox menu editor based on Gtk3
 Exec=/usr/bin/kickshaw

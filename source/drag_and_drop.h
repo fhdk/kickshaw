@@ -1,7 +1,7 @@
 /*
    Kickshaw - A Menu Editor for Openbox
 
-   Copyright (c) 2010-2013        Marcus Schaetzle
+   Copyright (c) 2010-2017        Marcus Schaetzle
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -27,6 +27,9 @@ extern GtkTreeModel *model;
 extern GtkWidget *treeview;
 extern GtkTreeIter iter;
 
+extern GtkWidget *statusbar;
+extern gboolean statusbar_msg_shown;
+
 extern GSList *source_paths;
 
 extern gboolean autosort_options;
@@ -34,14 +37,12 @@ extern gboolean autosort_options;
 extern gint handler_id_row_selected;
 
 extern void activate_change_done (void);
-extern gchar *check_if_invisible_ancestor_exists (GtkTreeModel *local_model, GtkTreePath *path);
+extern guint8 check_if_invisible_ancestor_exists (GtkTreeModel *local_model, GtkTreePath *local_path);
 extern void remove_rows (gchar *origin);
 extern void row_selected (void);
 extern void show_msg_in_statusbar (gchar *message);
-extern void sort_execute_or_startupnotify_options_after_insertion (gchar *execute_or_startupnotify,
-								   GtkTreeSelection *selection,
-								   GtkTreeIter *parent, gchar *option);
-G_GNUC_NULL_TERMINATED extern gboolean streq_any (const gchar *string, ...);
-extern void unref_icon (GdkPixbuf **icon, gboolean set_to_NULL);
+extern void sort_execute_or_startupnotify_options_after_insertion (GtkTreeSelection *selection, GtkTreeIter *parent, 
+																   gchar *execute_or_startupnotify, gchar *option);
+extern gboolean streq_any (const gchar *string, ...) G_GNUC_NULL_TERMINATED;
 
 #endif

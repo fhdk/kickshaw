@@ -17,34 +17,30 @@
    with Kickshaw. If not, see http://www.gnu.org/licenses/.
 */
 
-#ifndef __find_h
-#define __find_h
+#ifndef __check_for_external_changes_timeout_h
+#define __check_for_external_changes_timeout_h
 
+#define free_and_reassign(string, new_value) { g_free (string); string = new_value; }
 #define streq(string1, string2) (g_strcmp0 ((string1), (string2)) == 0)
 
+extern GtkTreeStore *treestore;
 extern GtkTreeModel *model;
-extern GtkTreeView *treeview;
-extern GtkTreeIter iter;
+extern GtkWidget *treeview;
 
-extern GtkTreeViewColumn *columns[];
+extern GdkPixbuf *invalid_icon_imgs[];
 
-extern GtkWidget *mb_view_and_options[];
+extern GtkWidget *entry_fields[];
+extern GtkCssProvider *icon_path_entry_css_provider;
 
-extern GtkWidget *find_grid;
-extern GtkWidget *find_entry_buttons[];
-extern GtkWidget *find_entry;
-extern GtkCssProvider *find_entry_css_provider;
-extern GtkWidget *find_in_columns[], *find_in_all_columns;
-extern GtkCssProvider *find_in_columns_css_providers[], *find_in_all_columns_css_provider;
-extern GtkWidget *find_match_case, *find_regular_expression; 
+extern gchar *icon_theme_name;
+extern guint font_size;
 
-extern GString *search_term;
+extern GSList *rows_with_icons;
 
-extern GList *rows_with_found_occurrences;
-
-extern gint handler_id_find_in_columns[];
-
-extern void row_selected (void);
+extern void create_invalid_icon_imgs (void);
+extern guint get_font_size (void);
+extern gboolean set_icon (GtkTreeIter *icon_iter, gchar *icon_path, gboolean automated);
+extern gchar *get_modification_time_for_icon (gchar *icon_path);
 extern void wrong_or_missing (GtkWidget *widget, GtkCssProvider *css_provider);
 
 #endif
