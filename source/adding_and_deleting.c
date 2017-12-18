@@ -86,7 +86,7 @@ void add_new (gchar *new_menu_element)
 									 new_menu_element);
 
 		create_dialog (&dialog, "Same level or inside menu?", "dialog-question", label_txt, 
-								"Same level", "Inside menu", "Cancel", TRUE); // TRUE == dialog is shown immediately.
+					   "Same level", "Inside menu", "Cancel", TRUE); // TRUE == dialog is shown immediately.
 
 		// Cleanup
 		g_free (label_txt);
@@ -103,7 +103,8 @@ void add_new (gchar *new_menu_element)
 		}
 	}
 
-	if (gtk_tree_selection_count_selected_rows (selection) && gtk_tree_path_get_depth (path = gtk_tree_model_get_path (model, &iter)) > 1) {
+	if (gtk_tree_selection_count_selected_rows (selection) && 
+		gtk_tree_path_get_depth (path = gtk_tree_model_get_path (model, &iter)) > 1) {
 		path_is_on_toplevel = FALSE;
 	}
 
@@ -119,8 +120,8 @@ void add_new (gchar *new_menu_element)
 
 	// Predefinitions
 	if (!streq (new_menu_element, "separator")) {
-		new_ts_fields[TS_MENU_ELEMENT] = g_strconcat (streq_any (new_menu_element, "menu", "pipe menu", "item", NULL) ? 
-													  			 "New " : "", new_menu_element, NULL);
+		new_ts_fields[TS_MENU_ELEMENT] = g_strconcat ((streq_any (new_menu_element, "menu", "pipe menu", "item", NULL)) ? 
+													  "New " : "", new_menu_element, NULL);
 	}
 	new_ts_fields[TS_TYPE] = new_menu_element; // New default, will be overwritten later if it's an option.
 
@@ -128,8 +129,9 @@ void add_new (gchar *new_menu_element)
 		guint menu_id_index = 1;
 
 		// Menu IDs have to be unique, so the list of menu IDs has to be checked for existing values.
-		while (g_slist_find_custom (menu_ids, new_ts_fields[TS_MENU_ID] = g_strdup_printf ("New menu %i", menu_id_index++), 
-			  (GCompareFunc) strcmp)) {
+		while (g_slist_find_custom (menu_ids, 
+									new_ts_fields[TS_MENU_ID] = g_strdup_printf ("New menu %i", menu_id_index++), 
+									(GCompareFunc) strcmp)) {
 			g_free (new_ts_fields[TS_MENU_ID]);
 		}
 		menu_ids = g_slist_prepend (menu_ids, new_ts_fields[TS_MENU_ID]);
@@ -183,7 +185,7 @@ void add_new (gchar *new_menu_element)
 
 			if ((invisible_ancestor = check_if_invisible_ancestor_exists (model, new_path))) { // Parentheses avoid gcc warning.
 				new_ts_fields[TS_ELEMENT_VISIBILITY] = (invisible_ancestor == INVISIBLE_ANCESTOR) ?
-				"invisible dsct. of invisible menu" : "invisible dsct. of invisible unintegrated menu";	   
+				"invisible dsct. of invisible menu" : "invisible dsct. of invisible orphaned menu";	   
 			}
 			// Cleanup
 			gtk_tree_path_free (new_path);
@@ -213,9 +215,8 @@ void add_new (gchar *new_menu_element)
 		gtk_tree_model_iter_parent (model, &parent, &new_iter);
 		if (gtk_tree_model_iter_n_children (model, &parent) > 1) {
 			sort_execute_or_startupnotify_options_after_insertion (selection, &parent, 
-																   (streq_any (new_menu_element, 
-																   "prompt", "command", NULL)) 
-																   ? "Execute" : "startupnotify", 
+																   (streq_any (new_menu_element, "prompt", "command", NULL)) ? 
+																   "Execute" : "startupnotify", 
 																   new_menu_element);
 		}
 	}
@@ -251,9 +252,11 @@ void option_list_with_headlines (G_GNUC_UNUSED GtkCellLayout   *cell_layout,
 	g_object_set (action_option_combo_box_renderer, 
 				  "foreground-rgba", (headline) ? &((GdkRGBA) { 1.0, 1.0, 1.0, 1.0 }) : NULL, 
 				  "background-rgba", (g_str_has_prefix (action_option_combo_item, "Choose")) ? 
-				  &((GdkRGBA) { 0.31, 0.31, 0.79, 1.0 }) : ((g_str_has_prefix (action_option_combo_item, "Add")) ? 
-				  &((GdkRGBA) { 0.0, 0.0, 0.0, 1.0 }) : NULL),
-				  "sensitive", !headline, NULL);
+									 &((GdkRGBA) { 0.31, 0.31, 0.79, 1.0 }) : 
+									 ((g_str_has_prefix (action_option_combo_item, "Add")) ? 
+									 &((GdkRGBA) { 0.0, 0.0, 0.0, 1.0 }) : NULL),
+				  "sensitive", !headline, 
+				  NULL);
 
 	// Cleanup
 	g_free (action_option_combo_item);
@@ -334,8 +337,8 @@ void generate_action_option_combo_box (gchar *preset_choice)
 	gtk_list_store_insert_with_values (action_option_combo_box_liststore, &action_option_combo_box_iter, -1, 
 									   ACTION_OPTION_COMBO_ITEM,
 									   (streq (bt_add_action_option_label_txt, "Action")) ? "Choose an action" : 
-									   (streq (bt_add_action_option_label_txt, "Option") 
-									   ? "Choose an option" : "Choose an action/option"),
+									   (streq (bt_add_action_option_label_txt, "Option")) ? 
+									   "Choose an option" : "Choose an action/option", 
 									  -1);
 
 	// Startupnotify options: enabled, name, wmclass, icon
@@ -478,7 +481,7 @@ void show_action_options (void)
 		}
 		if (!g_signal_handler_is_connected (options_fields[SN_OR_PROMPT], handler_id_show_startupnotify_options)) {
 			handler_id_show_startupnotify_options = g_signal_connect (options_fields[SN_OR_PROMPT], "toggled", 
-													G_CALLBACK (show_startupnotify_options), NULL);
+																	  G_CALLBACK (show_startupnotify_options), NULL);
 		}
 	}
 
@@ -605,14 +608,14 @@ static void clear_entries (void)
 
 /* 
 
-   Inserts an action and/or its option(s) with the entered values.
+	Inserts an action and/or its option(s) with the entered values.
 
 */
 
 void action_option_insert (gchar *origin)
 {
-	const gchar *choice = (streq (origin, "by combo box")) ? gtk_combo_box_get_active_id (GTK_COMBO_BOX (action_option)) : 
-						   "Reconfigure";
+	const gchar *choice = (streq (origin, "by combo box")) ? 
+						   gtk_combo_box_get_active_id (GTK_COMBO_BOX (action_option)) : "Reconfigure";
 	gboolean options_check_button_state = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (options_fields[SN_OR_PROMPT]));
 	gboolean enabled_check_button_state = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (suboptions_fields[ENABLED]));
 	const gchar *options_entries[] = { gtk_entry_get_text (GTK_ENTRY (options_fields[PROMPT])), 
@@ -803,8 +806,8 @@ void action_option_insert (gchar *origin)
 			gtk_tree_store_insert_with_values (treestore, &new_iter2, &new_iter, -1, 
 											   TS_MENU_ELEMENT, (streq (choice, "Restart")) ? "command" : "prompt", 
 											   TS_TYPE, "option",
-											   TS_VALUE, (streq (choice, "Restart") ? options_entries[COMMAND] : 
-														  (options_check_button_state) ? "yes" : "no"),
+											   TS_VALUE, (streq (choice, "Restart")) ? options_entries[COMMAND] : 
+														  ((options_check_button_state) ? "yes" : "no"),
 											   -1);
 		}
 
@@ -817,8 +820,8 @@ void action_option_insert (gchar *origin)
 		gtk_tree_store_insert_with_values (treestore, &new_iter, &iter, -1, 
 										   TS_MENU_ELEMENT, (streq (choice, "Prompt")) ? "prompt" : "command", 
 										   TS_TYPE, "option",
-										   TS_VALUE, ((streq (choice, "Command")) ? options_entries[COMMAND] : 
-													  (options_check_button_state) ? "yes" : "no"),
+										   TS_VALUE, (streq (choice, "Command")) ? options_entries[COMMAND] : 
+													  ((options_check_button_state) ? "yes" : "no"),
 										   -1);
 
 		expand_row_from_iter (&iter);
@@ -881,18 +884,19 @@ static gboolean check_for_menus (			   GtkTreeModel	*filter_model,
 {
 	gchar *type_txt_filter, *menu_id_txt_filter;
 
-	gtk_tree_model_get (filter_model, filter_iter, 
-						TS_TYPE, &type_txt_filter, 
-						TS_MENU_ID, &menu_id_txt_filter, 
-						-1);
+	gtk_tree_model_get (filter_model, filter_iter, TS_TYPE, &type_txt_filter, -1);
 
 	if (streq_any (type_txt_filter, "menu", "pipe menu", NULL)) {
+		gtk_tree_model_get (filter_model, filter_iter, TS_MENU_ID, &menu_id_txt_filter, -1);
+
 		remove_menu_id (menu_id_txt_filter);
+
+		// Cleanup
+		g_free (menu_id_txt_filter);
 	}
 
 	// Cleanup
 	g_free (type_txt_filter);
-	g_free (menu_id_txt_filter);
 
 	return FALSE;
 }
@@ -1013,39 +1017,41 @@ void remove_rows (gchar *origin)
 	gchar *type_txt_loop, *menu_id_txt_loop;
 
 	// Prevents that the default check for change of selection(s) gets in the way.
-	g_signal_handler_block (selection, handler_id_row_selected); 
+	g_signal_handler_block (selection, handler_id_row_selected);
 
 	for (selected_rows_loop = selected_rows; selected_rows_loop; selected_rows_loop = selected_rows_loop->next) {
 		path_loop = selected_rows_loop->data;
 		gtk_tree_model_get_iter (model, &iter_loop, path_loop);
+		
+		if (!streq (origin, "dnd")) { // A drag & drop just moves rows; there are no new, deleted or changed menu IDs in this case.
+			gtk_tree_model_get (model, &iter_loop, TS_TYPE, &type_txt_loop, -1);
 
-		gtk_tree_model_get (model, &iter_loop, 
-							TS_TYPE, &type_txt_loop, 
-							TS_MENU_ID, &menu_id_txt_loop, 
-							-1);
+			if (streq_any (type_txt_loop, "menu", "pipe menu", NULL)) { 
+				// Keep menu IDs in the GSList equal to the menu IDs of the treestore.
+				gtk_tree_model_get (model, &iter_loop, TS_MENU_ID, &menu_id_txt_loop, -1);
+				remove_menu_id (menu_id_txt_loop);
 
-		if (!streq (origin, "dnd") && streq_any (type_txt_loop, "menu", "pipe menu", NULL)) {
-			// Keep menu IDs in the GSList equal to the menu IDs of the treestore.
-			remove_menu_id (menu_id_txt_loop);
+				/*
+					If the to be deleted row is a menu that contains other menus as children, 
+					their menu IDs have to be deleted, too.
+				*/
+				if (gtk_tree_model_iter_has_child (model, &iter_loop)) { // Has to be a menu, because pipe menus don't have children.
+					filter_model = gtk_tree_model_filter_new (model, path_loop);
+					gtk_tree_model_foreach (filter_model, (GtkTreeModelForeachFunc) check_for_menus, NULL);
 
-			/*
-				If the to be deleted row is a menu that contains other menus as children, 
-				their menu IDs have to be deleted, too.
-			*/
-			if (gtk_tree_model_iter_has_child (model, &iter_loop)) { // Has to be a menu, pipe menus don't have children.
-				filter_model = gtk_tree_model_filter_new (model, path_loop);
-				gtk_tree_model_foreach (filter_model, (GtkTreeModelForeachFunc) check_for_menus, NULL);
+					// Cleanup
+					g_object_unref (filter_model);
+				}
 
 				// Cleanup
-				g_object_unref (filter_model);
+				g_free (menu_id_txt_loop);
 			}
+
+			// Cleanup
+			g_free (type_txt_loop);
 		}
 
 		gtk_tree_store_remove (GTK_TREE_STORE (model), &iter_loop);
-
-		// Cleanup
-		g_free (type_txt_loop);
-		g_free (menu_id_txt_loop);
 	}
 
 	// If all rows have been deleted and the search functionality had been activated before, deactivate the latter.
@@ -1058,7 +1064,7 @@ void remove_rows (gchar *origin)
 	// Cleanup
 	g_list_free_full (selected_rows, (GDestroyNotify) gtk_tree_path_free);
 
- 	if (!streq_any (origin, "dnd", "load menu", NULL)) {
+ 	if (!streq_any (origin, "dnd", "load menu", NULL)) { // There might be further changes during Drag & Drop / loading a menu.
 		activate_change_done ();
 		row_selected ();
 	}

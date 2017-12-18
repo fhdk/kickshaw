@@ -53,6 +53,8 @@ static void create_cm_headline (GtkWidget *context_menu,
 #else
 	gtk_misc_set_alignment (GTK_MISC (headline_label), 0.0, 0.5);
 #endif
+	gtk_style_context_add_class (gtk_widget_get_style_context (headline_label), "cm_class");
+	gtk_css_provider_load_from_data (cm_css_provider, ".cm_class { color: rgba(255,255,255,100); background: rgba(102,102,155,100) }", -1, NULL);
 	gtk_style_context_add_provider (gtk_widget_get_style_context (headline_label), 
 									GTK_STYLE_PROVIDER (cm_css_provider), GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
 	gtk_container_add (GTK_CONTAINER (menu_item), headline_label);
@@ -96,7 +98,7 @@ static void expand_or_collapse_selected_rows (gpointer action_pointer)
 
 /* 
 
-   Adds all currently unused startupnotify or Execute options to the context menu.
+	Adds all currently unused startupnotify or Execute options to the context menu.
 
 */
 
@@ -172,7 +174,7 @@ void create_context_menu (GdkEventButton *event)
  			selected_rows = gtk_tree_selection_get_selected_rows (selection, &model);
  			for (selected_rows_loop = selected_rows; selected_rows_loop; selected_rows_loop = selected_rows_loop->next) {
 				if (gtk_tree_path_compare (path, selected_rows_loop->data) == 0) {
-					 selected_row_is_one_of_the_previously_selected_ones = TRUE;
+					selected_row_is_one_of_the_previously_selected_ones = TRUE;
 					break;
 				}
  			}
@@ -503,6 +505,9 @@ void create_context_menu (GdkEventButton *event)
 
 	gtk_widget_show_all (context_menu);
 
+#if GTK_CHECK_VERSION(3,22,0)
+	gtk_menu_popup_at_pointer (GTK_MENU (context_menu), NULL);
+#else
 	/*
 		Arguments two to five 
 		(parent_menu_shell, parent_menu_item, user defined positioning function and user data for that function)
@@ -510,4 +515,5 @@ void create_context_menu (GdkEventButton *event)
 	*/
 	gtk_menu_popup (GTK_MENU (context_menu), NULL, NULL, NULL, NULL, 
 					(event) ? event->button : 0, gdk_event_get_time ((GdkEvent*) event));
+#endif
 }

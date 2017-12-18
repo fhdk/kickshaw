@@ -18,6 +18,18 @@
 
 ---
 
+0.5.4 2017-12-16
+  * Bugfix - If several rows were selected for drag & drop and before 
+    doing the drag & drop action they were clicked on (again), it could 
+    happen that after the drag & drop process it was no longer possible to 
+    select a row.
+  * Bugfix (regression) - Context menu headlines were not styled under 
+    certain conditions.
+  * Minor changes.
+
+0.5.3 2017-12-13
+  * Minor/cosmetical changes; no bugfixes.
+
 0.5.2 2017-12-11
   * Error message for the case that there is no window system running 
     is now sent to stderr.
@@ -38,7 +50,7 @@
     from the dialog is working again.
   * Bugfix (regression) - Invalid attributes are rejected again.
   * Leading and trailing whitespace of text of options is now removed.
-  * The dialog texts for fixing invisible and unintegrated menus do no 
+  * The dialog texts for fixing invisible and orphaned menus do no 
     longer exceed the requested width.
   * Corrected position of GNU macros.
   * Code optimisation, minor/cosmetical changes and removal of redundant 
@@ -146,9 +158,9 @@
     occured during saving process, the filename is no longer replaced with 
     the chosen one.
   * Bugfix (regression) - After a submenu/-item had been dragged out of an 
-    invisible unintegrated menu to toplevel, this menu/item was marked as 
+    invisible orphaned menu to toplevel, this menu/item was marked as 
     invisible even if it had a label.
-  * Bugfix - Unintegrated pipe menus were not saved.
+  * Bugfix - Orphaned pipe menus were not saved.
   * Bugfix - If a menu that included items with empty icon paths was 
     loaded, these paths were not saved back again.
   * Bugfix - If a row and at least one of its descendants were selected, 

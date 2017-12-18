@@ -120,7 +120,6 @@ GtkWidget *icon_chooser, *remove_icon;
 
 GSList *source_paths; // = automatically NULL
 gboolean statusbar_msg_shown; // = automatically FALSE
-
 GtkWidget *statusbar;
 
 GtkCssProvider *cm_css_provider;
@@ -138,11 +137,11 @@ gint handler_id_find_in_columns[NUMBER_OF_COLUMNS];
 
 static void general_initialisiation (void);
 static void add_button_content (GtkWidget *button, gchar *label_text);
-static gboolean selection_block_unblock (G_GNUC_UNUSED GtkTreeSelection *selection, 
-										 G_GNUC_UNUSED GtkTreeModel		*model,
-										 G_GNUC_UNUSED GtkTreePath		*path, 
-										 G_GNUC_UNUSED gboolean			 path_currently_selected, 
-													   gpointer			 block_state);
+gboolean selection_block_unblock (G_GNUC_UNUSED GtkTreeSelection *selection, 
+								  G_GNUC_UNUSED GtkTreeModel	 *model,
+								  G_GNUC_UNUSED GtkTreePath		 *path, 
+								  G_GNUC_UNUSED gboolean		  path_currently_selected, 
+								  gpointer						  block_state);
 static gboolean mouse_pressed (GtkTreeView *treeview, GdkEventButton *event);
 static gboolean mouse_released (void);
 static void set_column_attributes (G_GNUC_UNUSED GtkTreeViewColumn *cell_column, 
@@ -173,7 +172,7 @@ int main (G_GNUC_UNUSED int argc, char *argv[])
 	// ### Display program version. ###
 
 	if (G_UNLIKELY (streq (argv[1], "--version"))) {
-		g_print ("Kickshaw 0.5.2\
+		g_print ("Kickshaw 0.5.4\
 \nCopyright (C) 2010-2017    Marcus Schaetzle\
 \n\nKickshaw comes with ABSOLUTELY NO WARRANTY.\
 \nYou may redistribute copies of Kickshaw\
@@ -202,7 +201,7 @@ int main (G_GNUC_UNUSED int argc, char *argv[])
 
 /* 
 
-   Creates GUI and signals, also loads settings and standard menu file, if they exist.
+	Creates GUI and signals, also loads settings and standard menu file, if they exist.
 
 */
 
@@ -504,7 +503,6 @@ static void general_initialisiation (void)
 	// ### Grid for entering the values of new rows. ###
 
 	action_option_grid = gtk_grid_new ();
-	//gtk_grid_set_column_homogeneous (GTK_GRID (action_option_grid), TRUE);
 	gtk_orientable_set_orientation (GTK_ORIENTABLE (action_option_grid), GTK_ORIENTATION_VERTICAL);
 	gtk_container_set_border_width (GTK_CONTAINER (action_option_grid), 5);
 	gtk_container_add (GTK_CONTAINER (main_grid), action_option_grid);
@@ -783,7 +781,6 @@ static void general_initialisiation (void)
 	// ### CSS provider for context menu
 
 	cm_css_provider = gtk_css_provider_new ();
-	gtk_css_provider_load_from_data (cm_css_provider, ".label { color: rgba(255,255,255,100); background: rgba(102,102,155,100) }", -1, NULL);
 
 
 	// --- Create signals for all buttons and relevant events. ---
@@ -989,11 +986,11 @@ static void add_button_content (GtkWidget *button,
 
 /* 
 
-   Sets if the selection state of a node may be toggled.
+	Sets if the selection state of a node may be toggled.
 
 */
 
-static gboolean selection_block_unblock (G_GNUC_UNUSED GtkTreeSelection *selection, 
+gboolean selection_block_unblock (G_GNUC_UNUSED GtkTreeSelection *selection, 
 										 G_GNUC_UNUSED GtkTreeModel		*model,
 										 G_GNUC_UNUSED GtkTreePath		*path, 
 										 G_GNUC_UNUSED gboolean			 path_currently_selected, 
@@ -1004,8 +1001,8 @@ static gboolean selection_block_unblock (G_GNUC_UNUSED GtkTreeSelection *selecti
 
 /* 
 
-   A right click inside the treeview opens the context menu, a left click activates blocking of
-   selection changes if more than one row has been selected and one of these rows has been clicked again.
+	A right click inside the treeview opens the context menu, a left click activates blocking of
+	selection changes if more than one row has been selected and one of these rows has been clicked again.
 
 */
 
@@ -1029,6 +1026,7 @@ static gboolean mouse_pressed (GtkTreeView *treeview, GdkEventButton *event)
 			if (!gtk_tree_view_get_path_at_pos (GTK_TREE_VIEW (treeview), event->x, event->y, &path, NULL, NULL, NULL)) {
 				return FALSE; // No row clicked, return without propagating the event further.
 			}
+
 			if (gtk_tree_selection_path_is_selected (selection, path)) {
 				// NULL == No destroy function for user data.
 				gtk_tree_selection_set_select_function (selection, (GtkTreeSelectionFunc) selection_block_unblock, 
@@ -1145,22 +1143,23 @@ static void set_column_attributes (G_GNUC_UNUSED GtkTreeViewColumn *cell_column,
 		If the icon is one of the two built-in types that indicate an invalid path or icon image, 
 		set two red exclamation marks behind it to clearly distinguish this icon from icons of valid image files.
 	*/ 
-	if (G_UNLIKELY (column_number == COL_MENU_ELEMENT && cell_data_icon_img_status))
+	if (G_UNLIKELY (column_number == COL_MENU_ELEMENT && cell_data_icon_img_status)) {
 		g_object_set (renderers[EXCL_TXT_RENDERER], "markup", "<span foreground='red'><b>!!</b></span>", NULL);
+	}
 
 	// Emphasis that a menu, pipe menu or item has no label (=invisible).
 	if (G_UNLIKELY (column_number == COL_MENU_ELEMENT && 
-		streq_any (cell_data[TYPE_TXT], "menu", "pipe menu", "item", NULL) && !cell_data[MENU_ELEMENT_TXT])) {
+					streq_any (cell_data[TYPE_TXT], "menu", "pipe menu", "item", NULL) && !cell_data[MENU_ELEMENT_TXT])) {
 		g_object_set (txt_renderer, "text", "(No label)", NULL);
 	}
 
 	if (keep_highlighting) {
 		guint8 visibility_of_parent = NONE_OR_VISIBLE_ANCESTOR; // Default
 		if (G_UNLIKELY ((cell_data[ELEMENT_VISIBILITY_TXT] && !streq (cell_data[ELEMENT_VISIBILITY_TXT], "visible")) || 
-			(visibility_of_parent = check_if_invisible_ancestor_exists (cell_model, cell_path)))) {
+						(visibility_of_parent = check_if_invisible_ancestor_exists (cell_model, cell_path)))) {
 			background = ((cell_data[ELEMENT_VISIBILITY_TXT] && 
-						  g_str_has_suffix (cell_data[ELEMENT_VISIBILITY_TXT], "unintegrated menu")) || 
-						  visibility_of_parent == INVISIBLE_UNINTEGRATED_ANCESTOR) ? "#364074" : "#656772";
+						  g_str_has_suffix (cell_data[ELEMENT_VISIBILITY_TXT], "orphaned menu")) || 
+						  visibility_of_parent == INVISIBLE_ORPHANED_ANCESTOR) ? "#364074" : "#656772";
 			background_set = TRUE;
 		}
 	}
@@ -1172,7 +1171,7 @@ static void set_column_attributes (G_GNUC_UNUSED GtkTreeViewColumn *cell_column,
 		// cell_data starts with ICON_PATH, but this is not part of the treeview.
 		gchar *cell_txt = cell_data[column_number + 1];
 		gchar *search_term_str_escaped = (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (find_regular_expression))) ? 
-																		NULL : g_regex_escape_string (search_term->str, -1);
+										 NULL : g_regex_escape_string (search_term->str, -1);
  		GRegex *regex = g_regex_new ((search_term_str_escaped) ? search_term_str_escaped : search_term->str, 
 									 (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (find_match_case))) ? 
 									 0 : G_REGEX_CASELESS, 0, NULL);
@@ -1189,8 +1188,9 @@ static void set_column_attributes (G_GNUC_UNUSED GtkTreeViewColumn *cell_column,
 			if (!g_slist_find_custom (matches, match = g_match_info_fetch (match_info, 0), (GCompareFunc) strcmp)) {
 				matches = g_slist_prepend (matches, g_strdup (match));
 				replacement_txts = g_slist_prepend (replacement_txts, 
-								   g_strconcat ("<span background='", (row_is_selected) ? "black'>" : 
-								   "yellow' foreground='black'>", match, "</span>", NULL));
+													g_strconcat ("<span background='", 
+																 (row_is_selected) ? "black'>" : "yellow' foreground='black'>", 
+																 match, "</span>", NULL));
 				g_hash_table_insert (hash_table, matches->data, replacement_txts->data);
 			}
 			g_match_info_next (match_info, NULL);
@@ -1205,8 +1205,9 @@ static void set_column_attributes (G_GNUC_UNUSED GtkTreeViewColumn *cell_column,
 		*/
 		highlighted_txt_core = g_regex_replace_eval (regex, cell_txt, -1, 0, 0, 
 							   multiple_str_replacement_callback_func, hash_table, NULL);
-		highlighted_txt = (!background_set) ? g_strdup (highlighted_txt_core) : 
-		g_strdup_printf ("<span foreground='white'>%s</span>", highlighted_txt_core);
+		highlighted_txt = (!background_set) ? 
+						  g_strdup (highlighted_txt_core) : 
+						  g_strdup_printf ("<span foreground='white'>%s</span>", highlighted_txt_core);
 
 		g_object_set (txt_renderer, "markup", highlighted_txt, NULL);
 
@@ -1225,7 +1226,7 @@ static void set_column_attributes (G_GNUC_UNUSED GtkTreeViewColumn *cell_column,
 				  (show_separators_in_bold_type && streq (cell_data[TYPE_TXT], "separator")) ? 1000 : 400, 
 
 				  "family", (streq (cell_data[TYPE_TXT], "separator")) ? 
-				  "monospace, courier new, courier" : "sans, sans-serif, arial, helvetica",
+							"monospace, courier new, courier" : "sans, sans-serif, arial, helvetica",
  
 				  "foreground", "white", "foreground-set", (row_is_selected || (background_set && !highlighted_txt)),
 				  "background", background, "background-set", background_set, 
@@ -1257,7 +1258,7 @@ static void set_column_attributes (G_GNUC_UNUSED GtkTreeViewColumn *cell_column,
 
 /* 
 
-   Changes certain aspects of the tree view or misc. settings.
+	Changes certain aspects of the tree view or misc. settings.
 
 */
 
@@ -1380,7 +1381,7 @@ static void about (void)
 
 	gtk_show_about_dialog (GTK_WINDOW (window), 
 						   "program-name", "Kickshaw", 
-						   "version", "0.5.2", 
+						   "version", "0.5.4", 
 						   "comments", "A menu editor for Openbox", 
 						   "website", "https://savannah.nongnu.org/projects/obladi/", 
 						   "website_label", "Project page at GNU Savannah", 

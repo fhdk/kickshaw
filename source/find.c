@@ -113,7 +113,7 @@ void find_buttons_management (gchar *column_check_button_clicked)
 
 	if (*search_term->str) {
 		if (create_list_of_rows_with_found_occurrences ()) {
-			 gtk_tree_model_foreach (model, (GtkTreeModelForeachFunc) ensure_visibility_of_find, NULL);
+			gtk_tree_model_foreach (model, (GtkTreeModelForeachFunc) ensure_visibility_of_find, NULL);
 		}
     	row_selected (); // Reset status of forward and back buttons.
 	}
@@ -190,9 +190,11 @@ gboolean check_for_match (GtkTreeIter *local_iter,
 		gchar *search_term_str_escaped = (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (find_regular_expression))) ? 
 										  NULL : g_regex_escape_string (search_term->str, -1);
 
-		if (g_regex_match_simple ((search_term_str_escaped) ? search_term_str_escaped : search_term->str, current_column, 
+		if (g_regex_match_simple ((search_term_str_escaped) ? search_term_str_escaped : search_term->str,
+								  current_column, 
 								  (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (find_match_case))) ? 
-								  0 : G_REGEX_CASELESS, G_REGEX_MATCH_NOTEMPTY)) {
+								  0 : G_REGEX_CASELESS, 
+								  G_REGEX_MATCH_NOTEMPTY)) {
 			match_found = TRUE;
 		}
 
@@ -206,9 +208,9 @@ gboolean check_for_match (GtkTreeIter *local_iter,
 
 /* 
 
-   If the search term is contained inside...
-   ...a row whose parent is not expanded expand the latter.
-   ...a column which is hidden show this column.
+	If the search term is contained inside...
+	...a row whose parent is not expanded expand the latter.
+	...a column which is hidden show this column.
 
 */
 
@@ -228,8 +230,9 @@ static gboolean ensure_visibility_of_find (G_GNUC_UNUSED GtkTreeModel *foreach_o
 			}
 			if (!gtk_tree_view_column_get_visible (columns[columns_cnt])) {
 				gtk_check_menu_item_set_active (GTK_CHECK_MENU_ITEM (mb_view_and_options[(columns_cnt == COL_MENU_ID) ? 
-				SHOW_MENU_ID_COL : 
-				SHOW_EXECUTE_COL]), TRUE);
+																						  SHOW_MENU_ID_COL : 
+																						  SHOW_EXECUTE_COL]), 
+												TRUE);
 			}
 		}
 	}
@@ -283,8 +286,8 @@ void run_search (void)
 		gtk_tree_selection_unselect_all (selection);
  		gtk_tree_selection_select_path (selection, rows_with_found_occurrences->data);
 		/*
-			There is no horizontically movement to a specific GtkTreeViewColumn, this is indicated by NULL.  
-			Alignment arguments (row_align and col_align) aren't used, this is indicated by FALSE.
+			There is no horizontically movement to a specific GtkTreeViewColumn; this is indicated by NULL.  
+			Alignment arguments (row_align and col_align) aren't used; this is indicated by FALSE.
 		*/
 		gtk_tree_view_scroll_to_cell (GTK_TREE_VIEW (treeview), rows_with_found_occurrences->data, NULL, FALSE, 0, 0);
 	}
@@ -324,14 +327,14 @@ void jump_to_previous_or_next_occurrence (gpointer direction_pointer)
 	path_of_occurrence = rows_with_found_occurrences_loop->data;
 	gtk_tree_model_get_iter (model, &iter_of_occurrence, path_of_occurrence);
 
-	// ensure_visibility_of_find is not called by gtk_tree_model_foreach, model is unused so this argument is set to NULL.
+	// Ensure_visibility_of_find is not called by gtk_tree_model_foreach; model is unused so this argument is set to NULL.
 	ensure_visibility_of_find (NULL, path_of_occurrence, &iter_of_occurrence);
 
 	gtk_tree_selection_unselect_all (selection);
 	gtk_tree_selection_select_path (selection, path_of_occurrence);
 	/*
-		There is no horizontically movement to a specific GtkTreeViewColumn, this is indicated by NULL.  
-		Alignment arguments (row_align and col_align) aren't used, this is indicated by FALSE.
+		There is no horizontically movement to a specific GtkTreeViewColumn; this is indicated by NULL.  
+		Alignment arguments (row_align and col_align) aren't used; this is indicated by FALSE.
 	*/
 	gtk_tree_view_scroll_to_cell (GTK_TREE_VIEW (treeview), path_of_occurrence, NULL, FALSE, 0, 0);
 

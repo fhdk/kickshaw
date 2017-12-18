@@ -396,7 +396,7 @@ void visualise_menus_items_and_separators (gpointer recursively_pointer)
 
 /* 
 
-   File filter is limited to display only image files.
+	File filter is limited to display only image files.
 
 */
 
@@ -528,7 +528,7 @@ gboolean set_icon (GtkTreeIter *icon_iter,
 
 /* 
 
-   Removes icons from menus or items.
+	Removes icons from menus or items.
 
 */
 

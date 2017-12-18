@@ -35,7 +35,7 @@ enum { MENUS, ROOT_MENU, NUMBER_OF_MENU_LEVELS };
 enum { ITEM, ACTION, OPTION, NUMBER_OF_CURRENT_ELEMENTS };
 enum { MENU_IDS_LIST, MENUS_LIST = 0, MENU_ELEMENTS_LIST, ITEMS_LIST = 1, NUMBER_OF_INVISIBLE_ELEMENTS_LISTS };
 // Enumeration for dialogs.
-enum { UNINTEGRATED_MENUS, MISSING_LABELS };
+enum { ORPHANED_MENUS, MISSING_LABELS };
 
 typedef struct {
 	gchar *line;
@@ -82,10 +82,10 @@ void open_menu (void);
 
 /* 
 
-   Parses start elements, including error checking.
+	Parses start elements, including error checking.
 
-   GErrors constructed by g_set_error () don't receive a specific GQuark value since there is no differentiation, 
-   the value is always set to one.
+	GErrors constructed by g_set_error () don't receive a specific GQuark value since there is no differentiation, 
+	the value is always set to one.
 
 */
 
@@ -152,25 +152,25 @@ static void start_element (GMarkupParseContext	*parse_context,
 			error_txt = "An action can only have an item";
 		}
 		else if (G_UNLIKELY (streq (element_name, "prompt") && !(streq (parent_element_name, "action") && 
-				 streq_any (current_action, "Execute", "Exit", "SessionLogout", NULL)))) {
+							 streq_any (current_action, "Execute", "Exit", "SessionLogout", NULL)))) {
 			error_txt = "A 'prompt' option can only have an 'Execute', 'Exit' or 'SessionLogout' action";
 		}
 		else if (G_UNLIKELY (streq (element_name, "command") && !(streq (parent_element_name, "action") && 
-				 streq_any (current_action, "Execute", "Restart", NULL)))) {
+							 streq_any (current_action, "Execute", "Restart", NULL)))) {
 			error_txt = "A 'command' option can only have an 'Execute' or 'Restart' action";
 		}
 		else if (G_UNLIKELY (streq (element_name, "startupnotify") && !(streq (parent_element_name, "action") && 
-				 streq (current_action, "Execute")))) {
+							 streq (current_action, "Execute")))) {
 			error_txt = "A 'startupnotify' option can only have an 'Execute' action";
 		}
 		else if (G_UNLIKELY (streq_any (element_name, "enabled", "icon", "name", "wmclass", NULL) && 
-				 !streq (parent_element_name, "startupnotify"))) {
+							 !streq (parent_element_name, "startupnotify"))) {
 			g_set_error (error, 1, line_number, "A%s '%s' option can only have a 'startupnotify' option as a parent", 
 						 (streq_any (element_name, "enabled", "icon", NULL)) ? "n" : "", element_name);
 			return;
  		}
 		else if (G_UNLIKELY (streq (menu_building->previous_type, "pipe menu") && 
-				 menu_building->previous_path_depth < current_path_depth)) {
+							 menu_building->previous_path_depth < current_path_depth)) {
 			error_txt = "A pipe menu is a self-closing element; it can't be used";
 		}  
 
@@ -183,8 +183,8 @@ static void start_element (GMarkupParseContext	*parse_context,
 	// Too many attributes
 
 	if (G_UNLIKELY ((streq (element_name, "menu") && number_of_attributes > 4) || 
-		(streq (element_name, "item") && number_of_attributes > 2) || 
-		(streq_any (element_name, "separator", "action", NULL) && number_of_attributes > 1))) {
+					(streq (element_name, "item") && number_of_attributes > 2) || 
+					(streq_any (element_name, "separator", "action", NULL) && number_of_attributes > 1))) {
 		g_set_error (error, 1, line_number, "Too many attributes for element '%s'", element_name);
 		return;
 	}
@@ -209,10 +209,10 @@ static void start_element (GMarkupParseContext	*parse_context,
 		// Invalid attributes
 
 		if (G_UNLIKELY ((streq (element_name, "menu") && 
-			!streq_any (current_attribute_name, "id", "label", "icon", "execute", NULL)) || 
-			(streq (element_name, "item") && !streq_any (current_attribute_name, "label", "icon", NULL)) || 
-			(streq (element_name, "separator") && !streq (current_attribute_name, "label")) || 
-			(streq (element_name, "action") && !streq (current_attribute_name, "name")))) {
+						!streq_any (current_attribute_name, "id", "label", "icon", "execute", NULL)) || 
+						(streq (element_name, "item") && !streq_any (current_attribute_name, "label", "icon", NULL)) || 
+						(streq (element_name, "separator") && !streq (current_attribute_name, "label")) || 
+						(streq (element_name, "action") && !streq (current_attribute_name, "name")))) {
 
 			if (streq (element_name, "menu")) {
 				valid = "are 'id', 'label', 'icon' and 'execute'";
@@ -255,9 +255,9 @@ static void start_element (GMarkupParseContext	*parse_context,
 				if (G_UNLIKELY (g_slist_find_custom (*menu_ids, current_attribute_value, (GCompareFunc) strcmp) &&
 								!(*loading_stage == ROOT_MENU && current_path_depth == 2 && 
 								g_slist_find_custom (toplevel_menu_ids[MENUS], current_attribute_value, 
-								(GCompareFunc) strcmp) && 
+									(GCompareFunc) strcmp) && 
 								!g_slist_find_custom (toplevel_menu_ids[ROOT_MENU], current_attribute_value, 
-								(GCompareFunc) strcmp)))) {
+									(GCompareFunc) strcmp)))) {
 					g_set_error (error, 1, line_number, 
 								"'%s' is a menu ID that has already been defined before", current_attribute_value);
 					return;
@@ -368,9 +368,10 @@ static void start_element (GMarkupParseContext	*parse_context,
 					while (icon_creation_error) {
 						dialog_txt = g_string_new ("");
 						g_string_append_printf (dialog_txt, "<b>Line %i:\nThe following error occurred " 
-												"while trying to create an icon for %s %s with ", 
-												line_number, (txt_fields[MENU_ELEMENT_TXT]) ? "the" : 
-												((streq (txt_fields[TYPE_TXT], "menu")) ? "a" : "an"), txt_fields[TYPE_TXT]);
+												"while trying to create an icon for %s %s with ", line_number, 
+												(txt_fields[MENU_ELEMENT_TXT]) ? 
+												"the" : ((streq (txt_fields[TYPE_TXT], "menu")) ? "a" : "an"), 
+												txt_fields[TYPE_TXT]);
 						if (streq_any (txt_fields[TYPE_TXT], "menu", "pipe menu", NULL)) {
 							g_string_append_printf (dialog_txt, "the menu ID '%s'", txt_fields[MENU_ID_TXT]);
 						}
@@ -382,14 +383,16 @@ static void start_element (GMarkupParseContext	*parse_context,
 						}
 						g_string_append_printf (dialog_txt, " from '%s':\n\n<span foreground='#8a1515'>%s</span></b>\n\n"
 															"If you don't want to choose the correct/another file now, "
-															"you may ignore this or all following icon creation error messages "
-															"(closing this dialog window causes the latter) now and check later "
-															"from inside the program. In this case all nodes that contain menus and items "
-															"with invalid icon paths will be shown expanded after the loading process.", 
+															"you may ignore this or all following icon creation "
+															"error messages (closing this dialog window causes the latter) now "
+															"and check later from inside the program. "
+															"In this case all nodes that contain menus and items "
+															"with invalid icon paths will be shown expanded "
+															"after the loading process.", 
 															icon_path_error_loop, icon_creation_error->message);
 
 						create_dialog (&dialog, "Icon creation error", "dialog-error", dialog_txt->str, 
-						"Choose file", "Check later", "Ignore all errors and check later", TRUE);
+									   "Choose file", "Check later", "Ignore all errors and check later", TRUE);
 
 						// Cleanup
 						g_string_free (dialog_txt, TRUE);
@@ -555,9 +558,9 @@ static void element_text (G_GNUC_UNUSED GMarkupParseContext  *parse_context,
 		}
 
 		if (G_LIKELY (!((streq (current_element, "enabled") || 
-			(streq (current_element, "prompt") && 
-			streq_any (current_action, "Exit", "SessionLogout", NULL))) && 
-			!streq_any (nul_terminated_text, "yes", "no", NULL)))) {
+						(streq (current_element, "prompt") && 
+						streq_any (current_action, "Exit", "SessionLogout", NULL))) && 
+						!streq_any (nul_terminated_text, "yes", "no", NULL)))) {
 			tree_data[TS_BUILD_VALUE] = nul_terminated_text;
 		}
 		else {
@@ -580,7 +583,7 @@ static void element_text (G_GNUC_UNUSED GMarkupParseContext  *parse_context,
 
 										  menu_building->line_number, 
 										  g_strstrip (line_with_escaped_markup_txt = 
-											g_markup_escape_text (menu_building->line, -1)),
+											  g_markup_escape_text (menu_building->line, -1)),
 										  (current_item) ? "labeled <b>'" : "", 
 										  (current_item) ? (current_item) : "", 
 										  (current_item) ? "'</b> " : "", 
@@ -637,9 +640,9 @@ static gboolean elements_visibility (GtkTreeModel  *foreach_model,
 
 	gtk_tree_model_get (foreach_model, foreach_iter, TS_MENU_ELEMENT, &menu_element_txt, -1);
 
-	if (!streq (element_visibility_txt, "invisible unintegrated menu")) {
-		if (element_visibility_ancestor == INVISIBLE_UNINTEGRATED_ANCESTOR) {
-			new_element_visibility_txt = "invisible dsct. of invisible unintegrated menu";
+	if (!streq (element_visibility_txt, "invisible orphaned menu")) {
+		if (element_visibility_ancestor == INVISIBLE_ORPHANED_ANCESTOR) {
+			new_element_visibility_txt = "invisible dsct. of invisible orphaned menu";
 		}
 		else {
 			if (element_visibility_ancestor) {
@@ -724,7 +727,7 @@ static void create_dialogs_for_invisible_menus_and_items (guint8			 dialog_type,
 														"from the menu bar or rightclick them and choose "
 														"'<b>Visualise</b>/<b>Visualise recursively</b>' "
 														"from the context menu.\n\n", 
-														(dialog_type == UNINTEGRATED_MENUS) ? "" : "/items");
+														(dialog_type == ORPHANED_MENUS) ? "" : "/items");
 
 	gint result;
 
@@ -752,9 +755,9 @@ static void create_dialogs_for_invisible_menus_and_items (guint8			 dialog_type,
 
 	enum { VISUALISE = 1, KEEP_STATUS, DELETE };
 
-	// Preliminary work - Creating dialog title and headline, lists for the unintegrated menus dialog.
+	// Preliminary work - Creating dialog title and headline, lists for the orphaned menus dialog.
 
-	if (dialog_type == UNINTEGRATED_MENUS) {
+	if (dialog_type == ORPHANED_MENUS) {
 		guint menu_ids_list_len;
 
  		// Create menu element and menu ID lists. 
@@ -762,7 +765,7 @@ static void create_dialogs_for_invisible_menus_and_items (guint8			 dialog_type,
 		while (valid) {
 			gtk_tree_model_get (model, &iter_loop, TS_ELEMENT_VISIBILITY, &element_visibility_txt_loop, -1);
 
-			if (!streq (element_visibility_txt_loop, "invisible unintegrated menu")) {
+			if (!streq (element_visibility_txt_loop, "invisible orphaned menu")) {
 				// Cleanup
 				g_free (element_visibility_txt_loop);
 				break;
@@ -792,7 +795,7 @@ static void create_dialogs_for_invisible_menus_and_items (guint8			 dialog_type,
 		menu_ids_list_len = g_slist_length (menu_ids);
  		plural = (menu_ids_list_len == 1) ? "" : "s";
 
-		dialog_title_txt = g_strdup_printf ("Invisible unintegrated menu%s found", plural);
+		dialog_title_txt = g_strdup_printf ("Invisible orphaned menu%s found", plural);
 		dialog_headline_txt = g_strdup_printf ("The following menu%s %s defined outside the root menu, "
 											   "but <b>%s used inside it</b>:", plural, 
 											   (menu_ids_list_len == 1) ? "is" : "are", 
@@ -864,9 +867,11 @@ static void create_dialogs_for_invisible_menus_and_items (guint8			 dialog_type,
 															   "Six", "Seven", "Eight", "Nine" };
 
 						gchar *toplvl_items_str = (number_of_toplvl_items_without_label < 10) ? "%s%s%s%s" : "%i%s%s%s";
-						cell_txt = g_strdup_printf (toplvl_items_str, (number_of_toplvl_items_without_label < 10) ? 
+						cell_txt = g_strdup_printf (toplvl_items_str,
+													(number_of_toplvl_items_without_label < 10) ? 
 													small_numbers_spelled_out[number_of_toplvl_items_without_label - 1] : 
-													GUINT_TO_POINTER (number_of_toplvl_items_without_label), " toplevel item", 
+													GUINT_TO_POINTER (number_of_toplvl_items_without_label), 
+													" toplevel item", 
 													(number_of_toplvl_items_without_label > 1) ? "s" : "", 
 													(number_of_toplvl_items_without_label == items_list_len) ? "\n" : "");
 
@@ -881,21 +886,21 @@ static void create_dialogs_for_invisible_menus_and_items (guint8			 dialog_type,
 			}
 			invisible_elements_lists_loop[lists_cnt] = invisible_elements_lists[lists_cnt];
 		}
-		// Display the unintegrated menus and missing labels lists.
+		// Display the orphaned menus and missing labels lists.
 		while (invisible_elements_lists_loop[lists_cnt]) {
- 			for (grid_column_cnt = 0; grid_column_cnt <= (dialog_type == UNINTEGRATED_MENUS); grid_column_cnt++) {
-				index = ((dialog_type == UNINTEGRATED_MENUS && grid_column_cnt == 1) || 
+ 			for (grid_column_cnt = 0; grid_column_cnt <= (dialog_type == ORPHANED_MENUS); grid_column_cnt++) {
+				index = ((dialog_type == ORPHANED_MENUS && grid_column_cnt == 1) || 
 						 (dialog_type == MISSING_LABELS && lists_cnt == 1));
 
 				/*
 					The list construction loop covers both dialogs:
 					For the 
-					- UNINTEGRATED_MENUS dialog it creates one list with two columns
+					- ORPHANED_MENUS dialog it creates one list with two columns
 					- MISSING_LABELS	 dialog it creates one or two lists with one column
 
-					If dialog_type == UNINTEGRATED_MENUS, there are two columns (=two loop iterations): 
+					If dialog_type == ORPHANED_MENUS, there are two columns (=two loop iterations): 
 					One for the menu ID and one for the label (if it doesn't exist, the column is left blank).
-					The loop is called once, if there are unintegrated menus.
+					The loop is called once, if there are orphaned menus.
 
 					If dialog_type == MISSING_LABELS, there is one column (=one loop iteration).
 					The loop is called once, if there are either menus OR items without labels, 
@@ -904,13 +909,13 @@ static void create_dialogs_for_invisible_menus_and_items (guint8			 dialog_type,
 					it is followed by a list of items with missing labels.
 				*/
 
-				cell_txt = g_strdup_printf ("%s%s%s%s  ", (dialog_type == UNINTEGRATED_MENUS && grid_row_cnt == 0) ? "\n" : "", 
+				cell_txt = g_strdup_printf ("%s%s%s%s  ", (dialog_type == ORPHANED_MENUS && grid_row_cnt == 0) ? "\n" : "", 
 											(dialog_type == MISSING_LABELS || 
 											(grid_column_cnt == 1 && !invisible_elements_lists_loop[MENU_ELEMENTS_LIST]->data)) ? 
 											"" : ((grid_column_cnt == 0) ? "<b>Menu ID:</b> " : 
 											(g_slist_length (invisible_elements_lists[grid_column_cnt]) == 1) ? 
 											" <b>Label:</b> " : "<b>Label:</b> "),  
-											(dialog_type == UNINTEGRATED_MENUS && 
+											(dialog_type == ORPHANED_MENUS && 
 											!invisible_elements_lists_loop[grid_column_cnt]->data) ? 
 											"" : (gchar *) invisible_elements_lists_loop[index]->data, 
 											(invisible_elements_lists_loop[index]->next || 
@@ -943,10 +948,10 @@ static void create_dialogs_for_invisible_menus_and_items (guint8			 dialog_type,
 	gtk_container_add (GTK_CONTAINER (content_area), scrolled_window);
 	gtk_container_add (GTK_CONTAINER (content_area), gtk_separator_new (GTK_ORIENTATION_HORIZONTAL));
 
-	dialog_txt = g_strdup_printf ((dialog_type == UNINTEGRATED_MENUS) ? 
+	dialog_txt = g_strdup_printf ((dialog_type == ORPHANED_MENUS) ? 
 								  "\n%sdefined outside the root menu that don't appear inside it%s"
 								  "To integrate them, %s%s"
-								  "Invisible unintegrated menus%s%s%sblue%s.\n" : // dialog_type == MISSING_LABELS
+								  "Invisible orphaned menus%s%s%sblue%s.\n" : // dialog_type == MISSING_LABELS
 								  "\n%sand items without label%s"
 								  "They can be visualised via creating a label for each of them; to do so %s%s"
 								  "Menus and items without label%s%s%sgrey%s.\n", 
@@ -956,7 +961,7 @@ static void create_dialogs_for_invisible_menus_and_items (guint8			 dialog_type,
 								  "choose '<b>Visualise</b>' here.", 
 								  dialog_txt_status_change2, 
 								  " and their children are <b><span background='", 
-								  (dialog_type == UNINTEGRATED_MENUS) ? "#364074" : "#656772", 
+								  (dialog_type == ORPHANED_MENUS) ? "#364074" : "#656772", 
 								  "' foreground='white'>highlighted in ", 
 								  "</span></b>");
 
@@ -985,7 +990,7 @@ static void create_dialogs_for_invisible_menus_and_items (guint8			 dialog_type,
 			for (selected_rows_loop = selected_rows; selected_rows_loop; selected_rows_loop = selected_rows_loop->next) {
 				gtk_tree_model_get_iter (model, &iter_loop, selected_rows_loop->data);
 
-				if (dialog_type == UNINTEGRATED_MENUS) {
+				if (dialog_type == ORPHANED_MENUS) {
 					gtk_tree_model_get (model, &iter_loop, TS_MENU_ELEMENT, &menu_element_txt_loop, -1);
 
 					// The visibility of subrows is set after the function has been left.
@@ -1000,7 +1005,7 @@ static void create_dialogs_for_invisible_menus_and_items (guint8			 dialog_type,
 					gtk_tree_store_set (treestore, &iter_loop, TS_MENU_ELEMENT, "= Newly created label =", -1);
 					gtk_tree_model_get (model, &iter_loop, TS_ELEMENT_VISIBILITY, &element_visibility_txt_loop, -1);
 					// The visibility of subrows is set after the function has been left.
-					if (!g_str_has_suffix (element_visibility_txt_loop, "invisible unintegrated menu")) {
+					if (!g_str_has_suffix (element_visibility_txt_loop, "invisible orphaned menu")) {
 						gtk_tree_store_set (treestore, &iter_loop, TS_ELEMENT_VISIBILITY, "visible", -1);
 					}
 
@@ -1077,7 +1082,7 @@ void get_menu_elements_from_file (gchar *new_filename)
 
 	while (getline (&menu_building.line, &length, file) != -1) {
 		if (G_UNLIKELY (!g_markup_parse_context_parse (parse_context, menu_building.line, 
-			strlen (menu_building.line), &error))) {
+						strlen (menu_building.line), &error))) {
  			gchar *part_of_err_msg_with_escaped_markup_txt, *pure_errmsg;
 			GString *full_errmsg = g_string_new ("");
 
@@ -1270,7 +1275,8 @@ void get_menu_elements_from_file (gchar *new_filename)
 						if (streq (toplevel_menu_ids_root_menu_loop->data, menu_id_txt_loop)) {
 							gtk_tree_model_get (model, &iter_loop, TS_MENU_ELEMENT, &menu_element_txt_loop, -1);
 							gtk_tree_store_set (treestore, &iter_loop, TS_ELEMENT_VISIBILITY, 
-												(G_LIKELY (menu_element_txt_loop)) ? "visible" : "invisible menu", -1);
+												(G_LIKELY (menu_element_txt_loop)) ? "visible" : "invisible menu", 
+												-1);
 							menu_ids_of_root_menus_defined_outside_root_first = 
 								g_slist_prepend (menu_ids_of_root_menus_defined_outside_root_first, g_strdup (menu_id_txt_loop));
 
@@ -1326,12 +1332,12 @@ void get_menu_elements_from_file (gchar *new_filename)
 					menu6
 					menu2
 
-					After the unintegrated menus have been moved to the end:
+					After the orphaned menus have been moved to the end:
 
 					menu3
 					menu1
 					menu2
-					menu5 (invisible unintegrated menu, sorted to the end)
+					menu5 (invisible orphaned menu, sorted to the end)
 					menu6                     ""
 				*/
 
@@ -1340,7 +1346,7 @@ void get_menu_elements_from_file (gchar *new_filename)
 				while (valid) {
 					gtk_tree_model_get (model, &iter_loop, TS_ELEMENT_VISIBILITY, &element_visibility_txt_loop, -1);
 					if (G_UNLIKELY (!element_visibility_txt_loop)) {
-						gtk_tree_store_set (treestore, &iter_loop, TS_ELEMENT_VISIBILITY, "invisible unintegrated menu", -1);
+						gtk_tree_store_set (treestore, &iter_loop, TS_ELEMENT_VISIBILITY, "invisible orphaned menu", -1);
 						gtk_tree_model_iter_nth_child (model, &iter_swap, NULL, invisible_menu_outside_root_index--);
 						gtk_tree_store_swap (treestore, &iter_loop, &iter_swap);
 						iter_loop = iter_swap;
@@ -1357,7 +1363,7 @@ void get_menu_elements_from_file (gchar *new_filename)
 
 					Toplevel menus defined inside the root menu as well as toplevel items and separators have not been added yet, 
 					so the number of elements of the menu_ids_of_root_menus_defined_first_outside_root list 
-					is equal to the number of menus inside the root menu that are not invisible unintegrated menus 
+					is equal to the number of menus inside the root menu that are not invisible orphaned menus 
 					(=element visibilty "visible" or "invisible menu"). 
 
 					Example menu:
@@ -1395,7 +1401,7 @@ void get_menu_elements_from_file (gchar *new_filename)
 					menu3 (order according to the menu definitions done prior to the root menu)
 					menu1								""            
 					menu2								""
-					menu5 (invisible unintegrated menu)
+					menu5 (invisible orphaned menu)
 					menu6								""
 
 					After the sorting has been done:
@@ -1403,10 +1409,10 @@ void get_menu_elements_from_file (gchar *new_filename)
 					menu1 (order according to root menu of the menu file)
 					menu2					""
 					menu3					""
-					menu5 (invisible unintegrated menu)
+					menu5 (invisible orphaned menu)
 					menu6					""
 
-					Invisible unintegrated menus are unaffected by the sorting.
+					Invisible orphaned menus are unaffected by the sorting.
 				*/
 
 				gtk_tree_model_get_iter_first (model, &iter_loop);
@@ -1491,7 +1497,7 @@ void get_menu_elements_from_file (gchar *new_filename)
 
 					if (!tree_data[TS_BUILD_MENU_ELEMENT] && 
 						g_slist_find_custom (menu_building.toplevel_menu_ids[MENUS], 
-						tree_data[TS_BUILD_MENU_ID], (GCompareFunc) strcmp)) {
+											 tree_data[TS_BUILD_MENU_ID], (GCompareFunc) strcmp)) {
 						add_row = FALSE; // Is a menu defined outside root that is already inside the treestore.
 					}
 				}
@@ -1501,8 +1507,8 @@ void get_menu_elements_from_file (gchar *new_filename)
     	if (add_row) {
 			GtkTreePath *path;
 
-			gtk_tree_store_insert (treestore, &levels[current_level], (current_level == 0) ? 
-								   NULL : &levels[current_level - 1], 
+			gtk_tree_store_insert (treestore, &levels[current_level], 
+								   (current_level == 0) ? NULL : &levels[current_level - 1], 
 								   (menu_or_item_or_separator_at_root_toplevel) ? row_number : -1);
 
 			iter = levels[current_level];
@@ -1534,12 +1540,12 @@ void get_menu_elements_from_file (gchar *new_filename)
 
 	// Show a message if there are invisible menus outside root.
 	if (G_UNLIKELY (number_of_used_toplevel_root_menus < number_of_toplevel_menu_ids)) {
-		create_dialogs_for_invisible_menus_and_items (UNINTEGRATED_MENUS, selection, invisible_elements_lists);
+		create_dialogs_for_invisible_menus_and_items (ORPHANED_MENUS, selection, invisible_elements_lists);
 	}
 
 	/*
 		Set element visibility status for all those (pipe) menus, items and separators that don't already have one.
-		If invisible unintegrated menus have been visualised and they had descendant (pipe) menus, items or separators, 
+		If invisible orphaned menus have been visualised and they had descendant (pipe) menus, items or separators, 
 		readjust the visibility status of the latter.
 	*/
 	gtk_tree_model_foreach (model, (GtkTreeModelForeachFunc) elements_visibility, invisible_elements_lists);
@@ -1657,7 +1663,7 @@ void get_menu_elements_from_file (gchar *new_filename)
 
 /* 
 
-   Lets the user choose a menu xml file for opening.
+	Lets the user choose a menu xml file for opening.
 
 */
 

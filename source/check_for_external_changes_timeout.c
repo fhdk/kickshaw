@@ -149,7 +149,7 @@ gboolean check_for_external_file_and_settings_changes (G_GNUC_UNUSED gpointer id
 			else { // Icon path is wrong or icon image is invalid = store broken icon with larger or smaller size
 				gtk_tree_store_set (treestore, &iter_loop, TS_ICON_IMG, 
 									invalid_icon_imgs[(icon_img_status_uint_loop == INVALID_PATH) ? 
-									INVALID_PATH_ICON : INVALID_FILE_ICON], -1);
+													  INVALID_PATH_ICON : INVALID_FILE_ICON], -1);
 			}
 
 			gtk_tree_view_columns_autosize (GTK_TREE_VIEW (treeview)); // In case that the font size has been reduced.

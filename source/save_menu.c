@@ -311,7 +311,7 @@ static void closing_tags (gboolean			filter_iteration_completed,
 
 /* 
 
-   Writes an (opening) menu, item, separator or action tag into the menu XML file.
+	Writes an (opening) menu, item, separator or action tag into the menu XML file.
 
 */
 
@@ -591,8 +591,8 @@ void save_menu (gchar *save_as_filename)
 		get_field_values (save_txts_toplevel, model, &save_menu_iter);
 
 		if (streq (save_txts_toplevel[TYPE_TXT], "menu") || 
-		(streq (save_txts_toplevel[TYPE_TXT], "pipe menu") && 
-		streq (save_txts_toplevel[ELEMENT_VISIBILITY_TXT], "invisible unintegrated menu"))) {
+			(streq (save_txts_toplevel[TYPE_TXT], "pipe menu") && 
+			streq (save_txts_toplevel[ELEMENT_VISIBILITY_TXT], "invisible orphaned menu"))) {
 			write_tag (MENUS, TOPLEVEL, save_txts_toplevel, menu_file, model, &save_menu_iter, MENU_OR_PIPE_MENU);
 			if (gtk_tree_model_iter_has_child (model, &save_menu_iter)) {
 				process_menu_or_item (&save_menu_iter, &save_menu_args);
@@ -615,7 +615,7 @@ void save_menu (gchar *save_as_filename)
 		get_field_values (save_txts_toplevel, model, &save_menu_iter);
 
 		if (streq_any (save_txts_toplevel[TYPE_TXT], "menu", "pipe menu", NULL) && 
-			!streq (save_txts_toplevel[ELEMENT_VISIBILITY_TXT], "invisible unintegrated menu")) {
+			!streq (save_txts_toplevel[ELEMENT_VISIBILITY_TXT], "invisible orphaned menu")) {
 			write_tag (ROOT_MENU, TOPLEVEL, save_txts_toplevel, menu_file, model, &save_menu_iter, MENU_OR_PIPE_MENU);
 		}
 		else if (streq_any (save_txts_toplevel[TYPE_TXT], "item", "separator", NULL)) {

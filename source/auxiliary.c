@@ -140,7 +140,7 @@ guint get_font_size (void)
 	guint font_size;
 
 	g_object_get (gtk_settings_get_default (), "gtk-font-name", &font_str, NULL);
-	font_size = atoi (font_substr = extract_substring_via_regex (font_str, "[0-9]+$")); // e.g. Sans 12 -> 12
+	font_size = atoi (font_substr = extract_substring_via_regex (font_str, "\\d+$")); // e.g. Sans 12 -> 12
 
 	// Cleanup
 	g_free (font_str);
@@ -510,8 +510,8 @@ guint8 check_if_invisible_ancestor_exists (GtkTreeModel *local_model, GtkTreePat
 		gtk_tree_model_get (local_model, &iter_loop, TS_ELEMENT_VISIBILITY, &element_ancestor_visibility_txt_loop, -1);
 		if (G_UNLIKELY (element_ancestor_visibility_txt_loop && 
 						g_str_has_prefix (element_ancestor_visibility_txt_loop, "invisible"))) {
-			visibility_of_ancestor = (g_str_has_suffix (element_ancestor_visibility_txt_loop, "unintegrated menu")) ? 
-														INVISIBLE_UNINTEGRATED_ANCESTOR : INVISIBLE_ANCESTOR;
+			visibility_of_ancestor = (g_str_has_suffix (element_ancestor_visibility_txt_loop, "orphaned menu")) ? 
+									  INVISIBLE_ORPHANED_ANCESTOR : INVISIBLE_ANCESTOR;
 
 			// Cleanup
 			gtk_tree_path_free (path_loop);

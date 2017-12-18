@@ -22,4 +22,5 @@ install:
 
 uninstall:
 	rm $(PREFIX)/bin/kickshaw
+	rm $(PREFIX)/share/applications/kickshaw.desktop
 	@echo "For every user who has started kickshaw a settings file .kickshawrc was created inside the respective home directory. It is not removed automatically, but can be removed by hand."

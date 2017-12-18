@@ -41,7 +41,7 @@ void drag_data_received_handler (G_GNUC_UNUSED GtkWidget	  *widget,
 
 /* 
 
-   Allows a drop only under conditions which make sense.
+	Allows a drop only under conditions which make sense.
 
 */
 
@@ -304,8 +304,8 @@ static gboolean subrows_creation_auxiliary (GtkTreeModel  *filter_model,
 							TS_TYPE, &type_txt_filter, 
 							-1);
 
-		if (G_UNLIKELY (g_str_has_suffix (element_visibility_txt_root, "unintegrated menu"))) {
-			new_element_visibility_txt = "invisible dsct. of invisible unintegrated menu";
+		if (G_UNLIKELY (g_str_has_suffix (element_visibility_txt_root, "orphaned menu"))) {
+			new_element_visibility_txt = "invisible dsct. of invisible orphaned menu";
 		}
 		else if (G_UNLIKELY (invisible_ancestor)) {
 			new_element_visibility_txt = "invisible dsct. of invisible menu";
@@ -478,8 +478,8 @@ void drag_data_received_handler (G_GNUC_UNUSED GtkWidget	  *widget,
 
 			if (G_LIKELY (!element_visibility_parent_txt || streq (element_visibility_parent_txt, "visible"))) {
 				if (G_UNLIKELY (!element_visibility_parent_txt && 
-								streq (copied_ts_row_fields[SUBROWS_ELEMENT_VISIBILITY], "invisible unintegrated menu"))) {
-					new_element_visibility_txt = "invisible unintegrated menu";
+								streq (copied_ts_row_fields[SUBROWS_ELEMENT_VISIBILITY], "invisible orphaned menu"))) {
+					new_element_visibility_txt = "invisible orphaned menu";
 				}
 				else if (G_UNLIKELY (!copied_ts_row_fields[SUBROWS_MENU_ELEMENT] && 
 									 !streq (copied_ts_row_fields[SUBROWS_TYPE], "separator"))) {
@@ -490,7 +490,7 @@ void drag_data_received_handler (G_GNUC_UNUSED GtkWidget	  *widget,
 			else {
 				new_element_visibility_txt = (g_str_has_suffix (element_visibility_parent_txt, "invisible menu")) ? 
 																"invisible dsct. of invisible menu" : 
-																"invisible dsct. of invisible unintegrated menu";
+																"invisible dsct. of invisible orphaned menu";
 			}
 
 			free_and_reassign (copied_ts_row_fields[SUBROWS_ELEMENT_VISIBILITY], g_strdup (new_element_visibility_txt));
@@ -521,7 +521,6 @@ void drag_data_received_handler (G_GNUC_UNUSED GtkWidget	  *widget,
 
 
 		// --- Add subrows, if they exist. ---
-
 
 		if (source_row_has_child) {
 			// Copy all children of the source row to the new row.
@@ -575,16 +574,24 @@ void drag_data_received_handler (G_GNUC_UNUSED GtkWidget	  *widget,
 		gtk_tree_path_free (source_path_loop);
 	}
 
-	g_signal_handler_block (selection, handler_id_row_selected); // Deactivates unnecessary selection check.
-
 	// The source rows are still selected, so they may be deleted that simple.
 	remove_rows ("dnd");
+
+	g_signal_handler_block (selection, handler_id_row_selected); // Deactivates unnecessary selection check.
+
+	/* 
+		This prevents a possible block of the change of the selection of nodes if 
+		the to be dragged nodes had been clicked on again before dragging.
+	*/
+	gtk_tree_selection_set_select_function (gtk_tree_view_get_selection (GTK_TREE_VIEW (treeview)), 
+											(GtkTreeSelectionFunc) selection_block_unblock, GINT_TO_POINTER (TRUE), NULL);
 
 	/*
 		Select the new root row(s). If these rows are options or option blocks that have been moved elsewhere and 
 		autosorting is activated, sort the options resp. option block.
 	*/
 	gtk_tree_selection_unselect_all (selection);
+
 	for (new_rows_loop = new_rows; new_rows_loop; new_rows_loop = new_rows_loop->next) {
 		new_path = gtk_tree_row_reference_get_path (new_rows_loop->data);
 		gtk_tree_model_get_iter (model, &iter, new_path);
@@ -601,7 +608,7 @@ void drag_data_received_handler (G_GNUC_UNUSED GtkWidget	  *widget,
 		if (autosort_options && streq_any (type_new_row_txt, "option", "option block", NULL) && 
 			gtk_tree_model_iter_n_children (model, &dest_parent_iter) > 1) {
 			sort_execute_or_startupnotify_options_after_insertion (selection, &dest_parent_iter, 
-			menu_element_dest_parent_txt, menu_element_new_row_txt);
+																   menu_element_dest_parent_txt, menu_element_new_row_txt);
 		}
 		else {
 			gtk_tree_selection_select_path (selection, new_path);

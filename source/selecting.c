@@ -60,7 +60,7 @@ static void all_options_have_been_set_msg (gchar *action_option)
 
 /* 
 
-   Checks if a selected node has a descendant that has also been selected.
+	Checks if a selected node has a descendant that has also been selected.
 
 */
 
@@ -400,8 +400,8 @@ void row_selected (void)
 		if (streq (txt_fields[TYPE_TXT], "action")) {
 			gtk_label_set_text (GTK_LABEL (bt_add_action_option_label), 
 								(!streq (txt_fields[MENU_ELEMENT_TXT], "Reconfigure") && 
-								(streq (txt_fields[MENU_ELEMENT_TXT], "Execute") ? 
-								number_of_children_of_iter < NUMBER_OF_EXECUTE_OPTS : number_of_children_of_iter == 0)) ? 
+								 ((streq (txt_fields[MENU_ELEMENT_TXT], "Execute") &&
+								  number_of_children_of_iter < NUMBER_OF_EXECUTE_OPTS) || number_of_children_of_iter == 0)) ? 
 								"Action/Option" : "Action");
 		}
 
@@ -443,9 +443,9 @@ void row_selected (void)
 						handler_id_action_option_button_clicked = 
 							g_signal_connect_swapped (bt_add[ACTION_OR_OPTION], "clicked", 
 													  G_CALLBACK ((execute_opts_cnt != STARTUPNOTIFY) ? 
-														add_new : generate_action_option_combo_box), 
+																  add_new : generate_action_option_combo_box), 
 													  (execute_opts_cnt != STARTUPNOTIFY) ? 
-														execute_options[execute_opts_cnt] : "Startupnotify");
+													  execute_options[execute_opts_cnt] : "Startupnotify");
 						gtk_label_set_text (GTK_LABEL (bt_add_action_option_label), execute_displayed_txts[execute_opts_cnt]);
 					}
 				}
@@ -498,9 +498,10 @@ void row_selected (void)
 		*/
 		if (streq (txt_fields[TYPE_TXT], "option") && streq_any (txt_fields[MENU_ELEMENT_TXT], "prompt", "command", NULL) && 
 			streq_any (menu_element_txt_parent, "Exit", "Restart", "SessionLogout", NULL)) {
-			msg_label_txt = g_strconcat ("this ", (streq (menu_element_txt_parent, "Exit")) ? 
+			msg_label_txt = g_strconcat ("this ", 
+										 (streq (menu_element_txt_parent, "Exit")) ? 
 										 "Exit" : ((streq (menu_element_txt_parent, "Restart")) ? 
-										 "Restart" : "SessionLogout"), " action", NULL);
+												   "Restart" : "SessionLogout"), " action", NULL);
 			all_options_have_been_set_msg (msg_label_txt);
 
 			// Cleanup
@@ -604,7 +605,8 @@ void set_entry_fields (void)
 	}
 	// Option other than "startupnotify" and "enabled".
 	else {
-		gchar *label_txt = g_strdup_printf (" %s: ", (streq (txt_fields[MENU_ELEMENT_TXT], "wmclass")) ? 
+		gchar *label_txt = g_strdup_printf (" %s: ", 
+											(streq (txt_fields[MENU_ELEMENT_TXT], "wmclass")) ? 
 											"WM_CLASS" : txt_fields[MENU_ELEMENT_TXT]);
 		label_txt[1] = g_ascii_toupper (label_txt[1]);
 
