@@ -26,6 +26,7 @@
 extern GtkTreeModel *model;
 
 extern GtkWidget *mb_file_menu_items[];
+extern GtkWidget *mb_view_and_options[];
 extern GtkToolItem *tb[];
 
 extern gchar *filename;

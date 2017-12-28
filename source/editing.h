@@ -42,8 +42,8 @@ extern gint font_size;
 extern void activate_change_done (void);
 extern guint8 check_if_invisible_ancestor_exists (GtkTreeModel *local_model, GtkTreePath *local_path);
 extern GtkWidget *create_dialog (GtkWidget **dialog, gchar *dialog_title, gchar *icon_name, gchar *label_txt, 
-				 gchar *button_txt_1, gchar *button_txt_2, gchar *button_txt_3, 
-				 gboolean show_immediately);
+                                 gchar *button_txt_1, gchar *button_txt_2, gchar *button_txt_3, 
+                                 gboolean show_immediately);
 extern gchar *get_modification_time_for_icon (gchar *icon_path);
 extern void get_toplevel_iter_from_path (GtkTreeIter *local_iter, GtkTreePath *local_path);
 extern void remove_menu_id (gchar *menu_id);

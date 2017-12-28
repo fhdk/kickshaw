@@ -24,32 +24,32 @@ extern void action_option_insert (gchar *origin);
 extern void add_new (gchar *new_menu_element);
 extern void boolean_toogled (void);
 extern void cell_edited (G_GNUC_UNUSED GtkCellRendererText *renderer, 
-									   gchar			   *path, 
-									   gchar			   *new_text, 
-									   gpointer				column_number_pointer);
+                                       gchar               *path, 
+                                       gchar               *new_text, 
+                                       gpointer             column_number_pointer);
 extern void change_row (void);
 extern gboolean check_expansion_statuses_of_nodes (GtkTreeModel *foreach_or_filter_model, 
-						   GtkTreePath *foreach_or_filter_path, 
-						   GtkTreeIter *foreach_or_filter_iter, 
-						   gboolean *expansion_statuses_of_nodes);
+                                                   GtkTreePath  *foreach_or_filter_path, 
+                                                   GtkTreeIter  *foreach_or_filter_iter, 
+                                                   gboolean     *expansion_statuses_of_nodes);
 extern gboolean check_for_match (GtkTreeIter *local_iter, guint8 column_number);
 extern guint8 check_if_invisible_ancestor_exists (GtkTreeModel *local_model, GtkTreePath *local_path);
 extern void create_context_menu (GdkEventButton *event);
 extern GtkWidget *create_dialog (GtkWidget **dialog, gchar *dialog_title, gchar *icon_name, gchar *label_txt, 
-								 gchar *button_txt_1, gchar *button_txt_2, gchar *button_txt_3, 
-								 gboolean show_immediately);
+                                 gchar *button_txt_1, gchar *button_txt_2, gchar *button_txt_3, 
+                                 gboolean show_immediately);
 extern void create_invalid_icon_imgs (void);
 extern void create_list_of_icon_occurrences (void);
 extern GList *create_list_of_rows_with_found_occurrences (void);
-extern void drag_data_received_handler (G_GNUC_UNUSED GtkWidget		 *widget, 
-										G_GNUC_UNUSED GdkDragContext *drag_context, 
-													  gint			  x, 
-													  gint			  y);
-extern gboolean drag_motion_handler (G_GNUC_UNUSED GtkWidget	  *widget, 
-												   GdkDragContext *drag_context, 
-												   gint			   x, 
-												   gint			   y, 
-												   guint		   time);
+extern void drag_data_received_handler (G_GNUC_UNUSED GtkWidget      *widget, 
+                                        G_GNUC_UNUSED GdkDragContext *drag_context, 
+                                                      gint            x, 
+                                                      gint            y);
+extern gboolean drag_motion_handler (G_GNUC_UNUSED GtkWidget      *widget, 
+                                                   GdkDragContext *drag_context, 
+                                                   gint            x, 
+                                                   gint            y, 
+                                                   guint           time);
 extern void find_buttons_management (gchar *column_check_button_clicked);
 extern void free_elements_of_static_string_array (gchar **string_array, gint8 number_of_fields, gboolean set_to_NULL);
 extern guint get_font_size (void);
@@ -58,16 +58,16 @@ extern void hide_action_option_grid (void);
 extern void icon_choosing_by_button_or_context_menu (void);
 extern void jump_to_previous_or_next_occurrence (gpointer direction_pointer);
 extern void key_pressed (G_GNUC_UNUSED GtkWidget   *widget, 
-									   GdkEventKey *event);
+                                       GdkEventKey *event);
 extern void move_selection (gpointer direction_pointer);
 extern gboolean multiple_str_replacement_callback_func (const GMatchInfo *match_info, 
-							GString *result, gpointer hash_table);
+                                                        GString *result, gpointer hash_table);
 extern void open_menu (void);
 extern void option_list_with_headlines (G_GNUC_UNUSED GtkCellLayout   *cell_layout, 
-													  GtkCellRenderer *action_option_combo_box_renderer, 
-													  GtkTreeModel	  *action_option_combo_box_model, 
-													  GtkTreeIter	  *action_option_combo_box_iter, 
-										G_GNUC_UNUSED gpointer		   data);
+                                                      GtkCellRenderer *action_option_combo_box_renderer, 
+                                                      GtkTreeModel    *action_option_combo_box_model, 
+                                                      GtkTreeIter     *action_option_combo_box_iter, 
+                                        G_GNUC_UNUSED gpointer         data);
 extern void remove_all_children (void);
 extern void remove_icons_from_menus_or_items (void);
 extern void remove_rows (gchar *origin);
@@ -80,7 +80,7 @@ extern void show_or_hide_find_grid (void);
 extern void show_startupnotify_options (void);
 extern void single_field_entry (void);
 extern gboolean sort_loop_after_sorting_activation (GtkTreeModel *foreach_model, GtkTreePath *foreach_path,
-						    GtkTreeIter *foreach_iter);
+                                                    GtkTreeIter *foreach_iter);
 extern void stop_timeout (void);
 G_GNUC_NULL_TERMINATED extern gboolean streq_any (const gchar *string, ...);
 extern void visualise_menus_items_and_separators (gpointer recursively_pointer);

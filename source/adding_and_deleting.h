@@ -67,16 +67,16 @@ extern gint handler_id_row_selected, handler_id_action_option_combo_box, handler
 
 extern void activate_change_done (void);
 extern void check_for_existing_options (GtkTreeIter *parent, guint8 number_of_opts, 
-										gchar **options_array, gboolean *opts_exist);
+                                        gchar **options_array, gboolean *opts_exist);
 extern guint8 check_if_invisible_ancestor_exists (GtkTreeModel *local_model, GtkTreePath *local_path);
 extern GtkWidget *create_dialog (GtkWidget **dialog, gchar *dialog_title, gchar *icon_name, gchar *label_txt, 
-								 gchar *button_txt_1, gchar *button_txt_2, gchar *button_txt_3, 
-								 gboolean show_immediately);
+                                 gchar *button_txt_1, gchar *button_txt_2, gchar *button_txt_3, 
+                                 gboolean show_immediately);
 extern void expand_row_from_iter (GtkTreeIter *local_iter);
 extern void row_selected (void);
 extern void show_or_hide_find_grid (void);
 extern void sort_execute_or_startupnotify_options_after_insertion (GtkTreeSelection *selection, GtkTreeIter *parent, 
-																   gchar *execute_or_startupnotify, gchar *option);
+                                                                   gchar *execute_or_startupnotify, gchar *option);
 extern gboolean streq_any (const gchar *string, ...) G_GNUC_NULL_TERMINATED;
 extern void wrong_or_missing (GtkWidget *widget, GtkCssProvider *css_provider);
 

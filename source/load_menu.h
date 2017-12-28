@@ -46,8 +46,8 @@ extern gchar *choose_icon (void);
 extern void clear_global_data (void);
 extern gboolean continue_despite_unsaved_changes (void);
 extern GtkWidget *create_dialog (GtkWidget **dialog, gchar *dialog_title, gchar *icon_name, gchar *label_txt, 
-								 gchar *button_txt_1, gchar *button_txt_2, gchar *button_txt_3, 
-								 gboolean show_immediately);
+                                 gchar *button_txt_1, gchar *button_txt_2, gchar *button_txt_3, 
+                                 gboolean show_immediately);
 extern void create_file_dialog (GtkWidget **dialog, gboolean open);
 extern void create_list_of_icon_occurrences (void);
 extern gchar *extract_substring_via_regex (gchar *string, gchar *regex_str);
@@ -58,7 +58,7 @@ extern void row_selected (void);
 extern void set_filename_and_window_title (gchar *new_filename);
 extern void show_errmsg (gchar *errmsg_raw_txt);
 extern gboolean sort_loop_after_sorting_activation (GtkTreeModel *foreach_model, GtkTreePath *foreach_path,
-													GtkTreeIter *foreach_iter);
+                                                    GtkTreeIter *foreach_iter);
 extern gboolean streq_any (const gchar *string, ...) G_GNUC_NULL_TERMINATED;
 
 #endif

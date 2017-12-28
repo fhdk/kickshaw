@@ -18,6 +18,31 @@
 
 ---
 
+0.5.8 2017-12-26
+  * The creation of a backup file for an overwritten menu is now optional. 
+    It remains activated by default. Settings can be changed via the menu 
+    bar (Options -> Create backup before overwriting menu).
+  * If not being set off, separators have now the default font.
+  * The settings file (.kickshawrc) now includes a version information.
+  * Minor/cosmetical changes.
+
+0.5.7 2017-12-24
+  * In addition to being a single-instance-only application (see changelog 
+    for version 0.5.5), Kickshaw now presents its main window when the 
+    program is started a second time and the main window was hidden.
+  * Minor changes.
+
+0.5.6 2017-12-23
+  * Added additional conditional compilation, since some of the used 
+    functions of G(tk)Application were introduced later during the GTK3 
+    development and Kickshaw is supposed to also work with GTK3 versions 
+    released before them.
+  * Minor/cosmetical changes.
+
+0.5.5 2017-12-22
+  * To avoid possible conflicts during execution, Kickshaw is now a 
+    single-instance-only application.
+
 0.5.4 2017-12-16
   * Bugfix - If several rows were selected for drag & drop and before 
     doing the drag & drop action they were clicked on (again), it could 

@@ -71,11 +71,11 @@ extern gint handler_id_action_option_button_clicked;
 extern void add_new (gchar *new_menu_element);
 extern void hide_action_option_grid (void);
 extern void check_for_existing_options (GtkTreeIter *parent, guint8 number_of_opts, 
-										gchar **options_array, gboolean *opts_exist);
-extern gboolean check_if_invisible_descendant_exists (				GtkTreeModel *filter_model, 
-													  G_GNUC_UNUSED GtkTreePath	 *filter_path, 
-																	GtkTreeIter	 *filter_iter, 
-																	gboolean	 *at_least_one_descendant_is_invisible);
+                                        gchar **options_array, gboolean *opts_exist);
+extern gboolean check_if_invisible_descendant_exists (              GtkTreeModel *filter_model, 
+                                                      G_GNUC_UNUSED GtkTreePath  *filter_path, 
+                                                                    GtkTreeIter  *filter_iter, 
+                                                                    gboolean     *at_least_one_descendant_is_invisible);
 extern void free_elements_of_static_string_array (gchar **string_array, gint8 number_of_fields, gboolean set_to_NULL);
 extern void generate_action_option_combo_box (gchar *preset_choice);
 extern void repopulate_txt_fields_array (void);
