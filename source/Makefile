@@ -5,7 +5,7 @@ CFLAGS  = -O2 -pedantic -std=gnu99 -Wall -Wextra -Wmissing-prototypes `pkg-confi
 LDADD   = `pkg-config gtk+-3.0 --libs`
 CC      = gcc
 PACKAGE = kickshaw
-PREFIX 	= /usr/local
+PREFIX 	= /usr
 
 all: ${OBJS}
 	${CC} -o ${PACKAGE} ${OBJS} ${LDADD}
@@ -18,7 +18,9 @@ clean:
 
 install:
 	cp kickshaw $(PREFIX)/bin
+	cp kickshaw.desktop $(PREFIX)/share/applications
 
 uninstall:
 	rm $(PREFIX)/bin/kickshaw
+	rm $(PREFIX)/share/applications/kickshaw.desktop
 	@echo "For every user who has started kickshaw a settings file .kickshawrc was created inside the respective home directory. It is not removed automatically, but can be removed by hand."
