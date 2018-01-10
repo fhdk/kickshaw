@@ -1,7 +1,7 @@
 /*
    Kickshaw - A Menu Editor for Openbox
 
-   Copyright (c) 2010-2017        Marcus Schaetzle
+   Copyright (c) 2010-2018        Marcus Schaetzle
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -19,10 +19,7 @@
 
 #include <gtk/gtk.h>
 
-#include "general_header_files/enum__entry_fields.h"
-#include "general_header_files/enum__invalid_icon_imgs.h"
-#include "general_header_files/enum__invalid_icon_img_statuses.h"
-#include "general_header_files/enum__ts_elements.h"
+#include "definitions_and_enumerations.h"
 #include "check_for_external_changes_timeout.h"
 
 gboolean check_for_external_file_and_settings_changes (G_GNUC_UNUSED gpointer identifier);
@@ -41,7 +38,7 @@ void stop_timeout (void);
 // The identifier is not used by the function, but to switch the timeout on and off.
 gboolean check_for_external_file_and_settings_changes (G_GNUC_UNUSED gpointer identifier)
 {
-    GtkTreeSelection *selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (treeview));
+    GtkTreeSelection *selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (ks.treeview));
     gint number_of_selected_rows = gtk_tree_selection_count_selected_rows (selection);
 
     guint font_size_updated;
@@ -63,15 +60,23 @@ gboolean check_for_external_file_and_settings_changes (G_GNUC_UNUSED gpointer id
     gchar *icon_path_txt_loop;
 
     // Check if font size has changed.
-    if ((recreate_icon_images = (G_UNLIKELY (font_size != (font_size_updated = get_font_size ()))))) {
-        font_size = font_size_updated;
+    if ((recreate_icon_images = (G_UNLIKELY (ks.font_size != (font_size_updated = get_font_size ()))))) {
+        ks.font_size = font_size_updated;
         create_new_invalid_icon_imgs = TRUE;
+
+		if (gtk_widget_get_visible (ks.change_values_label)) {
+			const gchar *label_txt = gtk_label_get_text (GTK_LABEL (ks.change_values_label));
+			gchar *label_markup = g_strdup_printf ("<span font='%i'>%s</span>", ks.font_size + 2, label_txt);
+    		gtk_label_set_markup (GTK_LABEL (ks.change_values_label), label_markup);
+			// Cleanup
+			g_free (label_markup);
+		}
     }
 
     // Check if icon theme has changed.
     g_object_get (gtk_settings_get_default (), "gtk-icon-theme-name", &current_icon_theme_name, NULL);
-    if (G_UNLIKELY (!streq (icon_theme_name, current_icon_theme_name))) {
-        free_and_reassign (icon_theme_name, g_strdup (current_icon_theme_name));
+    if (G_UNLIKELY (!STREQ (ks.icon_theme_name, current_icon_theme_name))) {
+        FREE_AND_REASSIGN (ks.icon_theme_name, g_strdup (current_icon_theme_name));
         create_new_invalid_icon_imgs = TRUE;
     }
 
@@ -80,13 +85,13 @@ gboolean check_for_external_file_and_settings_changes (G_GNUC_UNUSED gpointer id
         create_invalid_icon_imgs ();
     }
 
-    for (rows_with_icons_loop = rows_with_icons; 
+    for (rows_with_icons_loop = ks.rows_with_icons; 
          rows_with_icons_loop; 
          rows_with_icons_loop = rows_with_icons_loop->next) {
         path_loop = rows_with_icons_loop->data;
-        gtk_tree_model_get_iter (model, &iter_loop, path_loop);
+        gtk_tree_model_get_iter (ks.model, &iter_loop, path_loop);
  
-        gtk_tree_model_get (model, &iter_loop,
+        gtk_tree_model_get (ks.model, &iter_loop,
                             TS_ICON_IMG_STATUS, &icon_img_status_uint_loop, 
                             TS_ICON_MODIFICATION_TIME, &icon_modification_time_txt_loop,
                             TS_ICON_PATH, &icon_path_txt_loop, 
@@ -101,14 +106,14 @@ gboolean check_for_external_file_and_settings_changes (G_GNUC_UNUSED gpointer id
         */
         if (G_LIKELY (icon_img_status_uint_loop != INVALID_PATH) && 
             G_UNLIKELY (!g_file_test (icon_path_txt_loop, G_FILE_TEST_EXISTS))) { // Case 1
-            gtk_tree_store_set (treestore, &iter_loop, 
-                                TS_ICON_IMG, invalid_icon_imgs[INVALID_PATH_ICON], 
+            gtk_tree_store_set (ks.treestore, &iter_loop, 
+                                TS_ICON_IMG, ks.invalid_icon_imgs[INVALID_PATH_ICON], 
                                 TS_ICON_IMG_STATUS, INVALID_PATH, 
                                 TS_ICON_MODIFICATION_TIME, NULL, 
                                 -1);
 
             if (number_of_selected_rows == 1 && gtk_tree_selection_iter_is_selected (selection, &iter_loop)) {
-                wrong_or_missing (entry_fields[ICON_PATH_ENTRY], icon_path_entry_css_provider);
+                wrong_or_missing (ks.entry_fields[ICON_PATH_ENTRY], ks.icon_path_entry_css_provider);
             }
 
             replacement_done = TRUE;
@@ -117,17 +122,18 @@ gboolean check_for_external_file_and_settings_changes (G_GNUC_UNUSED gpointer id
             time_stamp = get_modification_time_for_icon (icon_path_txt_loop);
 
             if (G_UNLIKELY (icon_img_status_uint_loop == INVALID_PATH ||
-                            !streq (time_stamp, icon_modification_time_txt_loop))) {
-                if (G_UNLIKELY (!set_icon (&iter_loop, icon_path_txt_loop, TRUE))) { // Case 2 & 3, TRUE == automated
-                    gtk_tree_store_set (treestore, &iter_loop, 
-                                        TS_ICON_IMG, invalid_icon_imgs[INVALID_FILE_ICON], 
+                            !STREQ (time_stamp, icon_modification_time_txt_loop))) {
+				// Case 2 & 3, FALSE == don't show error message when error occurs.
+                if (G_UNLIKELY (!set_icon (&iter_loop, icon_path_txt_loop, FALSE))) { 
+                    gtk_tree_store_set (ks.treestore, &iter_loop, 
+                                        TS_ICON_IMG, ks.invalid_icon_imgs[INVALID_FILE_ICON], 
                                         TS_ICON_IMG_STATUS, INVALID_FILE, 
                                         TS_ICON_MODIFICATION_TIME, time_stamp, 
                                         -1);
                 }
 
                 if (number_of_selected_rows == 1 && gtk_tree_selection_iter_is_selected (selection, &iter_loop)) {
-                    gtk_style_context_remove_class (gtk_widget_get_style_context (entry_fields[ICON_PATH_ENTRY]), "bg_class");
+                    gtk_style_context_remove_class (gtk_widget_get_style_context (ks.entry_fields[ICON_PATH_ENTRY]), "bg_class");
                 }
 
                 replacement_done = TRUE;
@@ -144,15 +150,15 @@ gboolean check_for_external_file_and_settings_changes (G_GNUC_UNUSED gpointer id
         if (G_UNLIKELY ((recreate_icon_images || (create_new_invalid_icon_imgs && icon_img_status_uint_loop)) && 
                         !replacement_done)) {
             if (!icon_img_status_uint_loop) { // Icon path is OK and valid icon exists = create and store larger or smaller icon
-                set_icon (&iter_loop, icon_path_txt_loop, TRUE); // TRUE == automated
+                set_icon (&iter_loop, icon_path_txt_loop, FALSE); // FALSE == don't show error message when error occurs.
             }
             else { // Icon path is wrong or icon image is invalid = store broken icon with larger or smaller size
-                gtk_tree_store_set (treestore, &iter_loop, TS_ICON_IMG, 
-                                    invalid_icon_imgs[(icon_img_status_uint_loop == INVALID_PATH) ? 
-                                                      INVALID_PATH_ICON : INVALID_FILE_ICON], -1);
+                gtk_tree_store_set (ks.treestore, &iter_loop, TS_ICON_IMG, 
+                                    ks.invalid_icon_imgs[(icon_img_status_uint_loop == INVALID_PATH) ? 
+                                                         INVALID_PATH_ICON : INVALID_FILE_ICON], -1);
             }
 
-            gtk_tree_view_columns_autosize (GTK_TREE_VIEW (treeview)); // In case that the font size has been reduced.
+            gtk_tree_view_columns_autosize (GTK_TREE_VIEW (ks.treeview)); // In case that the font size has been reduced.
         }
 
         // Cleanup
@@ -175,6 +181,6 @@ gboolean check_for_external_file_and_settings_changes (G_GNUC_UNUSED gpointer id
 void stop_timeout (void)
 {
     g_source_remove_by_user_data ("timeout");
-    g_slist_free_full (rows_with_icons, (GDestroyNotify) gtk_tree_path_free);
-    rows_with_icons = NULL;
+    g_slist_free_full (ks.rows_with_icons, (GDestroyNotify) gtk_tree_path_free);
+    ks.rows_with_icons = NULL;
 }

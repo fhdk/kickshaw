@@ -1,7 +1,7 @@
 /*
    Kickshaw - A Menu Editor for Openbox
 
-   Copyright (c) 2010-2017        Marcus Schaetzle
+   Copyright (c) 2010-2018        Marcus Schaetzle
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -22,7 +22,7 @@
 
 extern void action_option_insert (gchar *origin);
 extern void add_new (gchar *new_menu_element);
-extern void boolean_toogled (void);
+extern void boolean_toggled (void);
 extern void cell_edited (G_GNUC_UNUSED GtkCellRendererText *renderer, 
                                        gchar               *path, 
                                        gchar               *new_text, 
@@ -62,6 +62,7 @@ extern void key_pressed (G_GNUC_UNUSED GtkWidget   *widget,
 extern void move_selection (gpointer direction_pointer);
 extern gboolean multiple_str_replacement_callback_func (const GMatchInfo *match_info, 
                                                         GString *result, gpointer hash_table);
+extern void one_of_the_change_values_buttons_pressed (gchar *origin);
 extern void open_menu (void);
 extern void option_list_with_headlines (G_GNUC_UNUSED GtkCellLayout   *cell_layout, 
                                                       GtkCellRenderer *action_option_combo_box_renderer, 

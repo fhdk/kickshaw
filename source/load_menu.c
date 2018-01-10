@@ -1,7 +1,7 @@
 /*
    Kickshaw - A Menu Editor for Openbox
 
-   Copyright (c) 2010-2017        Marcus Schaetzle
+   Copyright (c) 2010-2018        Marcus Schaetzle
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -21,21 +21,18 @@
 #include <gtk/gtk.h>
 #include <string.h>
 
-#include "general_header_files/enum__ancestor_visibility.h"
-#include "general_header_files/enum__invalid_icon_img_statuses.h"
-#include "general_header_files/enum__menu_bar_items_view_and_options.h"
-#include "general_header_files/enum__ts_elements.h"
-#include "general_header_files/enum__txt_fields.h"
+#include "definitions_and_enumerations.h"
 #include "load_menu.h"
 
-enum { TS_BUILD_ICON_IMG, TS_BUILD_ICON_IMG_STATUS, TS_BUILD_ICON_MODIFICATION_TIME, TS_BUILD_ICON_PATH, 
-       TS_BUILD_MENU_ELEMENT, TS_BUILD_TYPE, TS_BUILD_VALUE, TS_BUILD_MENU_ID, TS_BUILD_EXECUTE, 
-       TS_BUILD_ELEMENT_VISIBILITY, TS_BUILD_PATH_DEPTH, NUMBER_OF_TS_BUILD_FIELDS };
-enum { MENUS, ROOT_MENU, NUMBER_OF_MENU_LEVELS };
-enum { ITEM, ACTION, OPTION, NUMBER_OF_CURRENT_ELEMENTS };
-enum { MENU_IDS_LIST, MENUS_LIST = 0, MENU_ELEMENTS_LIST, ITEMS_LIST = 1, NUMBER_OF_INVISIBLE_ELEMENTS_LISTS };
+// LM = Load Menu, indicating that the enums are only used here; TS = Treestore
+enum { LM_TS_BUILD_ICON_IMG, LM_TS_BUILD_ICON_IMG_STATUS, LM_TS_BUILD_ICON_MODIFICATION_TIME, LM_TS_BUILD_ICON_PATH, 
+       LM_TS_BUILD_MENU_ELEMENT, LM_TS_BUILD_TYPE, LM_TS_BUILD_VALUE, LM_TS_BUILD_MENU_ID, LM_TS_BUILD_EXECUTE, 
+       LM_TS_BUILD_ELEMENT_VISIBILITY, LM_TS_BUILD_PATH_DEPTH, LM_NUMBER_OF_TS_BUILD_FIELDS };
+enum { LM_MENUS, LM_ROOT_MENU, LM_NUMBER_OF_MENU_LEVELS };
+enum { LM_ITEM, LM_ACTION, LM_NUMBER_OF_CURRENT_ELEMENTS };
+enum { LM_MENU_IDS_LIST, LM_MENUS_LIST = 0, LM_MENU_ELEMENTS_LIST, LM_ITEMS_LIST = 1, LM_NUMBER_OF_INVISIBLE_ELEMENTS_LISTS };
 // Enumeration for dialogs.
-enum { ORPHANED_MENUS, MISSING_LABELS };
+enum { LM_ORPHANED_MENUS, LM_MISSING_LABELS };
 
 typedef struct {
     gchar *line;
@@ -47,11 +44,11 @@ typedef struct {
     guint max_path_depth;
 
     GSList *menu_ids;
-    GSList *toplevel_menu_ids[NUMBER_OF_MENU_LEVELS];
+    GSList *toplevel_menu_ids[LM_NUMBER_OF_MENU_LEVELS];
 
     gboolean ignore_all_upcoming_errs;
 
-    gchar *current_elements[NUMBER_OF_CURRENT_ELEMENTS];
+    gchar *current_elements[LM_NUMBER_OF_CURRENT_ELEMENTS];
     gboolean open_option_element;
     gchar *previous_type;
 
@@ -102,7 +99,7 @@ static void start_tags_their_attr_and_val__empty_element_tags (GMarkupParseConte
     MenuBuildingData *menu_building = (MenuBuildingData *) menu_building_pnt; 
 
     // XML after the root menu is discarded by Openbox.
-    if (menu_building->root_menu_finished || streq (element_name, "openbox_menu")) {
+    if (menu_building->root_menu_finished || STREQ (element_name, "openbox_menu")) {
         return;
     }
 
@@ -111,7 +108,7 @@ static void start_tags_their_attr_and_val__empty_element_tags (GMarkupParseConte
     guint number_of_attributes = g_strv_length ((gchar **) attribute_names);
     GSList **menu_ids = &(menu_building->menu_ids);
     guint current_path_depth = menu_building->current_path_depth;
-    gchar *current_action = menu_building->current_elements[ACTION];
+    gchar *current_action = menu_building->current_elements[LM_ACTION];
     gint line_number = menu_building->line_number;
     guint8 *loading_stage = &(menu_building->loading_stage);
     GSList **toplevel_menu_ids = menu_building->toplevel_menu_ids;
@@ -143,37 +140,37 @@ static void start_tags_their_attr_and_val__empty_element_tags (GMarkupParseConte
         const gchar *parent_element_name = (g_slist_next (element_stack))->data;
         gchar *error_txt = NULL;
 
-        if (G_UNLIKELY (streq (element_name, "menu") && !streq (parent_element_name, "menu"))) {
+        if (G_UNLIKELY (STREQ (element_name, "menu") && !STREQ (parent_element_name, "menu"))) {
             error_txt = "A menu can only have another menu";
         }
-        else if (G_UNLIKELY (streq (element_name, "item") && !streq (parent_element_name, "menu"))) {
+        else if (G_UNLIKELY (STREQ (element_name, "item") && !STREQ (parent_element_name, "menu"))) {
             error_txt = "An item can only have a menu";
         }
-        else if (G_UNLIKELY (streq (element_name, "separator") && !streq (parent_element_name, "menu"))) {
+        else if (G_UNLIKELY (STREQ (element_name, "separator") && !STREQ (parent_element_name, "menu"))) {
             error_txt = "A separator can only have a menu";
         }
-        else if (G_UNLIKELY (streq (element_name, "action") && !streq (parent_element_name, "item"))) {
+        else if (G_UNLIKELY (STREQ (element_name, "action") && !STREQ (parent_element_name, "item"))) {
             error_txt = "An action can only have an item";
         }
-        else if (G_UNLIKELY (streq (element_name, "prompt") && !(streq (parent_element_name, "action") && 
+        else if (G_UNLIKELY (STREQ (element_name, "prompt") && !(STREQ (parent_element_name, "action") && 
                              streq_any (current_action, "Execute", "Exit", "SessionLogout", NULL)))) {
             error_txt = "A 'prompt' option can only have an 'Execute', 'Exit' or 'SessionLogout' action";
         }
-        else if (G_UNLIKELY (streq (element_name, "command") && !(streq (parent_element_name, "action") && 
+        else if (G_UNLIKELY (STREQ (element_name, "command") && !(STREQ (parent_element_name, "action") && 
                              streq_any (current_action, "Execute", "Restart", NULL)))) {
             error_txt = "A 'command' option can only have an 'Execute' or 'Restart' action";
         }
-        else if (G_UNLIKELY (streq (element_name, "startupnotify") && !(streq (parent_element_name, "action") && 
-                             streq (current_action, "Execute")))) {
+        else if (G_UNLIKELY (STREQ (element_name, "startupnotify") && !(STREQ (parent_element_name, "action") && 
+                             STREQ (current_action, "Execute")))) {
             error_txt = "A 'startupnotify' option can only have an 'Execute' action";
         }
         else if (G_UNLIKELY (streq_any (element_name, "enabled", "icon", "name", "wmclass", NULL) && 
-                             !streq (parent_element_name, "startupnotify"))) {
+                             !STREQ (parent_element_name, "startupnotify"))) {
             g_set_error (error, 1, line_number, "A%s '%s' option can only have a 'startupnotify' option as a parent", 
                          (streq_any (element_name, "enabled", "icon", NULL)) ? "n" : "", element_name);
             return;
         }
-        else if (G_UNLIKELY (streq (menu_building->previous_type, "pipe menu") && 
+        else if (G_UNLIKELY (STREQ (menu_building->previous_type, "pipe menu") && 
                              menu_building->previous_path_depth < current_path_depth)) {
             error_txt = "A pipe menu is a self-closing element; it can't be used";
         }  
@@ -186,8 +183,8 @@ static void start_tags_their_attr_and_val__empty_element_tags (GMarkupParseConte
 
     // Too many attributes
 
-    if (G_UNLIKELY ((streq (element_name, "menu") && number_of_attributes > 4) || 
-                    (streq (element_name, "item") && number_of_attributes > 2) || 
+    if (G_UNLIKELY ((STREQ (element_name, "menu") && number_of_attributes > 4) || 
+                    (STREQ (element_name, "item") && number_of_attributes > 2) || 
                     (streq_any (element_name, "separator", "action", NULL) && number_of_attributes > 1))) {
         g_set_error (error, 1, line_number, "Too many attributes for element '%s'", element_name);
         return;
@@ -203,7 +200,7 @@ static void start_tags_their_attr_and_val__empty_element_tags (GMarkupParseConte
             if (attribute_cnt == attribute_cnt2) {
                 continue;
             }
-            if (G_UNLIKELY (streq (current_attribute_name, attribute_names[attribute_cnt2]))) {
+            if (G_UNLIKELY (STREQ (current_attribute_name, attribute_names[attribute_cnt2]))) {
                 g_set_error (error, 1, line_number, "Element '%s' has more than one '%s' attribute", 
                              element_name, current_attribute_name);
                 return;
@@ -212,19 +209,19 @@ static void start_tags_their_attr_and_val__empty_element_tags (GMarkupParseConte
 
         // Invalid attributes
 
-        if (G_UNLIKELY ((streq (element_name, "menu") && 
+        if (G_UNLIKELY ((STREQ (element_name, "menu") && 
                         !streq_any (current_attribute_name, "id", "label", "icon", "execute", NULL)) || 
-                        (streq (element_name, "item") && !streq_any (current_attribute_name, "label", "icon", NULL)) || 
-                        (streq (element_name, "separator") && !streq (current_attribute_name, "label")) || 
-                        (streq (element_name, "action") && !streq (current_attribute_name, "name")))) {
+                        (STREQ (element_name, "item") && !streq_any (current_attribute_name, "label", "icon", NULL)) || 
+                        (STREQ (element_name, "separator") && !STREQ (current_attribute_name, "label")) || 
+                        (STREQ (element_name, "action") && !STREQ (current_attribute_name, "name")))) {
 
-            if (streq (element_name, "menu")) {
+            if (STREQ (element_name, "menu")) {
                 valid = "are 'id', 'label', 'icon' and 'execute'";
             }
-            else if (streq (element_name, "item")) {
+            else if (STREQ (element_name, "item")) {
                 valid = "are 'label' and 'icon'";
             }
-            else if (streq (element_name, "separator")) {
+            else if (STREQ (element_name, "separator")) {
                 valid = "is 'label'";
             }
             else { // action
@@ -235,39 +232,39 @@ static void start_tags_their_attr_and_val__empty_element_tags (GMarkupParseConte
             return;
         }
 
-        if (streq (element_name, "menu")) {
+        if (STREQ (element_name, "menu")) {
 
             // Check if a found menu ID fulfills the necessary conditions.
 
-            if (streq (current_attribute_name, "id")) {
+            if (STREQ (current_attribute_name, "id")) {
                 menu_id_found = TRUE;
 
                 // Check if the ID is a root menu ID, if so, whether it's at toplevel.
 
-                if (streq (current_attribute_value, "root-menu")) {
+                if (STREQ (current_attribute_value, "root-menu")) {
                     if (G_UNLIKELY (current_path_depth > 1)) {
                         g_set_error (error, 1, line_number, "%s", 
                                      "The root menu can't be defined as a child of another menu");
                         return;
                     }
 
-                    *loading_stage = ROOT_MENU;
+                    *loading_stage = LM_ROOT_MENU;
                 }
 
                 // Check if the ID is unique.
 
                 if (G_UNLIKELY (g_slist_find_custom (*menu_ids, current_attribute_value, (GCompareFunc) strcmp) &&
-                                !(*loading_stage == ROOT_MENU && current_path_depth == 2 && 
-                                g_slist_find_custom (toplevel_menu_ids[MENUS], current_attribute_value, 
-                                    (GCompareFunc) strcmp) && 
-                                !g_slist_find_custom (toplevel_menu_ids[ROOT_MENU], current_attribute_value, 
-                                    (GCompareFunc) strcmp)))) {
+                                !(*loading_stage == LM_ROOT_MENU && current_path_depth == 2 && 
+                                g_slist_find_custom (toplevel_menu_ids[LM_MENUS], current_attribute_value, 
+                                                     (GCompareFunc) strcmp) && 
+                                !g_slist_find_custom (toplevel_menu_ids[LM_ROOT_MENU], current_attribute_value, 
+                                                      (GCompareFunc) strcmp)))) {
                     g_set_error (error, 1, line_number, 
                                 "'%s' is a menu ID that has already been defined before", current_attribute_value);
                     return;
                 }
             }
-            else if (streq (current_attribute_name, "label")) {
+            else if (STREQ (current_attribute_name, "label")) {
                 menu_label = current_attribute_value;
             }
         }
@@ -275,7 +272,7 @@ static void start_tags_their_attr_and_val__empty_element_tags (GMarkupParseConte
 
     // Missing or duplicate menu IDs
 
-    if (G_UNLIKELY (streq (element_name, "menu") && !menu_id_found)) {
+    if (G_UNLIKELY (STREQ (element_name, "menu") && !menu_id_found)) {
         g_set_error (error, 1, line_number, "Menu%s%s%s has no 'id' attribute", 
                      (menu_label) ? " '" : "",  (menu_label) ? menu_label : "", (menu_label) ? "'" : "");
         return;
@@ -292,39 +289,39 @@ static void start_tags_their_attr_and_val__empty_element_tags (GMarkupParseConte
             current_attribute_name = attribute_names[attribute_cnt];
             current_attribute_value = attribute_values[attribute_cnt];
 
-            if (streq (current_attribute_name, "label")) {
+            if (STREQ (current_attribute_name, "label")) {
                 txt_fields[MENU_ELEMENT_TXT] = current_attribute_value;
-                if (streq (element_name, "item")) {
-                    free_and_reassign (menu_building->current_elements[ITEM], g_strdup (current_attribute_value));
+                if (STREQ (element_name, "item")) {
+                    FREE_AND_REASSIGN (menu_building->current_elements[LM_ITEM], g_strdup (current_attribute_value));
                 }
             }
-            if (!streq (element_name, "separator")) { // menu or item
-                if (streq (current_attribute_name, "icon")) {
+            if (!STREQ (element_name, "separator")) { // menu or item
+                if (STREQ (current_attribute_name, "icon")) {
                     icon_path = g_strdup (current_attribute_value);
                 }
-                if (streq (element_name, "menu")) {
-                    if (streq (current_attribute_name, "id")) {
+                if (STREQ (element_name, "menu")) {
+                    if (STREQ (current_attribute_name, "id")) {
                         /*
                             Root menu IDs are only included inside the menu_ids list 
                             if they did not already appear in an extern menu definition.
                         */
-                        if (!(*loading_stage == ROOT_MENU && 
-                            (streq (current_attribute_value, "root-menu") || 
-                             g_slist_find_custom (toplevel_menu_ids[MENUS], current_attribute_value, (GCompareFunc) strcmp)))) {
+                        if (!(*loading_stage == LM_ROOT_MENU && 
+                            (STREQ (current_attribute_value, "root-menu") || 
+                             g_slist_find_custom (toplevel_menu_ids[LM_MENUS], current_attribute_value, (GCompareFunc) strcmp)))) {
                             *menu_ids = g_slist_prepend (*menu_ids, g_strdup (current_attribute_value));
                         }
 
-                        if ((*loading_stage == MENUS && current_path_depth == 1) || 
-                            (*loading_stage == ROOT_MENU && current_path_depth == 2)) { // This excludes the "root-menu" id.
-                            // TRUE -> ROOT_MENU, FALSE -> MENUS
-                            GSList **menu_ids_list = &toplevel_menu_ids[(*loading_stage == ROOT_MENU)];
+                        if ((*loading_stage == LM_MENUS && current_path_depth == 1) || 
+                            (*loading_stage == LM_ROOT_MENU && current_path_depth == 2)) { // This excludes the "root-menu" id.
+                            // TRUE -> LM_ROOT_MENU, FALSE -> LM_MENUS
+                            GSList **menu_ids_list = &toplevel_menu_ids[(*loading_stage == LM_ROOT_MENU)];
 
                             *menu_ids_list = g_slist_prepend (*menu_ids_list, g_strdup (current_attribute_value));
                         }
  
                         txt_fields[MENU_ID_TXT] = current_attribute_value;
                     }
-                    else if (streq (current_attribute_name, "execute")) {
+                    else if (STREQ (current_attribute_name, "execute")) {
                         txt_fields[TYPE_TXT] = "pipe menu"; // Overwrites "menu".
                         txt_fields[EXECUTE_TXT] = current_attribute_value;
                     }
@@ -356,7 +353,7 @@ static void start_tags_their_attr_and_val__empty_element_tags (GMarkupParseConte
 
             if (G_UNLIKELY (!(icon_in_original_size = gdk_pixbuf_new_from_file (icon_path, &icon_creation_error)))) {
                 gboolean file_exists = g_file_test (icon_path, G_FILE_TEST_EXISTS);
-                icon_img = gdk_pixbuf_copy (invalid_icon_imgs[(file_exists)]); // INVALID_FILE_ICON (TRUE) or INVALID_PATH_ICON
+                icon_img = gdk_pixbuf_copy (ks.invalid_icon_imgs[(file_exists)]); // INVALID_FILE_ICON (TRUE) or INVALID_PATH_ICON
                 icon_img_status = (file_exists) ? INVALID_FILE : INVALID_PATH;
                 if (file_exists) {
                     icon_modification_time = get_modification_time_for_icon (icon_path);
@@ -374,7 +371,7 @@ static void start_tags_their_attr_and_val__empty_element_tags (GMarkupParseConte
                         g_string_append_printf (dialog_txt, "<b>Line %i:\nThe following error occurred " 
                                                 "while trying to create an icon for %s %s with ", line_number, 
                                                 (txt_fields[MENU_ELEMENT_TXT]) ? 
-                                                "the" : ((streq (txt_fields[TYPE_TXT], "menu")) ? "a" : "an"), 
+                                                "the" : ((STREQ (txt_fields[TYPE_TXT], "menu")) ? "a" : "an"), 
                                                 txt_fields[TYPE_TXT]);
                         if (streq_any (txt_fields[TYPE_TXT], "menu", "pipe menu", NULL)) {
                             g_string_append_printf (dialog_txt, "the menu ID '%s'", txt_fields[MENU_ID_TXT]);
@@ -409,11 +406,11 @@ static void start_tags_their_attr_and_val__empty_element_tags (GMarkupParseConte
                                     // Cleanup and reset
                                     g_error_free (icon_creation_error);
                                     icon_creation_error = NULL;
-                                    free_and_reassign (icon_path_error_loop, icon_path_selected);
+                                    FREE_AND_REASSIGN (icon_path_error_loop, icon_path_selected);
 
                                     if (G_LIKELY ((icon_in_original_size = gdk_pixbuf_new_from_file (icon_path_error_loop, 
                                                                                                      &icon_creation_error)))) {
-                                        free_and_reassign (icon_path, g_strdup (icon_path_error_loop));
+                                        FREE_AND_REASSIGN (icon_path, g_strdup (icon_path_error_loop));
                                         g_object_unref (icon_img);
                                         icon_img_status = NONE_OR_NORMAL;
                                         menu_building->change_done_loading_proc = TRUE;
@@ -434,22 +431,24 @@ static void start_tags_their_attr_and_val__empty_element_tags (GMarkupParseConte
             }
 
             if (G_LIKELY (!icon_img_status)) {
-                icon_img = gdk_pixbuf_scale_simple (icon_in_original_size, font_size + 10, font_size + 10, GDK_INTERP_BILINEAR);
-                free_and_reassign (icon_modification_time, get_modification_time_for_icon (icon_path));
+                icon_img = gdk_pixbuf_scale_simple (icon_in_original_size, 
+                                                    ks.font_size + 10, ks.font_size + 10, 
+                                                    GDK_INTERP_BILINEAR);
+                FREE_AND_REASSIGN (icon_modification_time, get_modification_time_for_icon (icon_path));
 
                 // Cleanup
                 g_object_unref (icon_in_original_size);
             }
         }
     }
-    else if (streq (element_name, "action")) {
+    else if (STREQ (element_name, "action")) {
         txt_fields[TYPE_TXT] = element_name;
         txt_fields[MENU_ELEMENT_TXT] = attribute_values[0]; // There is only one attribute.
-        free_and_reassign (menu_building->current_elements[ACTION], g_strdup (attribute_values[0]));
+        FREE_AND_REASSIGN (menu_building->current_elements[LM_ACTION], g_strdup (attribute_values[0]));
     }
     else if (g_regex_match_simple ("prompt|command|execute|startupnotify|enabled|wmclass|name|icon", 
-            element_name, G_REGEX_ANCHORED, 0)) {
-        if (!streq (element_name, "startupnotify")) {
+             element_name, G_REGEX_ANCHORED, 0)) {
+        if (!STREQ (element_name, "startupnotify")) {
             txt_fields[TYPE_TXT] = "option";
             menu_building->open_option_element = TRUE;
         }
@@ -457,7 +456,7 @@ static void start_tags_their_attr_and_val__empty_element_tags (GMarkupParseConte
             txt_fields[TYPE_TXT] = "option block";
         }
         txt_fields[MENU_ELEMENT_TXT] = element_name;
-        if (G_UNLIKELY (streq (txt_fields[MENU_ELEMENT_TXT], "execute"))) {
+        if (G_UNLIKELY (STREQ (txt_fields[MENU_ELEMENT_TXT], "execute"))) {
             txt_fields[MENU_ELEMENT_TXT] = "command";
             menu_building->deprecated_exe_cmds_cvtd = TRUE;
         }
@@ -466,20 +465,20 @@ static void start_tags_their_attr_and_val__empty_element_tags (GMarkupParseConte
     // --- Store all values that are needed later to create a treeview row. ---
 
 
-    gpointer *tree_data = g_slice_alloc (sizeof (gpointer) * NUMBER_OF_TS_BUILD_FIELDS);
+    gpointer *tree_data = g_slice_alloc (sizeof (gpointer) * LM_NUMBER_OF_TS_BUILD_FIELDS);
 
-    tree_data[TS_BUILD_ICON_IMG] = icon_img;
-    tree_data[TS_BUILD_ICON_IMG_STATUS] = GUINT_TO_POINTER (icon_img_status);
-    tree_data[TS_BUILD_ICON_MODIFICATION_TIME] = icon_modification_time;
-    tree_data[TS_BUILD_ICON_PATH] = icon_path;
+    tree_data[LM_TS_BUILD_ICON_IMG] = icon_img;
+    tree_data[LM_TS_BUILD_ICON_IMG_STATUS] = GUINT_TO_POINTER (icon_img_status);
+    tree_data[LM_TS_BUILD_ICON_MODIFICATION_TIME] = icon_modification_time;
+    tree_data[LM_TS_BUILD_ICON_PATH] = icon_path;
     /*
         txt_fields starts with ICON_PATH_TXT, but this array element is not used here and replaced by icon_path, 
         since there are separate variables here for all treestore fields that refer to an icon image.
     */
-    for (ts_build_cnt = TS_BUILD_MENU_ELEMENT; ts_build_cnt < TS_BUILD_PATH_DEPTH; ts_build_cnt++) {
+    for (ts_build_cnt = LM_TS_BUILD_MENU_ELEMENT; ts_build_cnt < LM_TS_BUILD_PATH_DEPTH; ts_build_cnt++) {
         tree_data[ts_build_cnt] = g_strdup (txt_fields[ts_build_cnt - 3]);
     }
-    tree_data[TS_BUILD_PATH_DEPTH] = GUINT_TO_POINTER (current_path_depth);
+    tree_data[LM_TS_BUILD_PATH_DEPTH] = GUINT_TO_POINTER (current_path_depth);
 
     menu_building->tree_build = g_slist_prepend (menu_building->tree_build, tree_data);
 
@@ -488,7 +487,7 @@ static void start_tags_their_attr_and_val__empty_element_tags (GMarkupParseConte
 
 
     menu_building->previous_path_depth = current_path_depth;
-    free_and_reassign (menu_building->previous_type, g_strdup (txt_fields[TYPE_TXT]));
+    FREE_AND_REASSIGN (menu_building->previous_type, g_strdup (txt_fields[TYPE_TXT]));
 
     if (current_path_depth > menu_building->max_path_depth) {
         menu_building->max_path_depth = current_path_depth;
@@ -514,11 +513,11 @@ static void end_tags (G_GNUC_UNUSED GMarkupParseContext  *parse_context,
     }
 
     if (streq_any (element_name, "item", "action", NULL)) {
-        free_and_reassign (menu_building->current_elements[streq (element_name, "action")], NULL);
+        FREE_AND_REASSIGN (menu_building->current_elements[STREQ (element_name, "action")], NULL);
     }
     guint current_path_depth = --(menu_building->current_path_depth);
 
-    if (menu_building->loading_stage == ROOT_MENU && current_path_depth == 1) {
+    if (menu_building->loading_stage == LM_ROOT_MENU && current_path_depth == 1) {
         menu_building->root_menu_finished = TRUE;
     }
 }
@@ -546,8 +545,8 @@ static void element_content (G_GNUC_UNUSED GMarkupParseContext  *parse_context,
 
     if (menu_building->open_option_element) {
         gchar *nul_terminated_text = g_strndup (text, text_len);
-        gchar *current_element = tree_data[TS_BUILD_MENU_ELEMENT];
-        gchar *current_action = menu_building->current_elements[ACTION];
+        gchar *current_element = tree_data[LM_TS_BUILD_MENU_ELEMENT];
+        gchar *current_action = menu_building->current_elements[LM_ACTION];
 
         /*
             Avoids that spaces and returns are taken over in cases like
@@ -557,18 +556,18 @@ static void element_content (G_GNUC_UNUSED GMarkupParseContext  *parse_context,
 
             This will be written back as <command>some_program</command>
         */
-        if (streq (tree_data[TS_BUILD_TYPE], "option")) {
+        if (STREQ (tree_data[LM_TS_BUILD_TYPE], "option")) {
             g_strstrip (nul_terminated_text);
         }
 
-        if (G_LIKELY (!((streq (current_element, "enabled") || 
-                        (streq (current_element, "prompt") && 
+        if (G_LIKELY (!((STREQ (current_element, "enabled") || 
+                        (STREQ (current_element, "prompt") && 
                         streq_any (current_action, "Exit", "SessionLogout", NULL))) && 
                         !streq_any (nul_terminated_text, "yes", "no", NULL)))) {
-            tree_data[TS_BUILD_VALUE] = nul_terminated_text;
+            tree_data[LM_TS_BUILD_VALUE] = nul_terminated_text;
         }
         else {
-            gchar *current_item = menu_building->current_elements[ITEM];
+            gchar *current_item = menu_building->current_elements[LM_ITEM];
 
             GtkWidget *dialog;
             gchar *dialog_title_txt, *dialog_txt, *line_with_escaped_markup_txt;
@@ -576,7 +575,7 @@ static void element_content (G_GNUC_UNUSED GMarkupParseContext  *parse_context,
 
             #define YES 1
 
-            dialog_title_txt = g_strconcat (streq (current_element, "enabled") ? "Enabled" : "Prompt", 
+            dialog_title_txt = g_strconcat (STREQ (current_element, "enabled") ? "Enabled" : "Prompt", 
                                             " option has invalid value", NULL);
             dialog_txt = g_strdup_printf ("<b>Line %i:</b>\n<tt>%s</tt>\n\n" 
                                           "An item %s%s%scontains a%s <b>'%s' action</b> "
@@ -591,9 +590,9 @@ static void element_content (G_GNUC_UNUSED GMarkupParseContext  *parse_context,
                                           (current_item) ? "labeled <b>'" : "", 
                                           (current_item) ? (current_item) : "", 
                                           (current_item) ? "'</b> " : "", 
-                                          (streq (current_action, "SessionLogout")) ? "" : "n", 
+                                          (STREQ (current_action, "SessionLogout")) ? "" : "n", 
                                           current_action, 
-                                          (streq (current_element, "enabled")) ? "n" : "", 
+                                          (STREQ (current_element, "enabled")) ? "n" : "", 
                                           current_element, 
                                           nul_terminated_text);
 
@@ -606,7 +605,7 @@ static void element_content (G_GNUC_UNUSED GMarkupParseContext  *parse_context,
 
             result = gtk_dialog_run (GTK_DIALOG (dialog));
             gtk_widget_destroy (dialog);
-            tree_data[TS_BUILD_VALUE] = g_strdup ((result == YES) ? "yes" : "no");
+            tree_data[LM_TS_BUILD_VALUE] = g_strdup ((result == YES) ? "yes" : "no");
             menu_building->change_done_loading_proc = TRUE;
         }
         menu_building->open_option_element = FALSE;
@@ -619,10 +618,10 @@ static void element_content (G_GNUC_UNUSED GMarkupParseContext  *parse_context,
 
 */
 
-static gboolean elements_visibility (GtkTreeModel  *foreach_model,
-                                     GtkTreePath   *foreach_path,
-                                     GtkTreeIter   *foreach_iter,
-                                     GSList       **invisible_elements_lists)
+gboolean elements_visibility (GtkTreeModel  *foreach_model,
+                              GtkTreePath   *foreach_path,
+                              GtkTreeIter   *foreach_iter,
+                              GSList        **invisible_elements_lists)
 {
     gchar *type_txt, *element_visibility_txt;
 
@@ -630,7 +629,7 @@ static gboolean elements_visibility (GtkTreeModel  *foreach_model,
                         TS_TYPE, &type_txt, 
                         TS_ELEMENT_VISIBILITY, &element_visibility_txt, -1);
 
-    if (streq_any (type_txt, "action", "option", "option block", NULL) || streq (element_visibility_txt, "visible")) {
+    if (streq_any (type_txt, "action", "option", "option block", NULL) || STREQ (element_visibility_txt, "visible")) {
         // Cleanup
         g_free (type_txt);
         g_free (element_visibility_txt);
@@ -644,7 +643,7 @@ static gboolean elements_visibility (GtkTreeModel  *foreach_model,
 
     gtk_tree_model_get (foreach_model, foreach_iter, TS_MENU_ELEMENT, &menu_element_txt, -1);
 
-    if (!streq (element_visibility_txt, "invisible orphaned menu")) {
+    if (!STREQ (element_visibility_txt, "invisible orphaned menu")) {
         if (element_visibility_ancestor == INVISIBLE_ORPHANED_ANCESTOR) {
             new_element_visibility_txt = "invisible dsct. of invisible orphaned menu";
         }
@@ -653,16 +652,16 @@ static gboolean elements_visibility (GtkTreeModel  *foreach_model,
                 new_element_visibility_txt = "invisible dsct. of invisible menu";
             }
             else {
-                if (menu_element_txt || streq (type_txt, "separator")) {
+                if (menu_element_txt || STREQ (type_txt, "separator")) {
                     new_element_visibility_txt = "visible";
                 }
                 else {
-                    new_element_visibility_txt = (streq (type_txt, "item")) ? "invisible item" : "invisible menu";
+                    new_element_visibility_txt = (STREQ (type_txt, "item")) ? "invisible item" : "invisible menu";
                 }
             }
         }
 
-        gtk_tree_store_set (treestore, foreach_iter, TS_ELEMENT_VISIBILITY, new_element_visibility_txt, -1);
+        gtk_tree_store_set (ks.treestore, foreach_iter, TS_ELEMENT_VISIBILITY, new_element_visibility_txt, -1);
     }
 
     /*
@@ -670,13 +669,13 @@ static gboolean elements_visibility (GtkTreeModel  *foreach_model,
         previous call of this function. In this case, NULL instead of the invisible elements lists has been sent as 
         a parameter, so the following if/else statement is not executed.
     */
-    if (invisible_elements_lists && !menu_element_txt && !streq (type_txt, "separator")) {
-        GtkTreeSelection *selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (treeview));
+    if (invisible_elements_lists && !menu_element_txt && !STREQ (type_txt, "separator")) {
+        GtkTreeSelection *selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (ks.treeview));
         gint current_path_depth = gtk_tree_path_get_depth (foreach_path);
-        GSList **label_list = &invisible_elements_lists[(streq (type_txt, "item")) ? ITEMS_LIST : MENUS_LIST];
+        GSList **label_list = &invisible_elements_lists[(STREQ (type_txt, "item")) ? LM_ITEMS_LIST : LM_MENUS_LIST];
         gchar *list_elm_txt = NULL; // Default, symbolises a toplevel item without label.
 
-        if (!streq (type_txt, "item")) {
+        if (!STREQ (type_txt, "item")) {
             gtk_tree_model_get (foreach_model, foreach_iter, TS_MENU_ID, &list_elm_txt, -1);
         }
         else if (current_path_depth > 1) {
@@ -696,8 +695,8 @@ static gboolean elements_visibility (GtkTreeModel  *foreach_model,
 
         // To select an iter, the equivalent row has to be visible.
         if (current_path_depth > 1 &&
-            !gtk_tree_view_row_expanded (GTK_TREE_VIEW (treeview), foreach_path)) {
-             gtk_tree_view_expand_to_path (GTK_TREE_VIEW (treeview), foreach_path);
+            !gtk_tree_view_row_expanded (GTK_TREE_VIEW (ks.treeview), foreach_path)) {
+             gtk_tree_view_expand_to_path (GTK_TREE_VIEW (ks.treeview), foreach_path);
         }
         gtk_tree_selection_select_iter (selection, foreach_iter);
         
@@ -731,7 +730,7 @@ static void create_dialogs_for_invisible_menus_and_items (guint8             dia
                                                         "from the menu bar or rightclick them and choose "
                                                         "'<b>Visualise</b>/<b>Visualise recursively</b>' "
                                                         "from the context menu.\n\n", 
-                                                        (dialog_type == ORPHANED_MENUS) ? "" : "/items");
+                                                        (dialog_type == LM_ORPHANED_MENUS) ? "" : "/items");
 
     gint result;
 
@@ -761,42 +760,42 @@ static void create_dialogs_for_invisible_menus_and_items (guint8             dia
 
     // Preliminary work - Creating dialog title and headline, lists for the orphaned menus dialog.
 
-    if (dialog_type == ORPHANED_MENUS) {
+    if (dialog_type == LM_ORPHANED_MENUS) {
         guint menu_ids_list_len;
 
-         // Create menu element and menu ID lists. 
-        valid = gtk_tree_model_iter_nth_child (model, &iter_loop, NULL, gtk_tree_model_iter_n_children (model, NULL) - 1);
+        // Create menu element and menu ID lists. 
+        valid = gtk_tree_model_iter_nth_child (ks.model, &iter_loop, NULL, gtk_tree_model_iter_n_children (ks.model, NULL) - 1);
         while (valid) {
-            gtk_tree_model_get (model, &iter_loop, TS_ELEMENT_VISIBILITY, &element_visibility_txt_loop, -1);
+            gtk_tree_model_get (ks.model, &iter_loop, TS_ELEMENT_VISIBILITY, &element_visibility_txt_loop, -1);
 
-            if (!streq (element_visibility_txt_loop, "invisible orphaned menu")) {
+            if (!STREQ (element_visibility_txt_loop, "invisible orphaned menu")) {
                 // Cleanup
                 g_free (element_visibility_txt_loop);
                 break;
             }
 
-            gtk_tree_model_get (model, &iter_loop, 
+            gtk_tree_model_get (ks.model, &iter_loop, 
                                 TS_MENU_ELEMENT, &menu_element_txt_loop,
                                 TS_MENU_ID, &menu_id_txt_loop,
                                 -1);
 
-            invisible_elements_lists[MENU_IDS_LIST] = g_slist_prepend (invisible_elements_lists[MENU_IDS_LIST], 
-                                                                       menu_id_txt_loop);
-            invisible_elements_lists[MENU_ELEMENTS_LIST] = g_slist_prepend (invisible_elements_lists[MENU_ELEMENTS_LIST], 
-                                                                            menu_element_txt_loop);
+            invisible_elements_lists[LM_MENU_IDS_LIST] = g_slist_prepend (invisible_elements_lists[LM_MENU_IDS_LIST], 
+                                                                          menu_id_txt_loop);
+            invisible_elements_lists[LM_MENU_ELEMENTS_LIST] = g_slist_prepend (invisible_elements_lists[LM_MENU_ELEMENTS_LIST], 
+                                                                               menu_element_txt_loop);
 
             gtk_tree_selection_select_iter (selection, &iter_loop);
-            valid = gtk_tree_model_iter_previous (model, &iter_loop);
+            valid = gtk_tree_model_iter_previous (ks.model, &iter_loop);
 
             // Cleanup
             g_free (element_visibility_txt_loop);
         }
 
-        invisible_elements_lists_loop[0] = invisible_elements_lists[MENU_IDS_LIST];
-        invisible_elements_lists_loop[1] = invisible_elements_lists[MENU_ELEMENTS_LIST];
+        invisible_elements_lists_loop[0] = invisible_elements_lists[LM_MENU_IDS_LIST];
+        invisible_elements_lists_loop[1] = invisible_elements_lists[LM_MENU_ELEMENTS_LIST];
 
         // Create dialog title and headline.
-        menu_ids_list_len = g_slist_length (menu_ids);
+        menu_ids_list_len = g_slist_length (ks.menu_ids);
         plural = (menu_ids_list_len == 1) ? "" : "s";
 
         dialog_title_txt = g_strdup_printf ("Invisible orphaned menu%s found", plural);
@@ -805,10 +804,10 @@ static void create_dialogs_for_invisible_menus_and_items (guint8             dia
                                                (menu_ids_list_len == 1) ? "is" : "are", 
                                                (menu_ids_list_len == 1) ? "isn't" : "aren't");
     }
-    else { // dialog_type == MISSING_LABELS
+    else { // dialog_type == LM_MISSING_LABELS
         // Create dialog title and headline
-        menus_list_len = g_slist_length (invisible_elements_lists[MENUS_LIST]);
-        items_list_len = g_slist_length (invisible_elements_lists[ITEMS_LIST]);
+        menus_list_len = g_slist_length (invisible_elements_lists[LM_MENUS_LIST]);
+        items_list_len = g_slist_length (invisible_elements_lists[LM_ITEMS_LIST]);
 
         gchar *menus_items_txt = g_strconcat ((menus_list_len > 0) ? "Menu" : "", 
                                               (menus_list_len <= 1) ? "" : "s", 
@@ -836,7 +835,7 @@ static void create_dialogs_for_invisible_menus_and_items (guint8             dia
     menu_grid = gtk_grid_new ();
 
     for (lists_cnt = 0; lists_cnt <= dialog_type; lists_cnt++) {
-        if (dialog_type == MISSING_LABELS) {
+        if (dialog_type == LM_MISSING_LABELS) {
             if (invisible_elements_lists[lists_cnt]) {
                 plural = (*(lists_len[lists_cnt]) > 1) ? "s" : "";
 
@@ -844,16 +843,16 @@ static void create_dialogs_for_invisible_menus_and_items (guint8             dia
                 invisible_elements_lists[lists_cnt] = g_slist_reverse (invisible_elements_lists[lists_cnt]);
 
                 cell_txt = g_strdup_printf ("\n<b>%s%s:</b> (%s%s shown)\n", 
-                                            (lists_cnt == MENUS_LIST) ? "Menu" : "Item", plural, 
-                                            (lists_cnt == MENUS_LIST) ? "Menu ID" : "Location", plural);
+                                            (lists_cnt == LM_MENUS_LIST) ? "Menu" : "Item", plural, 
+                                            (lists_cnt == LM_MENUS_LIST) ? "Menu ID" : "Location", plural);
                 gtk_grid_attach (GTK_GRID (menu_grid), new_label_with_formattings (cell_txt, FALSE), 0, grid_row_cnt++, 1, 1);
 
                 // Cleanup
                 g_free (cell_txt);
 
                 // Display the number of toplevel items without label.
-                if (lists_cnt == ITEMS_LIST) {
-                    for (invisible_elements_lists_subloop = invisible_elements_lists[ITEMS_LIST]; 
+                if (lists_cnt == LM_ITEMS_LIST) {
+                    for (invisible_elements_lists_subloop = invisible_elements_lists[LM_ITEMS_LIST]; 
                          invisible_elements_lists_subloop; 
                          invisible_elements_lists_subloop = invisible_elements_lists_subloop->next) {
                         if (!invisible_elements_lists_subloop->data) {
@@ -884,7 +883,7 @@ static void create_dialogs_for_invisible_menus_and_items (guint8             dia
                         // Cleanup
                         g_free (cell_txt);
                         // The number of toplevel items w/o label has been displayed, so these labels can be removed from the list.
-                        invisible_elements_lists[lists_cnt] = g_slist_remove_all (invisible_elements_lists[ITEMS_LIST], NULL);
+                        invisible_elements_lists[lists_cnt] = g_slist_remove_all (invisible_elements_lists[LM_ITEMS_LIST], NULL);
                     }
                 }
             }
@@ -892,39 +891,39 @@ static void create_dialogs_for_invisible_menus_and_items (guint8             dia
         }
         // Display the orphaned menus and missing labels lists.
         while (invisible_elements_lists_loop[lists_cnt]) {
-            for (grid_column_cnt = 0; grid_column_cnt <= (dialog_type == ORPHANED_MENUS); grid_column_cnt++) {
-                index = ((dialog_type == ORPHANED_MENUS && grid_column_cnt == 1) || 
-                         (dialog_type == MISSING_LABELS && lists_cnt == 1));
+            for (grid_column_cnt = 0; grid_column_cnt <= (dialog_type == LM_ORPHANED_MENUS); grid_column_cnt++) {
+                index = ((dialog_type == LM_ORPHANED_MENUS && grid_column_cnt == 1) || 
+                         (dialog_type == LM_MISSING_LABELS && lists_cnt == 1));
 
                 /*
                     The list construction loop covers both dialogs:
                     For the 
-                    - ORPHANED_MENUS dialog it creates one list with two columns
-                    - MISSING_LABELS     dialog it creates one or two lists with one column
+                    - LM_ORPHANED_MENUS dialog it creates one list with two columns
+                    - LM_MISSING_LABELS     dialog it creates one or two lists with one column
 
-                    If dialog_type == ORPHANED_MENUS, there are two columns (=two loop iterations): 
+                    If dialog_type == LM_ORPHANED_MENUS, there are two columns (=two loop iterations): 
                     One for the menu ID and one for the label (if it doesn't exist, the column is left blank).
                     The loop is called once, if there are orphaned menus.
 
-                    If dialog_type == MISSING_LABELS, there is one column (=one loop iteration).
+                    If dialog_type == LM_MISSING_LABELS, there is one column (=one loop iteration).
                     The loop is called once, if there are either menus OR items without labels, 
                     or twice, if there are menus AND items without labels.
                     An additional new line is added to the end of the list of menus with missing labels if 
                     it is followed by a list of items with missing labels.
                 */
 
-                cell_txt = g_strdup_printf ("%s%s%s%s  ", (dialog_type == ORPHANED_MENUS && grid_row_cnt == 0) ? "\n" : "", 
-                                            (dialog_type == MISSING_LABELS || 
-                                            (grid_column_cnt == 1 && !invisible_elements_lists_loop[MENU_ELEMENTS_LIST]->data)) ? 
+                cell_txt = g_strdup_printf ("%s%s%s%s  ", (dialog_type == LM_ORPHANED_MENUS && grid_row_cnt == 0) ? "\n" : "", 
+                                            (dialog_type == LM_MISSING_LABELS || 
+                                            (grid_column_cnt == 1 && !invisible_elements_lists_loop[LM_MENU_ELEMENTS_LIST]->data)) ? 
                                             "" : ((grid_column_cnt == 0) ? "<b>Menu ID:</b> " : 
                                             (g_slist_length (invisible_elements_lists[grid_column_cnt]) == 1) ? 
                                             " <b>Label:</b> " : "<b>Label:</b> "),  
-                                            (dialog_type == ORPHANED_MENUS && 
+                                            (dialog_type == LM_ORPHANED_MENUS && 
                                             !invisible_elements_lists_loop[grid_column_cnt]->data) ? 
                                             "" : (gchar *) invisible_elements_lists_loop[index]->data, 
                                             (invisible_elements_lists_loop[index]->next || 
-                                            (!invisible_elements_lists_loop[index]->next && dialog_type == MISSING_LABELS && 
-                                            lists_cnt == MENUS_LIST && invisible_elements_lists[ITEMS_LIST])) ? "" : "\n");
+                                            (!invisible_elements_lists_loop[index]->next && dialog_type == LM_MISSING_LABELS && 
+                                            lists_cnt == LM_MENUS_LIST && invisible_elements_lists[LM_ITEMS_LIST])) ? "" : "\n");
                 gtk_grid_attach (GTK_GRID (menu_grid), new_label_with_formattings (cell_txt, FALSE), 
                                  grid_column_cnt, grid_row_cnt, 1, 1);
 
@@ -952,10 +951,10 @@ static void create_dialogs_for_invisible_menus_and_items (guint8             dia
     gtk_container_add (GTK_CONTAINER (content_area), scrolled_window);
     gtk_container_add (GTK_CONTAINER (content_area), gtk_separator_new (GTK_ORIENTATION_HORIZONTAL));
 
-    dialog_txt = g_strdup_printf ((dialog_type == ORPHANED_MENUS) ? 
+    dialog_txt = g_strdup_printf ((dialog_type == LM_ORPHANED_MENUS) ? 
                                   "\n%sdefined outside the root menu that don't appear inside it%s"
                                   "To integrate them, %s%s"
-                                  "Invisible orphaned menus%s%s%sblue%s.\n" : // dialog_type == MISSING_LABELS
+                                  "Invisible orphaned menus%s%s%sblue%s.\n" : // dialog_type == LM_MISSING_LABELS
                                   "\n%sand items without label%s"
                                   "They can be visualised via creating a label for each of them; to do so %s%s"
                                   "Menus and items without label%s%s%sgrey%s.\n", 
@@ -965,14 +964,14 @@ static void create_dialogs_for_invisible_menus_and_items (guint8             dia
                                   "choose '<b>Visualise</b>' here.", 
                                   dialog_txt_status_change2, 
                                   " and their children are <b><span background='", 
-                                  (dialog_type == ORPHANED_MENUS) ? "#364074" : "#656772", 
+                                  (dialog_type == LM_ORPHANED_MENUS) ? "#364074" : "#656772", 
                                   "' foreground='white'>highlighted in ", 
                                   "</span></b>");
 
     gtk_container_add (GTK_CONTAINER (content_area), new_label_with_formattings (dialog_txt, TRUE));
 
     // Cleanup
-    for (lists_cnt = 0; lists_cnt < NUMBER_OF_INVISIBLE_ELEMENTS_LISTS; lists_cnt++) {
+    for (lists_cnt = 0; lists_cnt < LM_NUMBER_OF_INVISIBLE_ELEMENTS_LISTS; lists_cnt++) {
         g_slist_free_full (invisible_elements_lists[lists_cnt], (GDestroyNotify) g_free);
         invisible_elements_lists[lists_cnt] = NULL;
     }
@@ -989,28 +988,28 @@ static void create_dialogs_for_invisible_menus_and_items (guint8             dia
 
     switch (result) {
         case VISUALISE:
-            selected_rows = gtk_tree_selection_get_selected_rows (selection, &model);
+            selected_rows = gtk_tree_selection_get_selected_rows (selection, &ks.model);
 
             for (selected_rows_loop = selected_rows; selected_rows_loop; selected_rows_loop = selected_rows_loop->next) {
-                gtk_tree_model_get_iter (model, &iter_loop, selected_rows_loop->data);
+                gtk_tree_model_get_iter (ks.model, &iter_loop, selected_rows_loop->data);
 
-                if (dialog_type == ORPHANED_MENUS) {
-                    gtk_tree_model_get (model, &iter_loop, TS_MENU_ELEMENT, &menu_element_txt_loop, -1);
+                if (dialog_type == LM_ORPHANED_MENUS) {
+                    gtk_tree_model_get (ks.model, &iter_loop, TS_MENU_ELEMENT, &menu_element_txt_loop, -1);
 
                     // The visibility of subrows is set after the function has been left.
-                    gtk_tree_store_set (treestore, &iter_loop, TS_ELEMENT_VISIBILITY, 
+                    gtk_tree_store_set (ks.treestore, &iter_loop, TS_ELEMENT_VISIBILITY, 
                                         (menu_element_txt_loop) ? "visible" : "invisible menu", 
                                         -1);
 
                     // Cleanup
                     g_free (menu_element_txt_loop);
                 }
-                else { // dialog_type == MISSING_LABELS
-                    gtk_tree_store_set (treestore, &iter_loop, TS_MENU_ELEMENT, "= Newly created label =", -1);
-                    gtk_tree_model_get (model, &iter_loop, TS_ELEMENT_VISIBILITY, &element_visibility_txt_loop, -1);
+                else { // dialog_type == LM_MISSING_LABELS
+                    gtk_tree_store_set (ks.treestore, &iter_loop, TS_MENU_ELEMENT, "= Newly created label =", -1);
+                    gtk_tree_model_get (ks.model, &iter_loop, TS_ELEMENT_VISIBILITY, &element_visibility_txt_loop, -1);
                     // The visibility of subrows is set after the function has been left.
                     if (!g_str_has_suffix (element_visibility_txt_loop, "invisible orphaned menu")) {
-                        gtk_tree_store_set (treestore, &iter_loop, TS_ELEMENT_VISIBILITY, "visible", -1);
+                        gtk_tree_store_set (ks.treestore, &iter_loop, TS_ELEMENT_VISIBILITY, "visible", -1);
                     }
 
                     // Cleanup
@@ -1018,7 +1017,7 @@ static void create_dialogs_for_invisible_menus_and_items (guint8             dia
                 }
             }
 
-            change_done = TRUE;
+            ks.change_done = TRUE;
 
             // Cleanup
             g_list_free_full (selected_rows, (GDestroyNotify) gtk_tree_path_free);
@@ -1027,7 +1026,7 @@ static void create_dialogs_for_invisible_menus_and_items (guint8             dia
             break;
         case DELETE:
             remove_rows ("load menu");
-            change_done = TRUE;
+            ks.change_done = TRUE;
     }
 
     gtk_tree_selection_unselect_all (selection);
@@ -1068,7 +1067,7 @@ void get_menu_elements_from_file (gchar *new_filename)
         .open_option_element =      FALSE, 
         .previous_type =            NULL, 
         .deprecated_exe_cmds_cvtd = FALSE, 
-        .loading_stage =            MENUS, 
+        .loading_stage =            LM_MENUS, 
         .change_done_loading_proc = FALSE, 
         .root_menu_finished =       FALSE
     };
@@ -1147,21 +1146,21 @@ void get_menu_elements_from_file (gchar *new_filename)
 
 
     clear_global_data ();
-    change_done = menu_building.change_done_loading_proc;
-    menu_ids = menu_building.menu_ids;
+    ks.change_done = menu_building.change_done_loading_proc;
+    ks.menu_ids = menu_building.menu_ids;
     set_filename_and_window_title (new_filename);
 
 
     // --- Fill treestore. ---
 
 
-    GtkTreeSelection *selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (treeview));
+    GtkTreeSelection *selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (ks.treeview));
 
     guint allocated_size = sizeof (GtkTreeIter) * menu_building.max_path_depth;
     GtkTreeIter *levels = g_slice_alloc (allocated_size);
 
     GSList *menus_and_items_with_inaccessible_icon_image = NULL;
-    GSList *invisible_elements_lists[NUMBER_OF_INVISIBLE_ELEMENTS_LISTS] = { NULL };
+    GSList *invisible_elements_lists[LM_NUMBER_OF_INVISIBLE_ELEMENTS_LISTS] = { NULL };
 
     guint number_of_toplevel_menu_ids = 0;
     guint number_of_used_toplevel_root_menus = 0;
@@ -1187,11 +1186,11 @@ void get_menu_elements_from_file (gchar *new_filename)
 
     for (tree_build_loop = menu_building.tree_build; tree_build_loop; tree_build_loop = tree_build_loop->next) {
         tree_data = tree_build_loop->data;
-        if (streq (tree_data[TS_BUILD_MENU_ID], "root-menu")) {
-             root_menu_stage = TRUE;
+        if (STREQ (tree_data[LM_TS_BUILD_MENU_ID], "root-menu")) {
+            root_menu_stage = TRUE;
  
             // Parentheses avoid gcc warning.
-            if ((number_of_toplevel_menu_ids = gtk_tree_model_iter_n_children (model, NULL))) {
+            if ((number_of_toplevel_menu_ids = gtk_tree_model_iter_n_children (ks.model, NULL))) {
                 GSList *menu_ids_of_root_menus_defined_outside_root_first = NULL;
 
                 guint invisible_menu_outside_root_index;
@@ -1210,15 +1209,15 @@ void get_menu_elements_from_file (gchar *new_filename)
 
                     Generate a list that contains all toplevel menus defined first outside the root menu that are visible.
 
-                    menu_building.toplevel_menu_ids[ROOT_MENU] is in reverse order, 
+                    menu_building.toplevel_menu_ids[LM_ROOT_MENU] is in reverse order, 
                     so looping through it and prepending all matches with the treeview to the new list 
                     menu_ids_of_root_menus_defined_outside_root_first results in a correct order for the latter.
 
-                    menu_ids_of_root_menus_defined_outside_root_first is a subset of menu_building.toplevel_menu_ids[ROOT_MENU], 
+                    menu_ids_of_root_menus_defined_outside_root_first is a subset of menu_building.toplevel_menu_ids[LM_ROOT_MENU], 
                     if the number of root menus defined outside root first is smaller than the number of root menus, 
                     or it is identical, if both numbers are equal.
 
-                    The outer loop has to iterate through menu_building.toplevel_menu_ids[ROOT_MENU] whilst the inner one 
+                    The outer loop has to iterate through menu_building.toplevel_menu_ids[LM_ROOT_MENU] whilst the inner one 
                     has to iterate through the treeview, because if it would be done vice versa the order of 
                     menu_ids_of_root_menus_defined_outside_root_first would be according to the treeview, 
                     but it has to be according to the order of the root menu inside the menu file. 
@@ -1240,7 +1239,7 @@ void get_menu_elements_from_file (gchar *new_filename)
                     // This is the current position inside the menu file up to which its elements have been added to 
                     // the treeview yet, elements inside the root menu that have not been defined before haven't been 
                     // added yet; regarding this example these are the separator, item and menu4.
-                    // The menus 1-4 are part of the menu_building.toplevel_menu_ids[ROOT_MENU] list.
+                    // The menus 1-4 are part of the menu_building.toplevel_menu_ids[LM_ROOT_MENU] list.
 
                     <menu id="menu1" />
                     <separator />
@@ -1252,7 +1251,7 @@ void get_menu_elements_from_file (gchar *new_filename)
 
                     </openbox_menu>
 
-                    menu_building.toplevel_menu_ids[ROOT_MENU] contains:
+                    menu_building.toplevel_menu_ids[LM_ROOT_MENU] contains:
 
                     menu4
                     menu3
@@ -1270,15 +1269,15 @@ void get_menu_elements_from_file (gchar *new_filename)
                     menu4 has not been defined outside first -> no part of menu_ids_of_root_menus_defined_outside_root_first.
                 */
 
-                for (toplevel_menu_ids_root_menu_loop = menu_building.toplevel_menu_ids[ROOT_MENU]; 
+                for (toplevel_menu_ids_root_menu_loop = menu_building.toplevel_menu_ids[LM_ROOT_MENU]; 
                      toplevel_menu_ids_root_menu_loop; 
                      toplevel_menu_ids_root_menu_loop = toplevel_menu_ids_root_menu_loop->next) {
-                    valid = gtk_tree_model_get_iter_first (model, &iter_loop);
+                    valid = gtk_tree_model_get_iter_first (ks.model, &iter_loop);
                     while (valid) {
-                        gtk_tree_model_get (model, &iter_loop, TS_MENU_ID, &menu_id_txt_loop, -1);
-                        if (streq (toplevel_menu_ids_root_menu_loop->data, menu_id_txt_loop)) {
-                            gtk_tree_model_get (model, &iter_loop, TS_MENU_ELEMENT, &menu_element_txt_loop, -1);
-                            gtk_tree_store_set (treestore, &iter_loop, TS_ELEMENT_VISIBILITY, 
+                        gtk_tree_model_get (ks.model, &iter_loop, TS_MENU_ID, &menu_id_txt_loop, -1);
+                        if (STREQ (toplevel_menu_ids_root_menu_loop->data, menu_id_txt_loop)) {
+                            gtk_tree_model_get (ks.model, &iter_loop, TS_MENU_ELEMENT, &menu_element_txt_loop, -1);
+                            gtk_tree_store_set (ks.treestore, &iter_loop, TS_ELEMENT_VISIBILITY, 
                                                 (G_LIKELY (menu_element_txt_loop)) ? "visible" : "invisible menu", 
                                                 -1);
                             menu_ids_of_root_menus_defined_outside_root_first = 
@@ -1289,7 +1288,7 @@ void get_menu_elements_from_file (gchar *new_filename)
 
                             break;
                         }
-                        valid = gtk_tree_model_iter_next (model, &iter_loop);
+                        valid = gtk_tree_model_iter_next (ks.model, &iter_loop);
 
                         // Cleanup
                         g_free (menu_id_txt_loop);
@@ -1346,16 +1345,16 @@ void get_menu_elements_from_file (gchar *new_filename)
                 */
 
                 invisible_menu_outside_root_index = number_of_toplevel_menu_ids - 1;
-                valid = gtk_tree_model_iter_nth_child (model, &iter_loop, NULL, invisible_menu_outside_root_index);
+                valid = gtk_tree_model_iter_nth_child (ks.model, &iter_loop, NULL, invisible_menu_outside_root_index);
                 while (valid) {
-                    gtk_tree_model_get (model, &iter_loop, TS_ELEMENT_VISIBILITY, &element_visibility_txt_loop, -1);
+                    gtk_tree_model_get (ks.model, &iter_loop, TS_ELEMENT_VISIBILITY, &element_visibility_txt_loop, -1);
                     if (G_UNLIKELY (!element_visibility_txt_loop)) {
-                        gtk_tree_store_set (treestore, &iter_loop, TS_ELEMENT_VISIBILITY, "invisible orphaned menu", -1);
-                        gtk_tree_model_iter_nth_child (model, &iter_swap, NULL, invisible_menu_outside_root_index--);
-                        gtk_tree_store_swap (treestore, &iter_loop, &iter_swap);
+                        gtk_tree_store_set (ks.treestore, &iter_loop, TS_ELEMENT_VISIBILITY, "invisible orphaned menu", -1);
+                        gtk_tree_model_iter_nth_child (ks.model, &iter_swap, NULL, invisible_menu_outside_root_index--);
+                        gtk_tree_store_swap (ks.treestore, &iter_loop, &iter_swap);
                         iter_loop = iter_swap;
                     }
-                    valid = gtk_tree_model_iter_previous (model, &iter_loop);
+                    valid = gtk_tree_model_iter_previous (ks.model, &iter_loop);
 
                     // Cleanup
                     g_free (element_visibility_txt_loop);
@@ -1419,21 +1418,21 @@ void get_menu_elements_from_file (gchar *new_filename)
                     Invisible orphaned menus are unaffected by the sorting.
                 */
 
-                gtk_tree_model_get_iter_first (model, &iter_loop);
+                gtk_tree_model_get_iter_first (ks.model, &iter_loop);
                 for (menu_ids_of_root_menus_defined_outside_root_first_loop = menu_ids_of_root_menus_defined_outside_root_first; 
                      menu_ids_of_root_menus_defined_outside_root_first_loop; 
                      menu_ids_of_root_menus_defined_outside_root_first_loop = 
-                       menu_ids_of_root_menus_defined_outside_root_first_loop->next) {
-                    gtk_tree_model_get (model, &iter_loop, TS_MENU_ID, &menu_id_txt_loop, -1);
+                         menu_ids_of_root_menus_defined_outside_root_first_loop->next) {
+                    gtk_tree_model_get (ks.model, &iter_loop, TS_MENU_ID, &menu_id_txt_loop, -1);
                     menu_id_of_root_menu_defined_outside_root_first_loop = 
                     menu_ids_of_root_menus_defined_outside_root_first_loop->data;
-                    if (!streq (menu_id_of_root_menu_defined_outside_root_first_loop, menu_id_txt_loop)) {
+                    if (!STREQ (menu_id_of_root_menu_defined_outside_root_first_loop, menu_id_txt_loop)) {
                         for (root_menus_cnt = number_of_used_toplevel_root_menus + 1; // = 1 at first time.
                             root_menus_cnt <= invisible_menu_outside_root_index; 
                             root_menus_cnt++) {
-                            gtk_tree_model_iter_nth_child (model, &iter_swap, NULL, root_menus_cnt);
-                            gtk_tree_model_get (model, &iter_swap, TS_MENU_ID, &menu_id_txt_subloop, -1);
-                            if (streq (menu_id_of_root_menu_defined_outside_root_first_loop, menu_id_txt_subloop)) {
+                            gtk_tree_model_iter_nth_child (ks.model, &iter_swap, NULL, root_menus_cnt);
+                            gtk_tree_model_get (ks.model, &iter_swap, TS_MENU_ID, &menu_id_txt_subloop, -1);
+                            if (STREQ (menu_id_of_root_menu_defined_outside_root_first_loop, menu_id_txt_subloop)) {
                             // Cleanup
                                 g_free (menu_id_txt_subloop);
                                 break;
@@ -1441,10 +1440,10 @@ void get_menu_elements_from_file (gchar *new_filename)
                             // Cleanup
                             g_free (menu_id_txt_subloop);
                         }
-                        gtk_tree_store_swap (treestore, &iter_loop, &iter_swap);
+                        gtk_tree_store_swap (ks.treestore, &iter_loop, &iter_swap);
                     }
 
-                    gtk_tree_model_iter_nth_child (model, &iter_loop, NULL, ++number_of_used_toplevel_root_menus);
+                    gtk_tree_model_iter_nth_child (ks.model, &iter_loop, NULL, ++number_of_used_toplevel_root_menus);
 
                     // Cleanup
                     g_free (menu_id_txt_loop);
@@ -1459,9 +1458,9 @@ void get_menu_elements_from_file (gchar *new_filename)
 
         menu_or_item_or_separator_at_root_toplevel = FALSE; // Default
 
-        type_txt_loop = tree_data[TS_BUILD_TYPE];
+        type_txt_loop = tree_data[LM_TS_BUILD_TYPE];
 
-        current_level = GPOINTER_TO_UINT (tree_data[TS_BUILD_PATH_DEPTH]) - 1;
+        current_level = GPOINTER_TO_UINT (tree_data[LM_TS_BUILD_PATH_DEPTH]) - 1;
 
         if (root_menu_stage) {
             current_level--;
@@ -1473,19 +1472,19 @@ void get_menu_elements_from_file (gchar *new_filename)
                     a default setting is only done here and not for every menu element.
                 */
                 add_row = TRUE; // Default
-                if (streq (type_txt_loop, "menu")) {
+                if (STREQ (type_txt_loop, "menu")) {
                     /*
                         If the current row inside menu_building.tree_build is a menu with an icon, look for a corresponding 
                         toplevel menu inside the treeview (it will exist if it has already been defined outside the root menu),
                         and if one exists, add the icon data to this toplevel menu.
                     */
-                    if (tree_data[TS_BUILD_ICON_IMG]) {
-                        valid = gtk_tree_model_get_iter_first (model, &iter_loop);
+                    if (tree_data[LM_TS_BUILD_ICON_IMG]) {
+                        valid = gtk_tree_model_get_iter_first (ks.model, &iter_loop);
                         while (valid) {
-                            gtk_tree_model_get (model, &iter_loop, TS_MENU_ID, &menu_id_txt_loop, -1);
-                            if (streq (tree_data[TS_BUILD_MENU_ID], menu_id_txt_loop)) {
-                                for (ts_build_cnt = 0; ts_build_cnt <= TS_BUILD_ICON_PATH; ts_build_cnt++) {
-                                    gtk_tree_store_set (treestore, &iter_loop, ts_build_cnt, tree_data[ts_build_cnt], -1);
+                            gtk_tree_model_get (ks.model, &iter_loop, TS_MENU_ID, &menu_id_txt_loop, -1);
+                            if (STREQ (tree_data[LM_TS_BUILD_MENU_ID], menu_id_txt_loop)) {
+                                for (ts_build_cnt = 0; ts_build_cnt <= LM_TS_BUILD_ICON_PATH; ts_build_cnt++) {
+                                    gtk_tree_store_set (ks.treestore, &iter_loop, ts_build_cnt, tree_data[ts_build_cnt], -1);
                                 }
 
                                 // Cleanup
@@ -1495,13 +1494,13 @@ void get_menu_elements_from_file (gchar *new_filename)
                             // Cleanup
                             g_free (menu_id_txt_loop);
           
-                            valid = gtk_tree_model_iter_next (model, &iter_loop);
+                            valid = gtk_tree_model_iter_next (ks.model, &iter_loop);
                         }
                     }
 
-                    if (!tree_data[TS_BUILD_MENU_ELEMENT] && 
-                        g_slist_find_custom (menu_building.toplevel_menu_ids[MENUS], 
-                                             tree_data[TS_BUILD_MENU_ID], (GCompareFunc) strcmp)) {
+                    if (!tree_data[LM_TS_BUILD_MENU_ELEMENT] && 
+                        g_slist_find_custom (menu_building.toplevel_menu_ids[LM_MENUS], 
+                                             tree_data[LM_TS_BUILD_MENU_ID], (GCompareFunc) strcmp)) {
                         add_row = FALSE; // Is a menu defined outside root that is already inside the treestore.
                     }
                 }
@@ -1511,15 +1510,15 @@ void get_menu_elements_from_file (gchar *new_filename)
         if (add_row) {
             GtkTreePath *path;
 
-            gtk_tree_store_insert (treestore, &levels[current_level], 
+            gtk_tree_store_insert (ks.treestore, &levels[current_level], 
                                    (current_level == 0) ? NULL : &levels[current_level - 1], 
                                    (menu_or_item_or_separator_at_root_toplevel) ? row_number : -1);
 
-            iter = levels[current_level];
-            path = gtk_tree_model_get_path (model, &iter);
+            ks.iter = levels[current_level];
+            path = gtk_tree_model_get_path (ks.model, &ks.iter);
 
-            for (ts_build_cnt = 0; ts_build_cnt < TS_BUILD_PATH_DEPTH; ts_build_cnt++) {
-                gtk_tree_store_set (treestore, &iter, ts_build_cnt, tree_data[ts_build_cnt], -1);
+            for (ts_build_cnt = 0; ts_build_cnt < LM_TS_BUILD_PATH_DEPTH; ts_build_cnt++) {
+                gtk_tree_store_set (ks.treestore, &ks.iter, ts_build_cnt, tree_data[ts_build_cnt], -1);
             }
 
             if (GPOINTER_TO_UINT (tree_data[TS_ICON_IMG_STATUS]) && gtk_tree_path_get_depth (path) > 1) {
@@ -1528,7 +1527,7 @@ void get_menu_elements_from_file (gchar *new_filename)
                     a path that points to a file that contains no valid image data.
                 */
                 menus_and_items_with_inaccessible_icon_image = g_slist_prepend (menus_and_items_with_inaccessible_icon_image, 
-                                                                                gtk_tree_row_reference_new (model, path));
+                                                                                gtk_tree_row_reference_new (ks.model, path));
             }
 
             // Cleanup
@@ -1540,11 +1539,11 @@ void get_menu_elements_from_file (gchar *new_filename)
         }
     }
 
-    g_signal_handler_block (selection, handler_id_row_selected);
+    g_signal_handler_block (selection, ks.handler_id_row_selected);
 
     // Show a message if there are invisible menus outside root.
     if (G_UNLIKELY (number_of_used_toplevel_root_menus < number_of_toplevel_menu_ids)) {
-        create_dialogs_for_invisible_menus_and_items (ORPHANED_MENUS, selection, invisible_elements_lists);
+        create_dialogs_for_invisible_menus_and_items (LM_ORPHANED_MENUS, selection, invisible_elements_lists);
     }
 
     /*
@@ -1552,29 +1551,29 @@ void get_menu_elements_from_file (gchar *new_filename)
         If invisible orphaned menus have been visualised and they had descendant (pipe) menus, items or separators, 
         readjust the visibility status of the latter.
     */
-    gtk_tree_model_foreach (model, (GtkTreeModelForeachFunc) elements_visibility, invisible_elements_lists);
+    gtk_tree_model_foreach (ks.model, (GtkTreeModelForeachFunc) elements_visibility, invisible_elements_lists);
 
     // Show a message if there are menus and items without a label (=invisible).
-    if (G_UNLIKELY (invisible_elements_lists[MENUS_LIST] || invisible_elements_lists[ITEMS_LIST])) {
-        create_dialogs_for_invisible_menus_and_items (MISSING_LABELS, selection, invisible_elements_lists);
+    if (G_UNLIKELY (invisible_elements_lists[LM_MENUS_LIST] || invisible_elements_lists[LM_ITEMS_LIST])) {
+        create_dialogs_for_invisible_menus_and_items (LM_MISSING_LABELS, selection, invisible_elements_lists);
         /*
             If (pipe) menus and/or items without label have received a label now and they had descendant 
             (pipe) menus, items or separators, readjust the visibility status of the latter.
         */
-        gtk_tree_model_foreach (model, (GtkTreeModelForeachFunc) elements_visibility, NULL);
+        gtk_tree_model_foreach (ks.model, (GtkTreeModelForeachFunc) elements_visibility, NULL);
     }
 
-    g_signal_handler_unblock (selection, handler_id_row_selected);
+    g_signal_handler_unblock (selection, ks.handler_id_row_selected);
 
-    gtk_tree_view_collapse_all (GTK_TREE_VIEW (treeview));
+    gtk_tree_view_collapse_all (GTK_TREE_VIEW (ks.treeview));
 
 
     // --- Finalisation ---
 
 
     // Pre-sort options of Execute action and startupnotify, if autosorting is activated.
-    if (autosort_options) {
-        gtk_tree_model_foreach (model, (GtkTreeModelForeachFunc) sort_loop_after_sorting_activation, NULL);
+    if (ks.autosort_options) {
+        gtk_tree_model_foreach (ks.model, (GtkTreeModelForeachFunc) sort_loop_after_sorting_activation, NULL);
     }
 
     // Expand nodes that contain a broken icon.
@@ -1583,8 +1582,8 @@ void get_menu_elements_from_file (gchar *new_filename)
              menus_and_items_with_inaccessible_icon_image_loop; 
              menus_and_items_with_inaccessible_icon_image_loop = menus_and_items_with_inaccessible_icon_image_loop->next) {
             path_loop = gtk_tree_row_reference_get_path (menus_and_items_with_inaccessible_icon_image_loop->data);
-            gtk_tree_view_expand_to_path (GTK_TREE_VIEW (treeview), path_loop);
-            gtk_tree_view_collapse_row (GTK_TREE_VIEW (treeview), path_loop);
+            gtk_tree_view_expand_to_path (GTK_TREE_VIEW (ks.treeview), path_loop);
+            gtk_tree_view_collapse_row (GTK_TREE_VIEW (ks.treeview), path_loop);
 
             // Cleanup
             gtk_tree_path_free (path_loop);
@@ -1597,18 +1596,19 @@ void get_menu_elements_from_file (gchar *new_filename)
     // Notify about a conversion of deprecated execute to command options.
     if (G_UNLIKELY (menu_building.deprecated_exe_cmds_cvtd && 
                     gtk_check_menu_item_get_active (GTK_CHECK_MENU_ITEM 
-                                        (mb_view_and_options[NOTIFY_ABOUT_EXECUTE_OPT_CONVERSIONS])))) {
+                                        (ks.mb_view_and_options[NOTIFY_ABOUT_EXECUTE_OPT_CONVERSIONS])))) {
         GtkWidget *dialog, *content_area;
         GtkWidget *chkbt_exe_opt_conversion_notification = gtk_check_button_new_with_label 
-            (gtk_menu_item_get_label ((GTK_MENU_ITEM (mb_view_and_options[NOTIFY_ABOUT_EXECUTE_OPT_CONVERSIONS]))));
+            (gtk_menu_item_get_label ((GTK_MENU_ITEM (ks.mb_view_and_options[NOTIFY_ABOUT_EXECUTE_OPT_CONVERSIONS]))));
 
-        content_area = create_dialog (&dialog, "Conversion of deprecated execute option", 
-                                               "dialog-information", 
-                                               "This menu contains deprecated 'execute' options; "
-                                               "they have been converted to 'command' options. "
-                                               "These conversions have not been written back to the menu file yet; "
-                                               "to do so, simply save the menu from inside the program.", 
-                                               "_OK", NULL, NULL, FALSE);
+        content_area = create_dialog (&dialog,
+                                      "Conversion of deprecated execute option", 
+                                      "dialog-information", 
+                                      "This menu contains deprecated 'execute' options; "
+                                      "they have been converted to 'command' options. "
+                                      "These conversions have not been written back to the menu file yet; "
+                                      "to do so, simply save the menu from inside the program.", 
+                                      "_OK", NULL, NULL, FALSE);
 
         gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (chkbt_exe_opt_conversion_notification), TRUE);
 
@@ -1617,15 +1617,15 @@ void get_menu_elements_from_file (gchar *new_filename)
         gtk_widget_show_all (dialog);
 
         gtk_dialog_run (GTK_DIALOG (dialog));
-        gtk_check_menu_item_set_active (GTK_CHECK_MENU_ITEM (mb_view_and_options[NOTIFY_ABOUT_EXECUTE_OPT_CONVERSIONS]),
+        gtk_check_menu_item_set_active (GTK_CHECK_MENU_ITEM (ks.mb_view_and_options[NOTIFY_ABOUT_EXECUTE_OPT_CONVERSIONS]),
                                         gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON
                                         (chkbt_exe_opt_conversion_notification)));
         gtk_widget_destroy (dialog);
 
-        change_done = TRUE;
+        ks.change_done = TRUE;
     }
 
-    gtk_tree_view_columns_autosize (GTK_TREE_VIEW (treeview));
+    gtk_tree_view_columns_autosize (GTK_TREE_VIEW (ks.treeview));
 
     create_list_of_icon_occurrences ();
 
@@ -1643,13 +1643,13 @@ void get_menu_elements_from_file (gchar *new_filename)
 
     for (tree_build_loop = menu_building.tree_build; tree_build_loop; tree_build_loop = tree_build_loop->next) {
         tree_data = tree_build_loop->data;
-        if (tree_data[TS_BUILD_ICON_IMG]) {
-            g_object_unref (tree_data[TS_BUILD_ICON_IMG]);
+        if (tree_data[LM_TS_BUILD_ICON_IMG]) {
+            g_object_unref (tree_data[LM_TS_BUILD_ICON_IMG]);
         }
-        for (ts_build_cnt = TS_BUILD_ICON_MODIFICATION_TIME; ts_build_cnt <= TS_BUILD_ELEMENT_VISIBILITY; ts_build_cnt++) {
+        for (ts_build_cnt = LM_TS_BUILD_ICON_MODIFICATION_TIME; ts_build_cnt <= LM_TS_BUILD_ELEMENT_VISIBILITY; ts_build_cnt++) {
             g_free (tree_data[ts_build_cnt]);
         }
-        g_slice_free1 (sizeof (gpointer) * NUMBER_OF_TS_BUILD_FIELDS, tree_data);
+        g_slice_free1 (sizeof (gpointer) * LM_NUMBER_OF_TS_BUILD_FIELDS, tree_data);
     }
     g_slist_free (menu_building.tree_build);
 
@@ -1657,11 +1657,11 @@ void get_menu_elements_from_file (gchar *new_filename)
 
     g_free (menu_building.line);
 
-    g_slist_free_full (menu_building.toplevel_menu_ids[MENUS], (GDestroyNotify) g_free);
-    g_slist_free_full (menu_building.toplevel_menu_ids[ROOT_MENU], (GDestroyNotify) g_free);
+    g_slist_free_full (menu_building.toplevel_menu_ids[LM_MENUS], (GDestroyNotify) g_free);
+    g_slist_free_full (menu_building.toplevel_menu_ids[LM_ROOT_MENU], (GDestroyNotify) g_free);
 
-    g_free (menu_building.current_elements[ITEM]);
-    g_free (menu_building.current_elements[ACTION]);
+    g_free (menu_building.current_elements[LM_ITEM]);
+    g_free (menu_building.current_elements[LM_ACTION]);
     g_free (menu_building.previous_type);
 }
 
@@ -1673,7 +1673,7 @@ void get_menu_elements_from_file (gchar *new_filename)
 
 void open_menu (void)
 {
-    if (change_done && !continue_despite_unsaved_changes ()) {
+    if (ks.change_done && !continue_despite_unsaved_changes ()) {
         return;
     }
 

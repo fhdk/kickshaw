@@ -1,7 +1,7 @@
 /*
    Kickshaw - A Menu Editor for Openbox
 
-   Copyright (c) 2010-2017        Marcus Schaetzle
+   Copyright (c) 2010-2018        Marcus Schaetzle
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -20,10 +20,7 @@
 #include <gtk/gtk.h>
 #include <stdlib.h>
 
-#include "general_header_files/enum__ancestor_visibility.h"
-#include "general_header_files/enum__expansion_statuses.h"
-#include "general_header_files/enum__invalid_icon_imgs.h"
-#include "general_header_files/enum__ts_elements.h"
+#include "definitions_and_enumerations.h"
 #include "auxiliary.h"
 
 void expand_row_from_iter (GtkTreeIter *local_iter);
@@ -75,9 +72,9 @@ void wrong_or_missing (GtkWidget *widget, GtkCssProvider *css_provider);
 
 void expand_row_from_iter (GtkTreeIter *local_iter)
 {
-    GtkTreePath *path = gtk_tree_model_get_path (model, local_iter);
+    GtkTreePath *path = gtk_tree_model_get_path (ks.model, local_iter);
 
-    gtk_tree_view_expand_row (GTK_TREE_VIEW (treeview), path, FALSE); // FALSE == just expand immediate children.
+    gtk_tree_view_expand_row (GTK_TREE_VIEW (ks.treeview), path, FALSE); // FALSE == just expand immediate children.
 
     // Cleanup
     gtk_tree_path_free (path);
@@ -184,7 +181,7 @@ void get_toplevel_iter_from_path (GtkTreeIter *local_iter, GtkTreePath *local_pa
 {
     gchar *toplevel_str = g_strdup_printf ("%i", gtk_tree_path_get_indices (local_path)[0]);
 
-    gtk_tree_model_get_iter_from_string (model, local_iter, toplevel_str);
+    gtk_tree_model_get_iter_from_string (ks.model, local_iter, toplevel_str);
 
     // Cleanup
     g_free (toplevel_str);
@@ -229,7 +226,7 @@ gboolean streq_any (const gchar *string, ...)
 
     va_start (arguments, string);
     while ((check = va_arg (arguments, gchar *))) { // Parentheses avoid gcc warning.
-        if (streq (string, check)) {
+        if (STREQ (string, check)) {
             va_end (arguments); // Mandatory for safety and implementation/platform neutrality.
             return TRUE;
         }
@@ -283,7 +280,7 @@ GtkWidget *create_dialog (GtkWidget **dialog,
     GtkWidget *content_area, *label;
     gchar *label_txt_with_addl_border = g_strdup_printf ("\n%s\n", label_txt);
 
-    *dialog = gtk_dialog_new_with_buttons (dialog_title, GTK_WINDOW (window), GTK_DIALOG_MODAL, 
+    *dialog = gtk_dialog_new_with_buttons (dialog_title, GTK_WINDOW (ks.window), GTK_DIALOG_MODAL, 
                                            button_txt_1, 1, button_txt_2, 2, button_txt_3, 3,
                                            NULL);
 
@@ -315,7 +312,7 @@ void create_file_dialog (GtkWidget **dialog, gboolean open)
     GtkFileFilter *file_filter;
 
     *dialog = gtk_file_chooser_dialog_new ((open) ? "Open Openbox Menu File" : "Save Openbox Menu File As ...", 
-                                           GTK_WINDOW (window),
+                                           GTK_WINDOW (ks.window),
                                            (open) ? GTK_FILE_CHOOSER_ACTION_OPEN : GTK_FILE_CHOOSER_ACTION_SAVE, 
                                            "_Cancel", GTK_RESPONSE_CANCEL,
                                            (open) ? "_Open" : "_Save", GTK_RESPONSE_ACCEPT,
@@ -348,16 +345,16 @@ void create_invalid_icon_imgs (void)
 
     for (guint8 invalid_icon_img_cnt = 0; invalid_icon_img_cnt < NUMBER_OF_INVALID_ICON_IMGS; invalid_icon_img_cnt++) {
         // This becomes only true if the font size or icon theme have been changed before during the runtime of this program.
-        if (G_UNLIKELY (invalid_icon_imgs[invalid_icon_img_cnt])) {
-            g_object_unref (invalid_icon_imgs[invalid_icon_img_cnt]);
+        if (G_UNLIKELY (ks.invalid_icon_imgs[invalid_icon_img_cnt])) {
+            g_object_unref (ks.invalid_icon_imgs[invalid_icon_img_cnt]);
         }
 
         icon_name = (invalid_icon_img_cnt == INVALID_PATH_ICON) ? "dialog-question" : "image-missing";
         invalid_icon_img_pixbuf_dialog_size = gtk_icon_theme_load_icon (gtk_icon_theme_get_default (), icon_name, 
                                                                         48, GTK_ICON_LOOKUP_FORCE_SIZE, NULL);
-        invalid_icon_imgs[invalid_icon_img_cnt] = gdk_pixbuf_scale_simple (invalid_icon_img_pixbuf_dialog_size, 
-                                                                           font_size + 10, font_size + 10, 
-                                                                           GDK_INTERP_BILINEAR);
+        ks.invalid_icon_imgs[invalid_icon_img_cnt] = gdk_pixbuf_scale_simple (invalid_icon_img_pixbuf_dialog_size, 
+                                                                              ks.font_size + 10, ks.font_size + 10, 
+                                                                              GDK_INTERP_BILINEAR);
 
         // Cleanup
         g_object_unref (invalid_icon_img_pixbuf_dialog_size);
@@ -397,13 +394,13 @@ gboolean check_expansion_statuses_of_nodes (GtkTreeModel *foreach_or_filter_mode
     GtkTreePath *model_path = NULL; // Default
 
     if (gtk_tree_model_iter_has_child (foreach_or_filter_model, foreach_or_filter_iter)) {
-        if (model != foreach_or_filter_model) { // = filter, called from create_context_menu ()
+        if (ks.model != foreach_or_filter_model) { // = filter, called from create_context_menu ()
             // The path of the model, not filter model, is needed to check whether the row is expanded.
             model_path = gtk_tree_model_filter_convert_path_to_child_path ((GtkTreeModelFilter *) foreach_or_filter_model, 
                                                                            foreach_or_filter_path);
         }
 
-        if (gtk_tree_view_row_expanded (GTK_TREE_VIEW (treeview), (model_path) ? model_path : foreach_or_filter_path)) {
+        if (gtk_tree_view_row_expanded (GTK_TREE_VIEW (ks.treeview), (model_path) ? model_path : foreach_or_filter_path)) {
             if (!model_path) { // = called from row_selected ()
                 expansion_statuses_of_nodes[AT_LEAST_ONE_IS_EXPANDED] = TRUE;
             }
@@ -444,11 +441,11 @@ void check_for_existing_options (GtkTreeIter  *parent,
 
     gchar *menu_element_txt_loop;
 
-    for (ch_cnt = 0; ch_cnt < gtk_tree_model_iter_n_children (model, parent); ch_cnt++) {
-        gtk_tree_model_iter_nth_child (model, &iter_loop, parent, ch_cnt);
-        gtk_tree_model_get (model, &iter_loop, TS_MENU_ELEMENT, &menu_element_txt_loop, -1);
+    for (ch_cnt = 0; ch_cnt < gtk_tree_model_iter_n_children (ks.model, parent); ch_cnt++) {
+        gtk_tree_model_iter_nth_child (ks.model, &iter_loop, parent, ch_cnt);
+        gtk_tree_model_get (ks.model, &iter_loop, TS_MENU_ELEMENT, &menu_element_txt_loop, -1);
         for (opts_cnt = 0; opts_cnt < number_of_opts; opts_cnt++) {
-            if (streq (menu_element_txt_loop, options_array[opts_cnt])) {
+            if (STREQ (menu_element_txt_loop, options_array[opts_cnt])) {
                 opts_exist[opts_cnt] = TRUE;
             }
         }
@@ -475,7 +472,7 @@ gboolean check_if_invisible_descendant_exists (              GtkTreeModel *filte
                         TS_TYPE, &type_txt_loop, 
                         -1);
 
-    *at_least_one_descendant_is_invisible = !menu_element_txt_loop && !streq (type_txt_loop, "separator");
+    *at_least_one_descendant_is_invisible = !menu_element_txt_loop && !STREQ (type_txt_loop, "separator");
 
     // Cleanup
     g_free (menu_element_txt_loop);
@@ -543,9 +540,9 @@ static gboolean add_icon_occurrence_to_list (G_GNUC_UNUSED GtkTreeModel *foreach
 {
     GdkPixbuf *icon;
 
-    gtk_tree_model_get (model, foreach_iter, TS_ICON_IMG, &icon, -1);
+    gtk_tree_model_get (ks.model, foreach_iter, TS_ICON_IMG, &icon, -1);
     if (icon) {
-        rows_with_icons = g_slist_prepend (rows_with_icons, gtk_tree_path_copy (foreach_path));
+        ks.rows_with_icons = g_slist_prepend (ks.rows_with_icons, gtk_tree_path_copy (foreach_path));
 
         // Cleanup
         g_object_unref (icon);
@@ -562,8 +559,8 @@ static gboolean add_icon_occurrence_to_list (G_GNUC_UNUSED GtkTreeModel *foreach
 
 void create_list_of_icon_occurrences (void)
 {
-    gtk_tree_model_foreach (model, (GtkTreeModelForeachFunc) add_icon_occurrence_to_list, NULL);
-    if (rows_with_icons) {
+    gtk_tree_model_foreach (ks.model, (GtkTreeModelForeachFunc) add_icon_occurrence_to_list, NULL);
+    if (ks.rows_with_icons) {
         g_timeout_add (1000, (GSourceFunc) check_for_external_file_and_settings_changes, "timeout");
     }
 }

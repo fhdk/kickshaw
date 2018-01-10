@@ -1,7 +1,7 @@
 /*
    Kickshaw - A Menu Editor for Openbox
 
-   Copyright (c) 2010-2017        Marcus Schaetzle
+   Copyright (c) 2010-2018        Marcus Schaetzle
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -21,12 +21,7 @@
 #include <glib/gstdio.h>
 #include <stdlib.h>
 
-#include "general_header_files/enum__columns.h"
-#include "general_header_files/enum__menu_bar_items_file_and_edit.h"
-#include "general_header_files/enum__menu_bar_items_view_and_options.h"
-#include "general_header_files/enum__toolbar_buttons.h"
-#include "general_header_files/enum__ts_elements.h"
-#include "general_header_files/enum__txt_fields.h"
+#include "definitions_and_enumerations.h"
 #include "save_menu.h"
 
 typedef struct {
@@ -36,10 +31,11 @@ typedef struct {
     gint filter_path_depth_prev;
 } SaveMenuArgsData;
 
-enum { MENUS, ROOT_MENU, IND_OF_SAVING_STAGE };
-enum { TOPLEVEL, FILTER_LEVEL, IND_OF_LEVEL };
-enum { MENU_OR_PIPE_MENU, ITEM_OR_ACTION, SEPARATOR };
-enum { CURRENT, PREV, NUMBER_OF_ITER_ARRAY_ELM };
+// SM = Save Menu, indicating that the enums are only used here.
+enum { SM_MENUS, SM_ROOT_MENU, SM_IND_OF_SAVING_STAGE };
+enum { SM_TOPLEVEL, SM_FILTER_LEVEL, SM_IND_OF_LEVEL };
+enum { SM_MENU_OR_PIPE_MENU, SM_ITEM_OR_ACTION, SM_SEPARATOR };
+enum { SM_CURRENT, SM_PREV, SM_NUMBER_OF_ITER_ARRAY_ELM };
 
 static void closing_tags (gboolean filter_iteration_completed, GtkTreeModel *filter_model, SaveMenuArgsData *save_menu_args);
 static void write_tag (guint8 saving_stage, guint8 level, gchar **tag_elements, FILE *menu_file, 
@@ -93,9 +89,9 @@ static void closing_tags (gboolean          filter_iteration_completed,
                 </item>
             </menu>
     */
-    const guint8 offset = (saving_stage == MENUS); // TRUE = 1, FALSE = 0.
+    const guint8 offset = (saving_stage == SM_MENUS); // TRUE = 1, FALSE = 0.
 
-    gchar *ts_txt[NUMBER_OF_ITER_ARRAY_ELM][2]; // COL_MENU_ELEMENT & COL_TYPE for current and previous iter.
+    gchar *ts_txt[SM_NUMBER_OF_ITER_ARRAY_ELM][2]; // COL_MENU_ELEMENT & COL_TYPE for current and previous iter.
 
     /* 
         action_closing_tag_subtraction contains the number of indentations 
@@ -138,7 +134,7 @@ static void closing_tags (gboolean          filter_iteration_completed,
     gint path_depth_prev_cnt, subtr_path_depth_prev_cnt;
     gint8 array_cnt;
 
-    for (array_cnt = CURRENT; array_cnt < NUMBER_OF_ITER_ARRAY_ELM; array_cnt++) {
+    for (array_cnt = SM_CURRENT; array_cnt < SM_NUMBER_OF_ITER_ARRAY_ELM; array_cnt++) {
          gtk_tree_model_get (filter_model, &filter_iter[array_cnt], 
                             TS_MENU_ELEMENT, &ts_txt[array_cnt][COL_MENU_ELEMENT], 
                             TS_TYPE, &ts_txt[array_cnt][COL_TYPE],
@@ -146,10 +142,10 @@ static void closing_tags (gboolean          filter_iteration_completed,
     }
 
     // startupnotify
-    if ((streq (ts_txt[PREV][COL_TYPE], "option") && 
-        streq_any (ts_txt[PREV][COL_MENU_ELEMENT], "enabled", "name", "wmclass", "icon", NULL)) &&
-         (!(streq (ts_txt[CURRENT][COL_TYPE], "option") && 
-        streq_any (ts_txt[CURRENT][COL_MENU_ELEMENT], "enabled", "name", "wmclass", "icon", NULL)) || 
+    if ((STREQ (ts_txt[SM_PREV][COL_TYPE], "option") && 
+        streq_any (ts_txt[SM_PREV][COL_MENU_ELEMENT], "enabled", "name", "wmclass", "icon", NULL)) &&
+         (!(STREQ (ts_txt[SM_CURRENT][COL_TYPE], "option") && 
+        streq_any (ts_txt[SM_CURRENT][COL_MENU_ELEMENT], "enabled", "name", "wmclass", "icon", NULL)) || 
         filter_iteration_completed)) {
         for (path_depth_prev_cnt = offset; path_depth_prev_cnt < filter_path_depth_prev; path_depth_prev_cnt++) {
             fputs ("\t", menu_file);
@@ -159,9 +155,9 @@ static void closing_tags (gboolean          filter_iteration_completed,
     }
 
     // action
-    if (streq_any (ts_txt[PREV][COL_TYPE], "option", "option block", NULL) && 
-        (!streq_any (ts_txt[CURRENT][COL_TYPE], "option", "option block", NULL) || filter_iteration_completed)) {
-        action_closing_tag_subtraction = (streq_any (ts_txt[PREV][COL_MENU_ELEMENT], // 2 if startupnotify option.
+    if (streq_any (ts_txt[SM_PREV][COL_TYPE], "option", "option block", NULL) && 
+        (!streq_any (ts_txt[SM_CURRENT][COL_TYPE], "option", "option block", NULL) || filter_iteration_completed)) {
+        action_closing_tag_subtraction = (streq_any (ts_txt[SM_PREV][COL_MENU_ELEMENT], // 2 if startupnotify option.
                                           "command", "prompt", "startupnotify", NULL)) ? 1 : 2;
         for (subtr_path_depth_prev_cnt = offset;
             subtr_path_depth_prev_cnt <= filter_path_depth_prev - action_closing_tag_subtraction;
@@ -173,15 +169,15 @@ static void closing_tags (gboolean          filter_iteration_completed,
     }
 
     // action without option
-    if (streq (ts_txt[PREV][COL_TYPE], "action") && !gtk_tree_model_iter_has_child (filter_model, &filter_iter[PREV])) {
+    if (STREQ (ts_txt[SM_PREV][COL_TYPE], "action") && !gtk_tree_model_iter_has_child (filter_model, &filter_iter[SM_PREV])) {
         action_closing_tag_subtraction = 0;
     }
 
     // item
-    if (!(streq_any (ts_txt[PREV][COL_TYPE], "menu", "pipe menu", "separator", NULL) ||
-        (streq (ts_txt[PREV][COL_TYPE], "item") && 
-        !gtk_tree_model_iter_has_child (filter_model, &filter_iter[PREV]))) && 
-        (streq_any (ts_txt[CURRENT][COL_TYPE], "menu", "pipe menu", "item", "separator", NULL) || 
+    if (!(streq_any (ts_txt[SM_PREV][COL_TYPE], "menu", "pipe menu", "separator", NULL) ||
+        (STREQ (ts_txt[SM_PREV][COL_TYPE], "item") && 
+        !gtk_tree_model_iter_has_child (filter_model, &filter_iter[SM_PREV]))) && 
+        (streq_any (ts_txt[SM_CURRENT][COL_TYPE], "menu", "pipe menu", "item", "separator", NULL) || 
         filter_iteration_completed)) {
         /* 
             If an open action has been closed (or it has been a self-closing action) and no new action follows, 
@@ -212,8 +208,8 @@ static void closing_tags (gboolean          filter_iteration_completed,
     }
 
     // menu
-    if (saving_stage == MENUS) {
-        GtkTreePath *filter_path = gtk_tree_model_get_path (filter_model, &filter_iter[CURRENT]);
+    if (saving_stage == SM_MENUS) {
+        GtkTreePath *filter_path = gtk_tree_model_get_path (filter_model, &filter_iter[SM_CURRENT]);
         const gint filter_path_depth = (filter_iteration_completed) ? 1 : gtk_tree_path_get_depth (filter_path);
 
         // Cleanup
@@ -280,7 +276,7 @@ static void closing_tags (gboolean          filter_iteration_completed,
             filter_path_depth_prev - (-1) - 1 = filter_path_depth_prev
             so reductions that would be caused by additional closing tags don't come to effect.
         */
-        if ((streq_any (ts_txt[CURRENT][COL_TYPE], "menu", "pipe menu", "item", "separator", NULL) || 
+        if ((streq_any (ts_txt[SM_CURRENT][COL_TYPE], "menu", "pipe menu", "item", "separator", NULL) || 
             filter_iteration_completed) && 
             filter_path_depth < filter_path_depth_prev - action_closing_tag_subtraction - 1) {
             /* 
@@ -306,7 +302,7 @@ static void closing_tags (gboolean          filter_iteration_completed,
     }
 
     // Cleanup
-    for (array_cnt = CURRENT; array_cnt < NUMBER_OF_ITER_ARRAY_ELM; array_cnt++) {
+    for (array_cnt = SM_CURRENT; array_cnt < SM_NUMBER_OF_ITER_ARRAY_ELM; array_cnt++) {
         g_free (ts_txt[array_cnt][COL_MENU_ELEMENT]);
         g_free (ts_txt[array_cnt][COL_TYPE]);
     }
@@ -327,38 +323,38 @@ static void write_tag (guint8         saving_stage,
                        guint8         type)
 {
     /*
-        For actions and options there is no distinction made between MENUS and ROOT_MENU, 
-        the value is always IND_OF_SAVING_STAGE. 
-        If the current saving stage is ROOT_MENU and a menu or item has to be written, this function was called 
+        For actions and options there is no distinction made between SM_MENUS and SM_ROOT_MENU, 
+        the value is always SM_IND_OF_SAVING_STAGE. 
+        If the current saving stage is SM_ROOT_MENU and a menu or item has to be written, this function was called 
         directly from the save_menu and not from the treestore_save_process_iteration function.
         This means that there has no indentation been done yet (this is done inside the latter function), 
         so there's one added for the mentioned case.
     */
-    GString *file_string = g_string_new ((saving_stage == ROOT_MENU) ? "\t" : "");
+    GString *file_string = g_string_new ((saving_stage == SM_ROOT_MENU) ? "\t" : "");
 
-    if (type == MENU_OR_PIPE_MENU || type == ITEM_OR_ACTION) {
-        if (type == MENU_OR_PIPE_MENU) {
+    if (type == SM_MENU_OR_PIPE_MENU || type == SM_ITEM_OR_ACTION) {
+        if (type == SM_MENU_OR_PIPE_MENU) {
             g_string_append_printf (file_string, "<menu id=\"%s\"", tag_elements[MENU_ID_TXT]);
             if (tag_elements[MENU_ELEMENT_TXT] && 
-                !(saving_stage == ROOT_MENU && streq (tag_elements[TYPE_TXT], "menu"))) {
+                !(saving_stage == SM_ROOT_MENU && STREQ (tag_elements[TYPE_TXT], "menu"))) {
                 g_string_append_printf (file_string, " label=\"%s\"", tag_elements[MENU_ELEMENT_TXT]);
             }
-            if (streq (tag_elements[TYPE_TXT], "pipe menu")) {
+            if (STREQ (tag_elements[TYPE_TXT], "pipe menu")) {
                 g_string_append_printf (file_string, " execute=\"%s\"", 
                 (tag_elements[EXECUTE_TXT]) ? (tag_elements[EXECUTE_TXT]) : "");
             }
-            if (tag_elements[ICON_PATH_TXT] && (saving_stage == ROOT_MENU || level == FILTER_LEVEL)) { // icon="" is saved back.
+            if (tag_elements[ICON_PATH_TXT] && (saving_stage == SM_ROOT_MENU || level == SM_FILTER_LEVEL)) { // icon="" is saved back.
                 g_string_append_printf (file_string, " icon=\"%s\"", tag_elements[ICON_PATH_TXT]);
             }
         }
         else { // Item or action
-            g_string_append_printf (file_string, "<%s", (streq (tag_elements[TYPE_TXT], "item")) ? "item" : "action name");
-            if (streq (tag_elements[TYPE_TXT], "item")) {
+            g_string_append_printf (file_string, "<%s", (STREQ (tag_elements[TYPE_TXT], "item")) ? "item" : "action name");
+            if (STREQ (tag_elements[TYPE_TXT], "item")) {
                 if (tag_elements[MENU_ELEMENT_TXT]) {
                     g_string_append_printf (file_string, " label=\"%s\"", tag_elements[MENU_ELEMENT_TXT]);
                 }
                 if (tag_elements[ICON_PATH_TXT]) { // icon="" is saved back.
-                      g_string_append_printf (file_string, " icon=\"%s\"", tag_elements[ICON_PATH_TXT]);
+                    g_string_append_printf (file_string, " icon=\"%s\"", tag_elements[ICON_PATH_TXT]);
                 }
             }
             else { // Action
@@ -366,7 +362,7 @@ static void write_tag (guint8         saving_stage,
             }
         }
         g_string_append_printf (file_string, "%s>\n", 
-                                ((saving_stage == ROOT_MENU && type == MENU_OR_PIPE_MENU) || 
+                                ((saving_stage == SM_ROOT_MENU && type == SM_MENU_OR_PIPE_MENU) || 
                                  !gtk_tree_model_iter_has_child (local_model, local_iter)) ? "/" : "");
     }
     else { // Separator
@@ -422,7 +418,7 @@ static gboolean treestore_save_process_iteration (GtkTreeModel     *filter_model
 
     gint path_depth_cnt;
 
-    save_menu_args->filter_iter[CURRENT] = *filter_iter;
+    save_menu_args->filter_iter[SM_CURRENT] = *filter_iter;
 
     // Write closing tag(s).
     if (filter_path_depth < save_menu_args->filter_path_depth_prev) {
@@ -460,24 +456,24 @@ static gboolean treestore_save_process_iteration (GtkTreeModel     *filter_model
                 </item>
             </menu>
     */
-    for (path_depth_cnt = (save_menu_args->saving_stage == MENUS); // TRUE = 1, FALSE = 0.
+    for (path_depth_cnt = (save_menu_args->saving_stage == SM_MENUS); // TRUE = 1, FALSE = 0.
          path_depth_cnt <= filter_path_depth;
          path_depth_cnt++) {
         fputs ("\t", menu_file);
     }
 
     if (streq_any (save_txts_filter[TYPE_TXT], "menu", "pipe menu", NULL)) {
-        write_tag (MENUS, FILTER_LEVEL, save_txts_filter, menu_file, filter_model, filter_iter, MENU_OR_PIPE_MENU);
+        write_tag (SM_MENUS, SM_FILTER_LEVEL, save_txts_filter, menu_file, filter_model, filter_iter, SM_MENU_OR_PIPE_MENU);
     }
     else if (streq_any (save_txts_filter[TYPE_TXT], "item", "action", "separator", NULL)) {
-        write_tag (IND_OF_SAVING_STAGE, IND_OF_LEVEL, save_txts_filter, menu_file, filter_model, filter_iter, 
-                   streq (save_txts_filter[TYPE_TXT], "separator") ? SEPARATOR : ITEM_OR_ACTION);
+        write_tag (SM_IND_OF_SAVING_STAGE, SM_IND_OF_LEVEL, save_txts_filter, menu_file, filter_model, filter_iter, 
+                   STREQ (save_txts_filter[TYPE_TXT], "separator") ? SM_SEPARATOR : SM_ITEM_OR_ACTION);
     }
     else { // Options
         // Option with value or "startupnotify" option block with child(ren)
-        if (not_NULL_and_not_empty (save_txts_filter[VALUE_TXT]) || 
+        if (NOT_NULL_AND_NOT_EMPTY (save_txts_filter[VALUE_TXT]) || 
             gtk_tree_model_iter_has_child (filter_model, filter_iter)) {
-            if (streq (save_txts_filter[TYPE_TXT], "option")) {
+            if (STREQ (save_txts_filter[TYPE_TXT], "option")) {
                 fprintf (menu_file, "<%s>%s</%s>\n", save_txts_filter[MENU_ELEMENT_TXT], save_txts_filter[VALUE_TXT], 
                 save_txts_filter[MENU_ELEMENT_TXT]);
             }
@@ -495,7 +491,7 @@ static gboolean treestore_save_process_iteration (GtkTreeModel     *filter_model
     }
 
     save_menu_args->filter_path_depth_prev = filter_path_depth;
-    save_menu_args->filter_iter[PREV] = *filter_iter;
+    save_menu_args->filter_iter[SM_PREV] = *filter_iter;
 
     // Cleanup
     free_elements_of_static_string_array (save_txts_filter, NUMBER_OF_TXT_FIELDS, FALSE);
@@ -512,8 +508,8 @@ static gboolean treestore_save_process_iteration (GtkTreeModel     *filter_model
 static void process_menu_or_item (GtkTreeIter      *process_iter, 
                                   SaveMenuArgsData *save_menu_args) 
 {
-    GtkTreePath *path = gtk_tree_model_get_path (model, process_iter);
-    GtkTreeModel *filter_model = gtk_tree_model_filter_new (model, path);
+    GtkTreePath *path = gtk_tree_model_get_path (ks.model, process_iter);
+    GtkTreeModel *filter_model = gtk_tree_model_filter_new (ks.model, path);
 
     // Cleanup
     gtk_tree_path_free (path);
@@ -537,7 +533,7 @@ void save_menu (gchar *save_as_filename)
     GtkTreeIter save_menu_iter;
     gboolean valid;
 
-    gchar *preliminary_filename = (save_as_filename) ? save_as_filename : filename;
+    gchar *preliminary_filename = (save_as_filename) ? save_as_filename : ks.filename;
     FILE *menu_file;
 
     gchar *save_txts_toplevel[NUMBER_OF_TXT_FIELDS];
@@ -546,14 +542,14 @@ void save_menu (gchar *save_as_filename)
         Create a backup of the menu file if the option for creating a backup is activated and 
         another menu file already exists with the same name.
     */
-    if (gtk_check_menu_item_get_active (GTK_CHECK_MENU_ITEM (mb_view_and_options [CREATE_BACKUP_BEFORE_OVERWRITING_MENU])) && 
+    if (gtk_check_menu_item_get_active (GTK_CHECK_MENU_ITEM (ks.mb_view_and_options [CREATE_BACKUP_BEFORE_OVERWRITING_MENU])) && 
         g_file_test (preliminary_filename, G_FILE_TEST_EXISTS)) {
         gchar *backup_file_name = g_strconcat (preliminary_filename, "~", NULL);
 
         if (G_UNLIKELY (g_rename (preliminary_filename, backup_file_name) != 0)) {
             show_errmsg ("Creation of a backup of the menu file has failed, overwriting canceled.");
 
-             // Cleanup
+            // Cleanup
             g_free (save_as_filename); // If save_menu is called directly, save_as_filename is NULL.
             g_free (backup_file_name);
 
@@ -586,27 +582,27 @@ void save_menu (gchar *save_as_filename)
 
     SaveMenuArgsData save_menu_args = {
         .menu_file = menu_file,
-        .saving_stage = MENUS,
+        .saving_stage = SM_MENUS,
         .filter_path_depth_prev = 0
     };
 
     fputs ("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n\n<openbox_menu>\n\n", menu_file);
 
     // Menus
-    valid = gtk_tree_model_get_iter_first (model, &save_menu_iter);
+    valid = gtk_tree_model_get_iter_first (ks.model, &save_menu_iter);
     while (valid) {
-        get_field_values (save_txts_toplevel, model, &save_menu_iter);
+        get_field_values (save_txts_toplevel, ks.model, &save_menu_iter);
 
-        if (streq (save_txts_toplevel[TYPE_TXT], "menu") || 
-            (streq (save_txts_toplevel[TYPE_TXT], "pipe menu") && 
-            streq (save_txts_toplevel[ELEMENT_VISIBILITY_TXT], "invisible orphaned menu"))) {
-            write_tag (MENUS, TOPLEVEL, save_txts_toplevel, menu_file, model, &save_menu_iter, MENU_OR_PIPE_MENU);
-            if (gtk_tree_model_iter_has_child (model, &save_menu_iter)) {
+        if (STREQ (save_txts_toplevel[TYPE_TXT], "menu") || 
+            (STREQ (save_txts_toplevel[TYPE_TXT], "pipe menu") && 
+            STREQ (save_txts_toplevel[ELEMENT_VISIBILITY_TXT], "invisible orphaned menu"))) {
+            write_tag (SM_MENUS, SM_TOPLEVEL, save_txts_toplevel, menu_file, ks.model, &save_menu_iter, SM_MENU_OR_PIPE_MENU);
+            if (gtk_tree_model_iter_has_child (ks.model, &save_menu_iter)) {
                 process_menu_or_item (&save_menu_iter, &save_menu_args);
                 fputs ("</menu>\n", menu_file);
             }
         }
-        valid = gtk_tree_model_iter_next (model, &save_menu_iter);
+        valid = gtk_tree_model_iter_next (ks.model, &save_menu_iter);
 
         // Cleanup
         free_elements_of_static_string_array (save_txts_toplevel, NUMBER_OF_TXT_FIELDS, FALSE);
@@ -615,25 +611,25 @@ void save_menu (gchar *save_as_filename)
     // Root menu
     fputs ("\n<menu id=\"root-menu\" label=\"Openbox 3\">\n", menu_file);
 
-    save_menu_args.saving_stage = ROOT_MENU;
+    save_menu_args.saving_stage = SM_ROOT_MENU;
 
-    valid = gtk_tree_model_get_iter_first (model, &save_menu_iter);
+    valid = gtk_tree_model_get_iter_first (ks.model, &save_menu_iter);
     while (valid) {
-        get_field_values (save_txts_toplevel, model, &save_menu_iter);
+        get_field_values (save_txts_toplevel, ks.model, &save_menu_iter);
 
         if (streq_any (save_txts_toplevel[TYPE_TXT], "menu", "pipe menu", NULL) && 
-            !streq (save_txts_toplevel[ELEMENT_VISIBILITY_TXT], "invisible orphaned menu")) {
-            write_tag (ROOT_MENU, TOPLEVEL, save_txts_toplevel, menu_file, model, &save_menu_iter, MENU_OR_PIPE_MENU);
+            !STREQ (save_txts_toplevel[ELEMENT_VISIBILITY_TXT], "invisible orphaned menu")) {
+            write_tag (SM_ROOT_MENU, SM_TOPLEVEL, save_txts_toplevel, menu_file, ks.model, &save_menu_iter, SM_MENU_OR_PIPE_MENU);
         }
         else if (streq_any (save_txts_toplevel[TYPE_TXT], "item", "separator", NULL)) {
-            write_tag (ROOT_MENU, IND_OF_LEVEL, save_txts_toplevel, menu_file, model, &save_menu_iter, 
-            streq (save_txts_toplevel[TYPE_TXT], "item") ? ITEM_OR_ACTION : SEPARATOR);
-            if (gtk_tree_model_iter_has_child (model, &save_menu_iter)) { // = non-empty item (= containing action(s))
+            write_tag (SM_ROOT_MENU, SM_IND_OF_LEVEL, save_txts_toplevel, menu_file, ks.model, &save_menu_iter, 
+            STREQ (save_txts_toplevel[TYPE_TXT], "item") ? SM_ITEM_OR_ACTION : SM_SEPARATOR);
+            if (gtk_tree_model_iter_has_child (ks.model, &save_menu_iter)) { // = non-empty item (= containing action(s))
                 process_menu_or_item (&save_menu_iter, &save_menu_args);
             }
         }
 
-        valid = gtk_tree_model_iter_next (model, &save_menu_iter);
+        valid = gtk_tree_model_iter_next (ks.model, &save_menu_iter);
 
         // Cleanup
         free_elements_of_static_string_array (save_txts_toplevel, NUMBER_OF_TXT_FIELDS, FALSE);
@@ -642,12 +638,12 @@ void save_menu (gchar *save_as_filename)
     fputs ("</menu>\n\n</openbox_menu>", menu_file);
 
     fclose (menu_file);
-    change_done = FALSE;
-    gtk_widget_set_sensitive (mb_file_menu_items[MB_SAVE], FALSE);
-    gtk_widget_set_sensitive (GTK_WIDGET (tb[TB_SAVE]), FALSE);
+    ks.change_done = FALSE;
+    gtk_widget_set_sensitive (ks.mb_file_menu_items[MB_SAVE], FALSE);
+    gtk_widget_set_sensitive (GTK_WIDGET (ks.tb[TB_SAVE]), FALSE);
 
     // "openbox --reconfigure" is only called when kickshaw is used under openbox.
-    if (streq (filename, standard_file_path) && 
+    if (STREQ (ks.filename, standard_file_path) && 
         G_LIKELY (system ("pgrep 'openbox' > /dev/null 2>&1") == 0) && 
         G_UNLIKELY (system ("openbox --reconfigure") != 0)) {
         show_errmsg ("The menu has been saved, but reconfiguration of Openbox has failed.");

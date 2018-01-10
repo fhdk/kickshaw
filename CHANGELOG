@@ -1,6 +1,6 @@
    Kickshaw - A Menu Editor for Openbox
 
-   Copyright (c) 2010-2017        Marcus Schaetzle
+   Copyright (c) 2010-2018        Marcus Schaetzle
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -17,6 +17,14 @@
 
 
 ---
+
+0.5.9 2018-01-07
+  * It is now possible to add items together with an action. 
+  * An input screen has been added for new menus, pipe menus and items.
+    It consists of the already existing entry fields plus some additional 
+    buttons, depending on the new menu element. 
+  * Major internal restructuring.
+  * Minor/cosmetical changes.
 
 0.5.8 2017-12-26
   * The creation of a backup file for an overwritten menu is now optional. 

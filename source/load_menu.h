@@ -1,7 +1,7 @@
 /*
    Kickshaw - A Menu Editor for Openbox
 
-   Copyright (c) 2010-2017        Marcus Schaetzle
+   Copyright (c) 2010-2018        Marcus Schaetzle
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -20,26 +20,7 @@
 #ifndef __load_menu_h
 #define __load_menu_h
 
-#define free_and_reassign(string, new_value) { g_free (string); string = new_value; }
-#define streq(string1, string2) (g_strcmp0 ((string1), (string2)) == 0)
-
-extern GtkTreeStore *treestore;
-extern GtkTreeModel *model;
-extern GtkWidget *treeview;
-extern GtkTreeIter iter;
-
-extern GtkWidget *mb_view_and_options[];
-
-extern GSList *menu_ids;
-
-extern GdkPixbuf *invalid_icon_imgs[];
-
-extern gboolean autosort_options;
-extern gboolean change_done;
-
-extern gint font_size;
-
-extern gint handler_id_row_selected;
+extern ks_data ks;
 
 extern guint8 check_if_invisible_ancestor_exists (GtkTreeModel *local_model, GtkTreePath *local_path);
 extern gchar *choose_icon (void);

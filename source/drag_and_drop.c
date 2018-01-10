@@ -1,7 +1,7 @@
 /*
    Kickshaw - A Menu Editor for Openbox
 
-   Copyright (c) 2010-2017        Marcus Schaetzle
+   Copyright (c) 2010-2018        Marcus Schaetzle
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -19,13 +19,14 @@
 
 #include <gtk/gtk.h>
 
-#include "general_header_files/enum__ts_elements.h"
+#include "definitions_and_enumerations.h"
 #include "drag_and_drop.h"
 
-enum { SUBROWS_ICON_IMG, SUBROWS_ICON_IMG_STATUS, SUBROWS_ICON_MODIFICATION_TIME, SUBROWS_ICON_PATH, 
-       SUBROWS_MENU_ELEMENT, SUBROWS_TYPE, SUBROWS_VALUE, SUBROWS_MENU_ID, SUBROWS_EXECUTE, SUBROWS_ELEMENT_VISIBILITY, 
-       SUBROWS_EXPANSION_STATUS, SUBROWS_CURRENT_PATH_DEPTH, SUBROWS_MAX_PATH_DEPTH, SUBROWS_ROOT_VISIBILITY, 
-       NUMBER_OF_SUBROW_ELEMENTS };
+// DD = drag & drop, indicating that the enums are only used here
+enum { DD_SUBROWS_ICON_IMG, DD_SUBROWS_ICON_IMG_STATUS, DD_SUBROWS_ICON_MODIFICATION_TIME, DD_SUBROWS_ICON_PATH, 
+       DD_SUBROWS_MENU_ELEMENT, DD_SUBROWS_TYPE, DD_SUBROWS_VALUE, DD_SUBROWS_MENU_ID, DD_SUBROWS_EXECUTE, 
+       DD_SUBROWS_ELEMENT_VISIBILITY, DD_SUBROWS_EXPANSION_STATUS, DD_SUBROWS_CURRENT_PATH_DEPTH, DD_SUBROWS_MAX_PATH_DEPTH, 
+       DD_SUBROWS_ROOT_VISIBILITY, DD_NUMBER_OF_SUBROW_ELEMENTS };
 
 gboolean drag_motion_handler (G_GNUC_UNUSED GtkWidget      *widget,
                                             GdkDragContext *drag_context, 
@@ -71,37 +72,37 @@ gboolean drag_motion_handler (G_GNUC_UNUSED GtkWidget      *widget,
     gchar *menu_element_option_txt_loop; // Loop text for option_iter_loop.
 
     // Reset
-    if (statusbar_msg_shown) {
-        gtk_statusbar_remove_all (GTK_STATUSBAR (statusbar), 1); // Only one context (indicated by 1) with one message.
-        statusbar_msg_shown = FALSE;
+    if (ks.statusbar_msg_shown) {
+        gtk_statusbar_remove_all (GTK_STATUSBAR (ks.statusbar), 1); // Only one context (indicated by 1) with one message.
+        ks.statusbar_msg_shown = FALSE;
     }
 
     /*
         The return value of gtk_tree_view_get_dest_row_at_pos is not needed here, since dest_path_drag_motion == NULL 
         already indicates that the row has been dragged after the last row of the menu.
     */ 
-    gtk_tree_view_get_dest_row_at_pos (GTK_TREE_VIEW (treeview), x, y, &dest_path_drag_motion, &position);
+    gtk_tree_view_get_dest_row_at_pos (GTK_TREE_VIEW (ks.treeview), x, y, &dest_path_drag_motion, &position);
 
     if (dest_path_drag_motion) { // == Not dragged after the last row of the menu.
         dest_path_depth = gtk_tree_path_get_depth (dest_path_drag_motion);
         if (position == GTK_TREE_VIEW_DROP_INTO_OR_BEFORE || position == GTK_TREE_VIEW_DROP_INTO_OR_AFTER) {
-            gtk_tree_model_get_iter (model, &dest_parent_iter, dest_path_drag_motion);
+            gtk_tree_model_get_iter (ks.model, &dest_parent_iter, dest_path_drag_motion);
             dropped_onto_row = TRUE;
         } 
         else if (dest_path_depth > 1) {
             GtkTreeIter dest_iter;
 
-            gtk_tree_model_get_iter (model, &dest_iter, dest_path_drag_motion);
-            gtk_tree_model_iter_parent (model, &dest_parent_iter, &dest_iter);
+            gtk_tree_model_get_iter (ks.model, &dest_iter, dest_path_drag_motion);
+            gtk_tree_model_iter_parent (ks.model, &dest_parent_iter, &dest_iter);
         }
 
         if (dest_path_depth > 1 || dropped_onto_row) {
-            gtk_tree_model_get (model, &dest_parent_iter, 
+            gtk_tree_model_get (ks.model, &dest_parent_iter, 
                                 TS_MENU_ELEMENT, &menu_element_dest_parent_txt, 
                                 TS_TYPE, &type_dest_parent_txt, 
                                 -1);
             if (dest_path_depth > 1) {
-                dest_parent_path = gtk_tree_model_get_path (model, &dest_parent_iter);
+                dest_parent_path = gtk_tree_model_get_path (ks.model, &dest_parent_iter);
             }
         }
     }
@@ -109,10 +110,10 @@ gboolean drag_motion_handler (G_GNUC_UNUSED GtkWidget      *widget,
         dest_path_depth = 1;
     }
 
-    for (source_paths_loop = source_paths; source_paths_loop; source_paths_loop = source_paths_loop->next) {
+    for (source_paths_loop = ks.source_paths; source_paths_loop; source_paths_loop = source_paths_loop->next) {
         source_path_loop = gtk_tree_row_reference_get_path (source_paths_loop->data);
-        gtk_tree_model_get_iter (model, &iter_loop, source_path_loop);
-        gtk_tree_model_get (model, &iter_loop, 
+        gtk_tree_model_get_iter (ks.model, &iter_loop, source_path_loop);
+        gtk_tree_model_get (ks.model, &iter_loop, 
                             TS_MENU_ELEMENT, &menu_element_txt_loop, 
                             TS_TYPE, &type_txt_loop, 
                             TS_VALUE, &value_txt_loop,
@@ -123,7 +124,7 @@ gboolean drag_motion_handler (G_GNUC_UNUSED GtkWidget      *widget,
         gtk_tree_path_up (source_parent_path);
 
         // Prevent that menus are dragged into themselves.
-        if (streq (type_txt_loop, "menu") && dest_path_drag_motion && 
+        if (STREQ (type_txt_loop, "menu") && dest_path_drag_motion && 
             gtk_tree_path_is_descendant (dest_path_drag_motion, source_path_loop)) {
             statusbar_txt = "!!! Menus can't be dragged into themselves !!!";
             goto cleanup;
@@ -131,30 +132,30 @@ gboolean drag_motion_handler (G_GNUC_UNUSED GtkWidget      *widget,
 
         // Prevent that menu elements are dragged to a place where they don't belong.
         if ((type_dest_parent_txt && // Not dragged to toplevel
-            element_visibility_txt_loop && !streq (type_dest_parent_txt, "menu")) || 
+            element_visibility_txt_loop && !STREQ (type_dest_parent_txt, "menu")) || 
 
-            (streq (type_txt_loop, "action") && !streq (type_dest_parent_txt, "item")) || 
+            (STREQ (type_txt_loop, "action") && !STREQ (type_dest_parent_txt, "item")) || 
 
-            (streq (type_txt_loop, "option") && streq (menu_element_txt_loop, "prompt") &&
-            !(streq (type_dest_parent_txt, "action") &&  
+            (STREQ (type_txt_loop, "option") && STREQ (menu_element_txt_loop, "prompt") &&
+            !(STREQ (type_dest_parent_txt, "action") &&  
             streq_any (menu_element_dest_parent_txt, "Execute", "Exit", "SessionLogout", NULL))) || 
 
-            (streq (type_txt_loop, "option") && streq (menu_element_txt_loop, "command") && 
-            !(streq (type_dest_parent_txt, "action") && 
+            (STREQ (type_txt_loop, "option") && STREQ (menu_element_txt_loop, "command") && 
+            !(STREQ (type_dest_parent_txt, "action") && 
             streq_any (menu_element_dest_parent_txt, "Execute", "Restart", NULL))) ||
 
-            (streq (type_txt_loop, "option block") && 
-            !(streq (type_dest_parent_txt, "action") && streq (menu_element_dest_parent_txt, "Execute"))) ||
+            (STREQ (type_txt_loop, "option block") && 
+            !(STREQ (type_dest_parent_txt, "action") && STREQ (menu_element_dest_parent_txt, "Execute"))) ||
 
-            (streq (type_txt_loop, "option") && 
+            (STREQ (type_txt_loop, "option") && 
             streq_any (menu_element_txt_loop, "enabled", "name", "wmclass", "icon", NULL) && 
-            !streq (type_dest_parent_txt, "option block"))) {
+            !STREQ (type_dest_parent_txt, "option block"))) {
             statusbar_txt = "!!! Inappropriate new position !!!";
             goto cleanup;
         }
 
         // Prevent that Execute options are dragged inside the same Execute action if autosorting is activated.
-        if (autosort_options && streq_any (type_txt_loop, "option", "option block", NULL) && 
+        if (ks.autosort_options && streq_any (type_txt_loop, "option", "option block", NULL) && 
             streq_any (menu_element_dest_parent_txt, "Execute", "startupnotify", NULL) &&
             gtk_tree_path_compare (source_parent_path, dest_parent_path) == 0) {
             statusbar_txt = "!!! Autosorting active - no movement of options inside the same action possible !!!";
@@ -165,10 +166,10 @@ gboolean drag_motion_handler (G_GNUC_UNUSED GtkWidget      *widget,
         if (streq_any (type_dest_parent_txt, "action", "option block", NULL) &&
             streq_any (type_txt_loop, "option", "option block", NULL) && 
             gtk_tree_path_compare (source_parent_path, dest_parent_path) != 0) {
-            for (ch_cnt = 0; ch_cnt < gtk_tree_model_iter_n_children (model, &dest_parent_iter); ch_cnt++) {
-                gtk_tree_model_iter_nth_child (model, &option_iter_loop, &dest_parent_iter, ch_cnt);
-                gtk_tree_model_get (model, &option_iter_loop, TS_MENU_ELEMENT, &menu_element_option_txt_loop, -1);
-                if (streq (menu_element_txt_loop, menu_element_option_txt_loop)) {
+            for (ch_cnt = 0; ch_cnt < gtk_tree_model_iter_n_children (ks.model, &dest_parent_iter); ch_cnt++) {
+                gtk_tree_model_iter_nth_child (ks.model, &option_iter_loop, &dest_parent_iter, ch_cnt);
+                gtk_tree_model_get (ks.model, &option_iter_loop, TS_MENU_ELEMENT, &menu_element_option_txt_loop, -1);
+                if (STREQ (menu_element_txt_loop, menu_element_option_txt_loop)) {
                     statusbar_txt = "!!! Only one option of a kind allowed !!!";
                     // Cleanup
                     g_free (menu_element_option_txt_loop);
@@ -183,7 +184,7 @@ gboolean drag_motion_handler (G_GNUC_UNUSED GtkWidget      *widget,
             Prevent that a prompt option with a value other than "yes" or "no" 
             is dragged into the actions "Exit" and "SessionLogout".
         */
-        if (streq (type_txt_loop, "option") && streq (menu_element_txt_loop, "prompt") && 
+        if (STREQ (type_txt_loop, "option") && STREQ (menu_element_txt_loop, "prompt") && 
             streq_any (menu_element_dest_parent_txt, "Exit", "SessionLogout", NULL) && 
             !streq_any (value_txt_loop, "yes", "no", NULL)) {
             statusbar_txt = "!!! Prompt option must have value \"yes\" or \"no\" !!!";
@@ -236,11 +237,11 @@ static gboolean subrows_creation_auxiliary (GtkTreeModel  *filter_model,
 {
     GtkTreePath *model_path;
 
-    if (streq (g_ptr_array_index (subrows[SUBROWS_ROOT_VISIBILITY], 0), "n/a")) {
+    if (STREQ (g_ptr_array_index (subrows[DD_SUBROWS_ROOT_VISIBILITY], 0), "n/a")) {
         // --- Step 1: Creation of subrow array(s) ---
 
         gint current_path_depth = gtk_tree_path_get_depth (filter_path);
-        gint *max_path_depth = (gint *) subrows[SUBROWS_MAX_PATH_DEPTH][0].pdata;
+        gint *max_path_depth = (gint *) subrows[DD_SUBROWS_MAX_PATH_DEPTH][0].pdata;
 
         gpointer current_ts_field;
 
@@ -250,19 +251,19 @@ static gboolean subrows_creation_auxiliary (GtkTreeModel  *filter_model,
             *max_path_depth = current_path_depth;
         }
 
-        for (subrows_elm_cnt = 0; subrows_elm_cnt <= SUBROWS_ELEMENT_VISIBILITY; subrows_elm_cnt++) {
+        for (subrows_elm_cnt = 0; subrows_elm_cnt <= DD_SUBROWS_ELEMENT_VISIBILITY; subrows_elm_cnt++) {
             gtk_tree_model_get (filter_model, filter_iter, subrows_elm_cnt, &current_ts_field, -1);
             g_ptr_array_add (subrows[subrows_elm_cnt], current_ts_field);
         }
 
-        // SUBROWS_EXPANSION_STATUS
+        // DD_SUBROWS_EXPANSION_STATUS
         // The path of the model, not filter model, is needed to check whether the row is expanded.
         model_path = gtk_tree_model_filter_convert_path_to_child_path ((GtkTreeModelFilter *) filter_model, filter_path);
-        g_ptr_array_add (subrows[SUBROWS_EXPANSION_STATUS], 
-                         GINT_TO_POINTER (gtk_tree_view_row_expanded (GTK_TREE_VIEW (treeview), model_path)));
+        g_ptr_array_add (subrows[DD_SUBROWS_EXPANSION_STATUS], 
+                         GINT_TO_POINTER (gtk_tree_view_row_expanded (GTK_TREE_VIEW (ks.treeview), model_path)));
 
-        // SUBROWS_CURRENT_PATH_DEPTH
-        g_ptr_array_add (subrows[SUBROWS_CURRENT_PATH_DEPTH], GINT_TO_POINTER (current_path_depth));
+        // DD_SUBROWS_CURRENT_PATH_DEPTH
+        g_ptr_array_add (subrows[DD_SUBROWS_CURRENT_PATH_DEPTH], GINT_TO_POINTER (current_path_depth));
     }
     else {
         // --- Step 2: Adjustment of subrows ---
@@ -275,11 +276,11 @@ static gboolean subrows_creation_auxiliary (GtkTreeModel  *filter_model,
         */
         model_path = gtk_tree_model_filter_convert_path_to_child_path (GTK_TREE_MODEL_FILTER (filter_model), filter_path);
 
-        if (GPOINTER_TO_INT (g_ptr_array_index (subrows[SUBROWS_EXPANSION_STATUS], 0))) {
-            gtk_tree_view_expand_row (GTK_TREE_VIEW (treeview), model_path, FALSE);
+        if (GPOINTER_TO_INT (g_ptr_array_index (subrows[DD_SUBROWS_EXPANSION_STATUS], 0))) {
+            gtk_tree_view_expand_row (GTK_TREE_VIEW (ks.treeview), model_path, FALSE);
         }
 
-        g_ptr_array_remove_index (subrows[SUBROWS_EXPANSION_STATUS], 0);
+        g_ptr_array_remove_index (subrows[DD_SUBROWS_EXPANSION_STATUS], 0);
 
         // --- Step 2b: Visibilty of menus, pipe menus, items and separators ---
         gchar *element_visibility_txt_filter;
@@ -294,8 +295,8 @@ static gboolean subrows_creation_auxiliary (GtkTreeModel  *filter_model,
         }
 
         GtkTreeIter model_iter;
-        guint8 invisible_ancestor = check_if_invisible_ancestor_exists (model, model_path);
-        gchar *element_visibility_txt_root = g_ptr_array_index (subrows[SUBROWS_ROOT_VISIBILITY], 0);
+        guint8 invisible_ancestor = check_if_invisible_ancestor_exists (ks.model, model_path);
+        gchar *element_visibility_txt_root = g_ptr_array_index (subrows[DD_SUBROWS_ROOT_VISIBILITY], 0);
         gchar *new_element_visibility_txt = "visible"; // Default
         gchar *menu_element_txt_filter, *type_txt_filter;
 
@@ -310,12 +311,12 @@ static gboolean subrows_creation_auxiliary (GtkTreeModel  *filter_model,
         else if (G_UNLIKELY (invisible_ancestor)) {
             new_element_visibility_txt = "invisible dsct. of invisible menu";
         }
-        else if (G_UNLIKELY (!menu_element_txt_filter && !streq (type_txt_filter, "separator"))) {
-            new_element_visibility_txt = (streq (type_txt_filter, "item")) ? "invisible item" : "invisible menu";
+        else if (G_UNLIKELY (!menu_element_txt_filter && !STREQ (type_txt_filter, "separator"))) {
+            new_element_visibility_txt = (STREQ (type_txt_filter, "item")) ? "invisible item" : "invisible menu";
         }
  
         gtk_tree_model_filter_convert_iter_to_child_iter (GTK_TREE_MODEL_FILTER (filter_model), &model_iter, filter_iter);
-        gtk_tree_store_set (treestore, &model_iter, TS_ELEMENT_VISIBILITY, new_element_visibility_txt, -1);
+        gtk_tree_store_set (ks.treestore, &model_iter, TS_ELEMENT_VISIBILITY, new_element_visibility_txt, -1);
 
         // Cleanup
         g_free (menu_element_txt_filter);
@@ -346,7 +347,7 @@ void drag_data_received_handler (G_GNUC_UNUSED GtkWidget      *widget,
     gboolean to_be_appended_at_toplevel = FALSE, to_be_appended_as_last_row = FALSE; // Defaults
     gint insertion_position = 0; // Initialised to avoid compiler warning since this variable might not be used.
 
-    GtkTreeSelection *selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (treeview));
+    GtkTreeSelection *selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (ks.treeview));
     GSList *new_rows = NULL;
     GtkTreeModel *filter_model = NULL; // Default
     GtkTreePath *dest_path, *new_path;
@@ -362,7 +363,7 @@ void drag_data_received_handler (G_GNUC_UNUSED GtkWidget      *widget,
 
     gboolean source_row_has_child;
     gboolean expand_new_row = FALSE; // Initialised to avoid compiler warning.
-    GPtrArray *subrows[NUMBER_OF_SUBROW_ELEMENTS];
+    GPtrArray *subrows[DD_NUMBER_OF_SUBROW_ELEMENTS];
 
     gpointer copied_ts_row_fields[NUMBER_OF_TS_ELEMENTS];
     gchar *new_element_visibility_txt;
@@ -374,7 +375,7 @@ void drag_data_received_handler (G_GNUC_UNUSED GtkWidget      *widget,
     guint subrows_cnt;
     guint8 ts_cnt, elm_cnt, subrows_elm_cnt;
 
-    gtk_tree_view_get_dest_row_at_pos (GTK_TREE_VIEW (treeview), x, y, &dest_path, &position);
+    gtk_tree_view_get_dest_row_at_pos (GTK_TREE_VIEW (ks.treeview), x, y, &dest_path, &position);
     /*
         If the result is NULL, the function is not aborted, since the result indicates 
         that the row has been dragged after the last row of the menu.
@@ -382,7 +383,7 @@ void drag_data_received_handler (G_GNUC_UNUSED GtkWidget      *widget,
 
      // Don't continue if the source rows are dropped onto themselves.
     if (dest_path) {
-        for (source_paths_loop = source_paths; source_paths_loop; source_paths_loop = source_paths_loop->next) {
+        for (source_paths_loop = ks.source_paths; source_paths_loop; source_paths_loop = source_paths_loop->next) {
             source_path_loop = gtk_tree_row_reference_get_path (source_paths_loop->data);
             if (gtk_tree_path_compare (source_path_loop, dest_path) == 0) {
 
@@ -398,7 +399,7 @@ void drag_data_received_handler (G_GNUC_UNUSED GtkWidget      *widget,
     }
 
     if (position == GTK_TREE_VIEW_DROP_INTO_OR_BEFORE || position == GTK_TREE_VIEW_DROP_INTO_OR_AFTER) {
-        gtk_tree_model_get_iter (model, &dest_parent_iter, dest_path);
+        gtk_tree_model_get_iter (ks.model, &dest_parent_iter, dest_path);
         dropped_onto_row = TRUE;
     }
 
@@ -416,15 +417,15 @@ void drag_data_received_handler (G_GNUC_UNUSED GtkWidget      *widget,
     }
 
     if (dest_path_depth > 1) {
-        if (gtk_tree_model_get_iter (model, &dest_iter, dest_path)) {
-            gtk_tree_model_iter_parent (model, &dest_parent_iter, &dest_iter);
+        if (gtk_tree_model_get_iter (ks.model, &dest_iter, dest_path)) {
+            gtk_tree_model_iter_parent (ks.model, &dest_parent_iter, &dest_iter);
         }
         else { // Append as last row(s)
             GtkTreePath *dest_parent_path = gtk_tree_path_copy (dest_path);
 
             to_be_appended_as_last_row = TRUE;
             gtk_tree_path_up (dest_parent_path);
-            gtk_tree_model_get_iter (model, &dest_parent_iter, dest_parent_path);
+            gtk_tree_model_get_iter (ks.model, &dest_parent_iter, dest_parent_path);
 
             // Cleanup
             gtk_tree_path_free (dest_parent_path);
@@ -432,16 +433,16 @@ void drag_data_received_handler (G_GNUC_UNUSED GtkWidget      *widget,
     }
 
     if (dest_path_depth > 1 || dropped_onto_row) {
-        gtk_tree_model_get (model, &dest_parent_iter, 
+        gtk_tree_model_get (ks.model, &dest_parent_iter, 
                             TS_MENU_ELEMENT, &menu_element_dest_parent_txt,
                             TS_TYPE, &type_dest_parent_txt, 
                             TS_ELEMENT_VISIBILITY, &element_visibility_parent_txt, 
                             -1);
     }
 
-    for (source_paths_loop = source_paths; source_paths_loop; source_paths_loop = source_paths_loop->next) {
+    for (source_paths_loop = ks.source_paths; source_paths_loop; source_paths_loop = source_paths_loop->next) {
         source_path_loop = gtk_tree_row_reference_get_path (source_paths_loop->data);
-        gtk_tree_model_get_iter (model, &source_iter, source_path_loop);
+        gtk_tree_model_get_iter (ks.model, &source_iter, source_path_loop);
 
 
         // --- Create root row at destination. ---
@@ -449,23 +450,23 @@ void drag_data_received_handler (G_GNUC_UNUSED GtkWidget      *widget,
 
         // Retrieve data of the source row.
         for (ts_cnt = 0; ts_cnt < NUMBER_OF_TS_ELEMENTS; ts_cnt++) {
-            gtk_tree_model_get (model, &source_iter, ts_cnt, &copied_ts_row_fields[ts_cnt], -1);
+            gtk_tree_model_get (ks.model, &source_iter, ts_cnt, &copied_ts_row_fields[ts_cnt], -1);
         }
 
         // Retrieve data of the subrows of the source row, if they exist.
-        if ((source_row_has_child = gtk_tree_model_iter_has_child (model, &source_iter))) { // Parentheses avoid gcc warning.
-            for (subrows_elm_cnt = 0; subrows_elm_cnt < NUMBER_OF_SUBROW_ELEMENTS; subrows_elm_cnt++) {
+        if ((source_row_has_child = gtk_tree_model_iter_has_child (ks.model, &source_iter))) { // Parentheses avoid gcc warning.
+            for (subrows_elm_cnt = 0; subrows_elm_cnt < DD_NUMBER_OF_SUBROW_ELEMENTS; subrows_elm_cnt++) {
                 subrows[subrows_elm_cnt] = g_ptr_array_new ();
             }
-            g_ptr_array_add (subrows[SUBROWS_MAX_PATH_DEPTH], GUINT_TO_POINTER (0));
-            g_ptr_array_add (subrows[SUBROWS_ROOT_VISIBILITY], "n/a");
+            g_ptr_array_add (subrows[DD_SUBROWS_MAX_PATH_DEPTH], GUINT_TO_POINTER (0));
+            g_ptr_array_add (subrows[DD_SUBROWS_ROOT_VISIBILITY], "n/a");
 
-            filter_model = gtk_tree_model_filter_new (model, source_path_loop);
+            filter_model = gtk_tree_model_filter_new (ks.model, source_path_loop);
             gtk_tree_model_foreach (filter_model, (GtkTreeModelForeachFunc) subrows_creation_auxiliary, &subrows);
             // Cleanup
             g_object_unref (filter_model);
 
-            expand_new_row = gtk_tree_view_row_expanded (GTK_TREE_VIEW (treeview), source_path_loop);
+            expand_new_row = gtk_tree_view_row_expanded (GTK_TREE_VIEW (ks.treeview), source_path_loop);
         }
 
         /*
@@ -473,17 +474,17 @@ void drag_data_received_handler (G_GNUC_UNUSED GtkWidget      *widget,
             its element visibility is set according to the one of the latter. 
             If dragged to toplevel, the element visiblity is adjusted as well.
         */
-        if (!type_dest_parent_txt || streq (type_dest_parent_txt, "menu")) {
+        if (!type_dest_parent_txt || STREQ (type_dest_parent_txt, "menu")) {
             new_element_visibility_txt = "visible"; // Default
 
-            if (G_LIKELY (!element_visibility_parent_txt || streq (element_visibility_parent_txt, "visible"))) {
+            if (G_LIKELY (!element_visibility_parent_txt || STREQ (element_visibility_parent_txt, "visible"))) {
                 if (G_UNLIKELY (!element_visibility_parent_txt && 
-                                streq (copied_ts_row_fields[SUBROWS_ELEMENT_VISIBILITY], "invisible orphaned menu"))) {
+                                STREQ (copied_ts_row_fields[DD_SUBROWS_ELEMENT_VISIBILITY], "invisible orphaned menu"))) {
                     new_element_visibility_txt = "invisible orphaned menu";
                 }
-                else if (G_UNLIKELY (!copied_ts_row_fields[SUBROWS_MENU_ELEMENT] && 
-                                     !streq (copied_ts_row_fields[SUBROWS_TYPE], "separator"))) {
-                    new_element_visibility_txt = ((streq (copied_ts_row_fields[SUBROWS_TYPE], "item") ? 
+                else if (G_UNLIKELY (!copied_ts_row_fields[DD_SUBROWS_MENU_ELEMENT] && 
+                                     !STREQ (copied_ts_row_fields[DD_SUBROWS_TYPE], "separator"))) {
+                    new_element_visibility_txt = ((STREQ (copied_ts_row_fields[DD_SUBROWS_TYPE], "item") ? 
                                                   "invisible item" : "invisible menu"));
                 }
             }
@@ -493,48 +494,48 @@ void drag_data_received_handler (G_GNUC_UNUSED GtkWidget      *widget,
                                                                 "invisible dsct. of invisible orphaned menu";
             }
 
-            free_and_reassign (copied_ts_row_fields[SUBROWS_ELEMENT_VISIBILITY], g_strdup (new_element_visibility_txt));
+            FREE_AND_REASSIGN (copied_ts_row_fields[DD_SUBROWS_ELEMENT_VISIBILITY], g_strdup (new_element_visibility_txt));
         }
 
         // Add dragged source row at new position.
-        gtk_tree_store_insert (treestore, &new_iter, (dest_path_depth == 1) ? NULL : &dest_parent_iter, 
+        gtk_tree_store_insert (ks.treestore, &new_iter, (dest_path_depth == 1) ? NULL : &dest_parent_iter, 
                                (to_be_appended_at_toplevel || to_be_appended_as_last_row || dropped_onto_row) ? 
                                -1 : insertion_position++);
 
         for (ts_cnt = 0; ts_cnt < NUMBER_OF_TS_ELEMENTS; ts_cnt++) {
-            gtk_tree_store_set (treestore, &new_iter, ts_cnt, copied_ts_row_fields[ts_cnt], -1);
+            gtk_tree_store_set (ks.treestore, &new_iter, ts_cnt, copied_ts_row_fields[ts_cnt], -1);
         }
 
         // If at least one row was dropped onto another one, expand the latter if it had not already been expanded.
-        if (dropped_onto_row && !gtk_tree_view_row_expanded (GTK_TREE_VIEW (treeview), dest_path)) {
-            gtk_tree_view_expand_row (GTK_TREE_VIEW (treeview), dest_path, FALSE);
+        if (dropped_onto_row && !gtk_tree_view_row_expanded (GTK_TREE_VIEW (ks.treeview), dest_path)) {
+            gtk_tree_view_expand_row (GTK_TREE_VIEW (ks.treeview), dest_path, FALSE);
         }
 
         // Add the new row to the list of new rows.
-        new_path = gtk_tree_model_get_path (model, &new_iter);
+        new_path = gtk_tree_model_get_path (ks.model, &new_iter);
         /*
             The new rows list has to consist of row references, since a dragged row might be an option which is sorted 
             after the insertion if autosorting is enabled and thus might change the path of other inserted options which 
             have to be sorted next.
         */
-        new_rows = g_slist_prepend (new_rows, gtk_tree_row_reference_new (model, new_path));
+        new_rows = g_slist_prepend (new_rows, gtk_tree_row_reference_new (ks.model, new_path));
 
 
         // --- Add subrows, if they exist. ---
 
         if (source_row_has_child) {
             // Copy all children of the source row to the new row.
-            allocated_size = sizeof (GtkTreeIter) * GPOINTER_TO_UINT (g_ptr_array_index (subrows[SUBROWS_MAX_PATH_DEPTH], 0));
+            allocated_size = sizeof (GtkTreeIter) * GPOINTER_TO_UINT (g_ptr_array_index (subrows[DD_SUBROWS_MAX_PATH_DEPTH], 0));
             subrow_iters = g_slice_alloc (allocated_size);
 
             for (subrows_cnt = 0; subrows_cnt < subrows[0]->len; subrows_cnt++) {
-                current_path_depth = GPOINTER_TO_INT (g_ptr_array_index (subrows[SUBROWS_CURRENT_PATH_DEPTH], subrows_cnt));
-                gtk_tree_store_append (treestore, &subrow_iters[current_path_depth - 1], 
+                current_path_depth = GPOINTER_TO_INT (g_ptr_array_index (subrows[DD_SUBROWS_CURRENT_PATH_DEPTH], subrows_cnt));
+                gtk_tree_store_append (ks.treestore, &subrow_iters[current_path_depth - 1], 
                                        (current_path_depth == 1) ? &new_iter : &subrow_iters[current_path_depth - 2]);
 
                 for (ts_cnt = 0; ts_cnt < NUMBER_OF_TS_ELEMENTS; ts_cnt++) {
                     current_array = g_ptr_array_index (subrows[ts_cnt], subrows_cnt);
-                    gtk_tree_store_set (treestore, &subrow_iters[current_path_depth - 1], ts_cnt, current_array, -1);
+                    gtk_tree_store_set (ks.treestore, &subrow_iters[current_path_depth - 1], ts_cnt, current_array, -1);
 
                     // Cleanup
                     if (ts_cnt == TS_ICON_IMG && current_array) {
@@ -548,17 +549,17 @@ void drag_data_received_handler (G_GNUC_UNUSED GtkWidget      *widget,
 
             // If the source row was a node that was expanded, expand the new row as well.
             if (expand_new_row) {
-                gtk_tree_view_expand_row (GTK_TREE_VIEW (treeview), new_path, FALSE);
+                gtk_tree_view_expand_row (GTK_TREE_VIEW (ks.treeview), new_path, FALSE);
             }
 
             // Set expansions status of all subrows, also element visibility for all menus, pipe menus, items and separators.
-            g_ptr_array_index (subrows[SUBROWS_ROOT_VISIBILITY], 0) = copied_ts_row_fields[TS_ELEMENT_VISIBILITY];
-            filter_model = gtk_tree_model_filter_new (model, new_path);
+            g_ptr_array_index (subrows[DD_SUBROWS_ROOT_VISIBILITY], 0) = copied_ts_row_fields[TS_ELEMENT_VISIBILITY];
+            filter_model = gtk_tree_model_filter_new (ks.model, new_path);
             gtk_tree_model_foreach (filter_model, (GtkTreeModelForeachFunc) subrows_creation_auxiliary, &subrows);
 
             // Cleanup
             g_object_unref (filter_model);
-            for (subrows_elm_cnt = 0; subrows_elm_cnt < NUMBER_OF_SUBROW_ELEMENTS; subrows_elm_cnt++) {
+            for (subrows_elm_cnt = 0; subrows_elm_cnt < DD_NUMBER_OF_SUBROW_ELEMENTS; subrows_elm_cnt++) {
                 g_ptr_array_free (subrows[subrows_elm_cnt], TRUE);
             }
             g_slice_free1 (allocated_size, subrow_iters);
@@ -577,13 +578,13 @@ void drag_data_received_handler (G_GNUC_UNUSED GtkWidget      *widget,
     // The source rows are still selected, so they may be deleted that simple.
     remove_rows ("dnd");
 
-    g_signal_handler_block (selection, handler_id_row_selected); // Deactivates unnecessary selection check.
+    g_signal_handler_block (selection, ks.handler_id_row_selected); // Deactivates unnecessary selection check.
 
     /* 
         This prevents a possible block of the change of the selection of nodes if 
         the to be dragged nodes had been clicked on again before dragging.
     */
-    gtk_tree_selection_set_select_function (gtk_tree_view_get_selection (GTK_TREE_VIEW (treeview)), 
+    gtk_tree_selection_set_select_function (gtk_tree_view_get_selection (GTK_TREE_VIEW (ks.treeview)), 
                                             (GtkTreeSelectionFunc) selection_block_unblock, GINT_TO_POINTER (TRUE), NULL);
 
     /*
@@ -594,8 +595,8 @@ void drag_data_received_handler (G_GNUC_UNUSED GtkWidget      *widget,
 
     for (new_rows_loop = new_rows; new_rows_loop; new_rows_loop = new_rows_loop->next) {
         new_path = gtk_tree_row_reference_get_path (new_rows_loop->data);
-        gtk_tree_model_get_iter (model, &iter, new_path);
-        gtk_tree_model_get (model, &iter, 
+        gtk_tree_model_get_iter (ks.model, &ks.iter, new_path);
+        gtk_tree_model_get (ks.model, &ks.iter, 
                             TS_MENU_ELEMENT, &menu_element_new_row_txt, 
                             TS_TYPE, &type_new_row_txt, 
                             -1);
@@ -605,8 +606,8 @@ void drag_data_received_handler (G_GNUC_UNUSED GtkWidget      *widget,
             of "Execute" or an option of "startupnotify", since only an "Execute" action or a "startupnotify" option block 
             can have more than one child.
         */
-        if (autosort_options && streq_any (type_new_row_txt, "option", "option block", NULL) && 
-            gtk_tree_model_iter_n_children (model, &dest_parent_iter) > 1) {
+        if (ks.autosort_options && streq_any (type_new_row_txt, "option", "option block", NULL) && 
+            gtk_tree_model_iter_n_children (ks.model, &dest_parent_iter) > 1) {
             sort_execute_or_startupnotify_options_after_insertion (selection, &dest_parent_iter, 
                                                                    menu_element_dest_parent_txt, menu_element_new_row_txt);
         }
@@ -620,7 +621,7 @@ void drag_data_received_handler (G_GNUC_UNUSED GtkWidget      *widget,
         g_free (type_new_row_txt);
     }
 
-    g_signal_handler_unblock (selection, handler_id_row_selected);
+    g_signal_handler_unblock (selection, ks.handler_id_row_selected);
 
     // Cleanup
     g_free (menu_element_dest_parent_txt);
