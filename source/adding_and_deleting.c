@@ -76,56 +76,66 @@ static void hide_or_deactivate_widgets (void)
 void one_of_the_change_values_buttons_pressed (gchar *origin)
 {
     GSList *change_values_user_settings_loop;
-    gchar *field;
-    gchar *value;
+    // AD = adding and deleting, indicating that the enums are only used here
+    enum { AD_FIELD, AD_VALUE };
+    gchar **parameter;
 
     gboolean including_action_check_button_active = 
         gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (ks.including_action_check_button));
     gchar *new_menu_element = NULL; // Predefinition avoids compiler warning.
-    gboolean same_level = TRUE; // Predefinition avoids compiler warning.
-    gboolean incl_action = FALSE; // Default
-    const gchar *action = NULL; // Default
+    gboolean same_level = TRUE; // default
+    gboolean add_action;
 
     for (change_values_user_settings_loop = ks.change_values_user_settings; 
         change_values_user_settings_loop; 
         change_values_user_settings_loop = change_values_user_settings_loop->next) {
-        field = extract_substring_via_regex (change_values_user_settings_loop->data, ".*(?=:)");
-        value = extract_substring_via_regex (change_values_user_settings_loop->data, "(?<=:).*");
-
-        if (STREQ (origin, "done") || STREQ (origin, "reset")) {
-            if (STREQ (field, "new menu element")) {
-                new_menu_element = g_strdup (value);
-            }
-            if (STREQ (origin, "done") && STREQ (field, "inside menu")) {
-                same_level = (STREQ (value, "false"));
-            }
-            else if (STREQ (origin, "reset")) {
-                if (STREQ (field, "label field")) {
-                    gtk_entry_set_text (GTK_ENTRY (ks.entry_fields[MENU_ELEMENT_OR_VALUE_ENTRY]), value);
-                }
-                else if (STREQ (field, "menu ID field")) {
-                    gtk_entry_set_text (GTK_ENTRY (ks.entry_fields[MENU_ID_ENTRY]), value);
-                }
-                else if (STREQ (field, "inside menu")) {
-                    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ks.inside_menu_check_button), STREQ (value, "true"));
-                }
-                else if (STREQ (field, "incl. action")) {
-                    // Prevent recursion
-                    g_signal_handler_block (ks.including_action_check_button, ks.handler_id_including_action_check_button);
-                    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ks.including_action_check_button), STREQ (value, "true"));
-                    g_signal_handler_unblock (ks.including_action_check_button, ks.handler_id_including_action_check_button);
-                    gtk_widget_set_visible (ks.action_option, STREQ (value, "true"));
-                    incl_action = (STREQ (value, "true"));
-                }
-                else { // action
-                    gtk_combo_box_set_active_id (GTK_COMBO_BOX (ks.action_option), value);
-                    // Value is only temporary.
-                    action = gtk_combo_box_get_active_id (GTK_COMBO_BOX (ks.action_option));
-                }
-               }
+        parameter = g_strsplit (change_values_user_settings_loop->data, ":", -1);
+        if (STREQ (origin, "done") && STREQ (parameter[AD_FIELD], "new menu element")) {
+            // "value" exists only temporary
+            new_menu_element = g_strdup (parameter[AD_VALUE]);
         }
-        else if (STREQ (origin, "incl. action") && STREQ (field, "action")) { 
-            gtk_combo_box_set_active_id (GTK_COMBO_BOX (ks.action_option), value);
+        else if (STREQ (origin, "reset")) {
+            if (STREQ (parameter[AD_FIELD], "new menu element")) {
+                gchar *default_label_txt = g_strdup_printf ("New %s", parameter[AD_VALUE]);
+                gtk_entry_set_text (GTK_ENTRY (ks.entry_fields[MENU_ELEMENT_OR_VALUE_ENTRY]), default_label_txt);
+                // Cleanup
+                g_free (default_label_txt);
+
+                gtk_style_context_remove_class (gtk_widget_get_style_context (ks.entry_fields[MENU_ELEMENT_OR_VALUE_ENTRY]), 
+                                                "bg_class");
+
+                /*
+                    Reset the following two fields together with the default label.
+                    It doesn't hurt to do so even in the case that they are currently not visible.
+                */
+                gtk_entry_set_text (GTK_ENTRY (ks.entry_fields[ICON_PATH_ENTRY]), "");
+                gtk_entry_set_text (GTK_ENTRY (ks.entry_fields[EXECUTE_ENTRY]), "");
+            }
+            else if (STREQ (parameter[AD_FIELD], "menu ID field")) {
+                gtk_entry_set_text (GTK_ENTRY (ks.entry_fields[MENU_ID_ENTRY]), parameter[AD_VALUE]);
+            }
+            else if (STREQ (parameter[AD_FIELD], "inside menu")) {
+                gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ks.inside_menu_check_button), STREQ (parameter[AD_VALUE], "true"));
+            }
+            else if (STREQ (parameter[AD_FIELD], "incl. action")) {
+                including_action_check_button_active = (STREQ (parameter[AD_VALUE], "true"));
+                // Prevent recursion
+                g_signal_handler_block (ks.including_action_check_button, ks.handler_id_including_action_check_button);
+                gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ks.including_action_check_button), 
+                                              including_action_check_button_active);
+                g_signal_handler_unblock (ks.including_action_check_button, ks.handler_id_including_action_check_button);
+                gtk_widget_set_visible (ks.action_option, including_action_check_button_active);
+                if (including_action_check_button_active) {
+                    clear_entries ();
+                }
+                gtk_widget_set_visible (ks.options_grid, including_action_check_button_active);
+            }
+            else { // action
+                gtk_combo_box_set_active_id (GTK_COMBO_BOX (ks.action_option), parameter[AD_VALUE]);
+            }
+        }
+        else if (STREQ (origin, "incl. action") && STREQ (parameter[AD_FIELD], "action")) {
+            gtk_combo_box_set_active_id (GTK_COMBO_BOX (ks.action_option), parameter[AD_VALUE]);
             if (!including_action_check_button_active) {
                 clear_entries ();
             }
@@ -134,26 +144,15 @@ void one_of_the_change_values_buttons_pressed (gchar *origin)
         }
 
         // Cleanup
-        g_free (field);
-        g_free (value);
+        g_strfreev (parameter);
     }
 
-    if (STREQ (origin, "reset")) {
-        gtk_style_context_remove_class (gtk_widget_get_style_context (ks.entry_fields[MENU_ELEMENT_OR_VALUE_ENTRY]), 
-                                        "bg_class");
-        if (STREQ (new_menu_element, "item")) {
-            clear_entries ();
-            gtk_widget_set_visible (ks.options_grid, incl_action);
-            if (streq_any (action, "Exit", "SessionLogout", NULL)) {
-                gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ks.options_fields[SN_OR_PROMPT]), TRUE);
-            }
-        }
-        gtk_entry_set_text (GTK_ENTRY (ks.entry_fields[ICON_PATH_ENTRY]), "");
-        // It doesn't hurt to clear the Execute field even if it is not visible.
-        gtk_entry_set_text (GTK_ENTRY (ks.entry_fields[EXECUTE_ENTRY]), "");
+    if ((add_action = gtk_widget_get_visible (ks.action_option)) && 
+        streq_any (gtk_combo_box_get_active_id (GTK_COMBO_BOX (ks.action_option)), "Exit", "SessionLogout", NULL)) {
+        gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ks.options_fields[SN_OR_PROMPT]), TRUE);
     }
-    else if (STREQ (origin, "done")) {
-        gboolean missing_entry = FALSE;
+    if (STREQ (origin, "done")) {
+        gboolean missing_entry = FALSE; // default
 
         // Prevent empty label field.
         if (!(*((gchar *) gtk_entry_get_text (GTK_ENTRY (ks.entry_fields[MENU_ELEMENT_OR_VALUE_ENTRY]))))) {
@@ -166,7 +165,7 @@ void one_of_the_change_values_buttons_pressed (gchar *origin)
         }
 
         // Prevent empty command field.
-        if (STREQ (new_menu_element, "item") && including_action_check_button_active &&
+        if (add_action &&
             streq_any ((gchar *) gtk_combo_box_get_active_id (GTK_COMBO_BOX (ks.action_option)), "Execute", "Restart", NULL) && 
             !(*((gchar *) gtk_entry_get_text (GTK_ENTRY (ks.options_fields[COMMAND]))))) {
             wrong_or_missing (ks.options_fields[COMMAND], ks.execute_options_css_providers[COMMAND]);
@@ -181,34 +180,35 @@ void one_of_the_change_values_buttons_pressed (gchar *origin)
             return;
         }
 
-        const gchar *menu_id = gtk_entry_get_text (GTK_ENTRY (ks.entry_fields[MENU_ID_ENTRY]));
-        if (streq_any (new_menu_element, "menu", "pipe menu", NULL) && 
-            G_UNLIKELY (g_slist_find_custom (ks.menu_ids, menu_id, (GCompareFunc) strcmp))) {
-            show_errmsg ("The chosen menu ID already exists. Please choose another one.");
-            return;
+        if (!STREQ (new_menu_element, "item")) { // menu or pipe menu
+            const gchar *menu_id = gtk_entry_get_text (GTK_ENTRY (ks.entry_fields[MENU_ID_ENTRY]));
+            if (G_UNLIKELY (g_slist_find_custom (ks.menu_ids, menu_id, (GCompareFunc) strcmp))) {
+                show_errmsg ("The chosen menu ID already exists. Please choose another one.");
+                return;
+            }
+
+            ks.menu_ids = g_slist_prepend (ks.menu_ids, g_strdup (menu_id));
         }
 
         if (missing_entry) {
             return;
         }
 
-        ks.menu_ids = g_slist_prepend (ks.menu_ids, g_strdup (menu_id));
-        same_level = !gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (ks.inside_menu_check_button));
+        if (gtk_widget_get_visible (ks.inside_menu_check_button)) {
+            same_level = !gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (ks.inside_menu_check_button));
+        }
 
         GtkTreeIter new_menu_element_iter;
         ks.iter = new_menu_element_iter = add_new_execution (new_menu_element, same_level);
-        if (STREQ (new_menu_element, "item")) {
-            repopulate_txt_fields_array (); // This is usually called by row_selected ()
+
+        if (add_action) {
+            repopulate_txt_fields_array (); // This is usually called by row_selected () and needed by the following function.
             action_option_insert ("by combo box");
         }
 
         GtkTreeSelection *selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (ks.treeview));
-
-        g_signal_handler_block (selection, ks.handler_id_row_selected);
-        // If an item with an action has been selected, there is now the item and action selected.
-        gtk_tree_selection_unselect_all (selection);
-        g_signal_handler_unblock (selection, ks.handler_id_row_selected);
-        gtk_tree_selection_select_iter (selection, &new_menu_element_iter); // This triggers row_selected, resulting in a complete reset.
+        // This triggers row_selected, resulting in a complete reset.
+        gtk_tree_selection_select_iter (selection, &new_menu_element_iter);
 
         // Cleanup
         g_free (new_menu_element);
@@ -341,7 +341,9 @@ static GtkTreeIter add_new_execution (gchar *new_menu_element, gboolean same_lev
     }
     g_free (new_ts_fields[TS_ICON_MODIFICATION_TIME]);
 
-    gtk_tree_selection_select_iter (selection, &new_iter);
+    if (!gtk_widget_get_visible (ks.change_values_label)) {
+        gtk_tree_selection_select_iter (selection, &new_iter);
+    }
 
     /*
         In case that autosorting is activated:
@@ -421,7 +423,7 @@ void add_new (gchar *new_menu_element_plus_opt_suppl)
     else {
         gchar *field_value_pair;
 
-        gchar *change_values_markup, *element_txt;
+        gchar *change_values_markup, *default_label_txt;
 
         gboolean menu_or_pipe_menu = (!STREQ (new_menu_element, "item"));
 
@@ -518,12 +520,10 @@ void add_new (gchar *new_menu_element_plus_opt_suppl)
 
         field_value_pair = g_strdup_printf ("new menu element:%s", new_menu_element);
         ks.change_values_user_settings = g_slist_prepend (ks.change_values_user_settings, field_value_pair);
-        element_txt = g_strconcat ("New ", new_menu_element, NULL);
-        field_value_pair = g_strdup_printf ("label field:%s", element_txt);
-        ks.change_values_user_settings = g_slist_prepend (ks.change_values_user_settings, field_value_pair);
-        gtk_entry_set_text (GTK_ENTRY (ks.entry_fields[MENU_ELEMENT_OR_VALUE_ENTRY]), element_txt);
+        default_label_txt = g_strconcat ("New ", new_menu_element, NULL);
+        gtk_entry_set_text (GTK_ENTRY (ks.entry_fields[MENU_ELEMENT_OR_VALUE_ENTRY]), default_label_txt);
         // Cleanup
-        g_free (element_txt);
+        g_free (default_label_txt);
 
         gtk_entry_set_text (GTK_ENTRY (ks.entry_fields[ICON_PATH_ENTRY]), "");
 
@@ -1180,7 +1180,9 @@ void action_option_insert (gchar *origin)
         }
         // TRUE == expand recursively, this is for a new Execute action with startupnotify options, so the latter are shown.
         gtk_tree_view_expand_row (GTK_TREE_VIEW (ks.treeview), path, TRUE);
-        gtk_tree_selection_select_path (selection, path);
+        if (!gtk_widget_get_visible (ks.change_values_label)) {
+            gtk_tree_selection_select_path (selection, path);
+        }
 
         // Cleanup
         gtk_tree_path_free (parent_path);

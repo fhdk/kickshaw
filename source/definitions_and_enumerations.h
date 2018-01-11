@@ -48,7 +48,7 @@ enum { ICON_PATH_TXT, MENU_ELEMENT_TXT, TYPE_TXT, VALUE_TXT, MENU_ID_TXT,
 // renderer for treeview
 enum { TXT_RENDERER, EXCL_TXT_RENDERER, PIXBUF_RENDERER, BOOL_RENDERER, NUMBER_OF_RENDERERS };
 
-#define KICKSHAW_VERSION "0.5.9"
+#define KICKSHAW_VERSION "0.5.11"
 #define TREEVIEW_COLUMN_OFFSET NUMBER_OF_TS_ELEMENTS - NUMBER_OF_COLUMNS
 #define FREE_AND_REASSIGN(string, new_value) { g_free (string); string = new_value; }
 #define NOT_NULL_AND_NOT_EMPTY(string) (string && *string)
@@ -156,7 +156,6 @@ typedef struct {
 		 handler_id_find_in_columns[NUMBER_OF_COLUMNS], 
          handler_id_entry_fields[NUMBER_OF_ENTRY_FIELDS], 
 		 handler_id_including_action_check_button;
-	
 } ks_data;
 
 #endif

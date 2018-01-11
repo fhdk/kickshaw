@@ -18,6 +18,20 @@
 
 ---
 
+0.5.11 2018-01-10
+  * Bugfix (regression) - It was possible to nest menu elements into each 
+    other for which it was not supposed to be allowed.
+  * Bugfix (regression) - When mixing new menus with new items, the 
+    deletion of menus often did not delete the corresponding menu ID in the 
+    internal list.
+  * Fixed memory leak.
+  * Minor/cosmetical changes.
+
+0.5.10 2018-01-08
+  * Bugfix (regression) - If a row that includes an icon with an invalid 
+    icon path is selected, the icon path entry field is highlighted again.
+  * Cosmetical changes.
+
 0.5.9 2018-01-07
   * It is now possible to add items together with an action. 
   * An input screen has been added for new menus, pipe menus and items.

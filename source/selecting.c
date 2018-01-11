@@ -52,7 +52,7 @@ static void all_options_have_been_set_msg (gchar *action_option_txt)
 
 /* 
 
-    Checks. if a selected node has a descendant that has also been selected.
+    Checks if a selected node has a descendant that has also been selected.
 
 */
 
@@ -238,7 +238,7 @@ void row_selected (void)
             for (entry_fields_cnt = 0; entry_fields_cnt < NUMBER_OF_ENTRY_FIELDS; entry_fields_cnt++) {
                 if (!g_signal_handler_is_connected (ks.entry_fields[entry_fields_cnt], ks.handler_id_entry_fields[entry_fields_cnt])) {
                     ks.handler_id_entry_fields[entry_fields_cnt] = g_signal_connect (ks.entry_fields[entry_fields_cnt], "activate", 
-                                                                                       G_CALLBACK (change_row), NULL);
+                                                                                     G_CALLBACK (change_row), NULL);
                 }
             }
             gtk_widget_hide (ks.change_values_label);
@@ -338,6 +338,9 @@ void row_selected (void)
                                 " Addition of new menu elements deactivated due to multiple selections.");
         }
 
+        // Cleanup
+        g_list_free_full (selected_rows, (GDestroyNotify) gtk_tree_path_free);
+
         return;
     }
 
@@ -395,8 +398,8 @@ void row_selected (void)
         gtk_label_set_text (GTK_LABEL (ks.bt_add_action_option_label), "Action");
         g_signal_handler_disconnect (ks.bt_add[ACTION_OR_OPTION], ks.handler_id_action_option_button_clicked);
         ks.handler_id_action_option_button_clicked = g_signal_connect_swapped (ks.bt_add[ACTION_OR_OPTION], "clicked", 
-                                                                            G_CALLBACK (generate_items_for_action_option_combo_box), 
-                                                                            NULL);
+                                                                               G_CALLBACK (generate_items_for_action_option_combo_box), 
+                                                                               NULL);
     }
 
     // Action or option of it selected?
@@ -612,7 +615,7 @@ void set_entry_fields (void)
                 gtk_style_context_remove_class (entry_context, "bg_class");
             }
             else {
-                wrong_or_missing (ks.entry_fields[ICON_PATH_ENTRY], ks.find_entry_css_provider);
+                wrong_or_missing (ks.entry_fields[ICON_PATH_ENTRY], ks.icon_path_entry_css_provider);
             }
 
             if (!STREQ (ks.txt_fields[TYPE_TXT], "item")) {

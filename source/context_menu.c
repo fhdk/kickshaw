@@ -110,6 +110,7 @@ static void add_startupnotify_or_execute_options_to_context_menu (GtkWidget    *
                                                                   gchar       **options_array)
 {
     guint allocated_size = sizeof (gboolean) * number_of_opts;
+	// Used because VLAs cannot be initialized by any form of initialization syntax. 
     gboolean *opts_exist = g_slice_alloc0 (allocated_size); // Initialise all elements to FALSE.
     gchar *menu_item_txt;
     GtkWidget *menu_item;

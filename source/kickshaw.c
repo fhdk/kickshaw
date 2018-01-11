@@ -188,13 +188,13 @@ static void general_initialisiation (void)
 
 
     // ### Create a new window. ###
-           
+
 #if GTK_CHECK_VERSION(3,4,0)
     ks.window = gtk_application_window_new (GTK_APPLICATION (ks.app));
 #else
     ks.window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
 #endif
-    
+
     gtk_window_set_default_size (GTK_WINDOW (ks.window), 650, 550);
     gtk_window_set_title (GTK_WINDOW (ks.window), "Kickshaw");
     gtk_window_set_position (GTK_WINDOW (ks.window), GTK_WIN_POS_CENTER);
@@ -440,7 +440,7 @@ static void general_initialisiation (void)
                                      ".label { border-top-style:groove;"
                                      "         border-bottom-style:groove;" 
                                      "         border-width: 2px;"
-                                     "         border-color:#a8a8a8; "
+                                     "         border-color:#a8a8a8;"
                                      "         padding:3px; }", 
                                      -1, NULL);
 
@@ -659,6 +659,7 @@ static void general_initialisiation (void)
         ks.renderers[TXT_RENDERER] = gtk_cell_renderer_text_new ();
         g_signal_connect (ks.renderers[TXT_RENDERER], "edited", G_CALLBACK (cell_edited), GUINT_TO_POINTER (columns_cnt));
         gtk_tree_view_column_pack_start (ks.columns[columns_cnt], ks.renderers[TXT_RENDERER], FALSE);
+        // TREEVIEW_COLUMN_OFFSET is used to skip the icon related columns in the treestore. 
         gtk_tree_view_column_set_attributes (ks.columns[columns_cnt], ks.renderers[TXT_RENDERER], 
                                              "text", columns_cnt + TREEVIEW_COLUMN_OFFSET, NULL);
 
@@ -674,6 +675,11 @@ static void general_initialisiation (void)
     gtk_tree_view_column_set_visible (ks.columns[COL_ELEMENT_VISIBILITY], FALSE);
 
     // Set treestore and model.
+
+    /*
+        Order: icon img, icon img status, icon img modification time, icon path, 
+               menu element, type, value, menu ID, execute, element visibility
+    */
     ks.treestore = gtk_tree_store_new (NUMBER_OF_TS_ELEMENTS, GDK_TYPE_PIXBUF, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING, 
                                        G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, 
                                        G_TYPE_STRING);
@@ -1055,7 +1061,7 @@ static gboolean mouse_pressed (GtkTreeView *treeview, GdkEventButton *event)
             if (gtk_tree_selection_path_is_selected (selection, path)) {
                 // NULL == No destroy function for user data.
                 gtk_tree_selection_set_select_function (selection, (GtkTreeSelectionFunc) selection_block_unblock, 
-                                                                    GINT_TO_POINTER (FALSE), NULL);
+                                                        GINT_TO_POINTER (FALSE), NULL);
             }
 
             // Cleanup
