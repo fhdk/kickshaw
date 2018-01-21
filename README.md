@@ -31,7 +31,7 @@ or
 
 A simple script is provided to build and install from source if you prefer
 
-git clone https://github.com/natemaia/kickshaw
+    git clone https://github.com/natemaia/kickshaw
 
     cd kickshaw/
 
