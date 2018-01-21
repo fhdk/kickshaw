@@ -22,20 +22,20 @@ with Kickshaw. If not, see http://www.gnu.org/licenses/.
 
 If you are on Arch you can get from the AUR with
 
-yaourt -S kickshaw
+    yaourt -S kickshaw
 
 or
 
-packer -S kickshaw
+    packer -S kickshaw
 
 
 A simple script is provided to build and install from source if you prefer
 
 git clone https://github.com/natemaia/kickshaw
 
-cd kickshaw/
+    cd kickshaw/
 
-./install && exit
+    ./install && exit
 
 
 A makefile is provided. Running 'make' then 'sudo make install'
