@@ -12,18 +12,59 @@
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
 
-   You should have received a copy of the GNU General Public License along 
+   You should have received a copy of the GNU General Public License along
    with Kickshaw. If not, see http://www.gnu.org/licenses/.
 
 
 ---
 
+0.5.14 2018-01-24
+  * Bugfix (to some extent a regression) - If a (pipe) menu or item with 
+    an incorrect icon path was selected, in the screen for adding a new 
+    (pipe) menu or item the field for the icon path was shown with a red 
+    background, thus still indicating an incorrect path.
+  * Mandatory fields are now always shown with an asterisk inside the 
+    corresponding label. There is also a new label that indicates that 
+    the asterisk stands for a mandatory field.
+  * If a mandatory entry field has not been filled out, this entry no 
+    longer receives a red background, but a red border to prevent problems 
+    for color-blind users. The same goes for icon path entry fields with 
+    incorrect paths. For the same reason, if no column has been chosen 
+    during a search, the color contrast of the highlighted check buttons 
+    is now higher.
+  * Filling out the "Command" entry field for a new "Restart" action is 
+    now mandatory.
+  * Minor changes.
+
+0.5.13 2018-01-20
+  * Bugfix (to some extent a regression) - If an unlabeled (pipe) menu or 
+    item label was selected, in the screen for adding a new (pipe) menu or 
+    item the label field was deactivated, thus making it impossible to 
+    change the default label (unlabeled menu elements can only appear in 
+    menus that have been edited outside Kickshaw, since entering empty 
+    labels is prevented by the program).
+  * Minor/cosmetical changes.
+
+0.5.12 2018-01-18
+  * If the regular expression option is activated inside the 
+    search screen, a regular expression is now checked for errors before 
+    executing the search.
+  * Bugfix - During a search, special characters like less than, 
+    greater than, ampersand, etc. are now escaped in the markup of the 
+    matching string chunks, so that matches containing these special 
+    characters are also highlighted and a GTK warning is avoided.
+  * Bugfix - When using certain themes, search matches were shown with 
+    a black fore- and background for the selected row.
+  * Fixed memory leaks.
+  * Cosmetical changes.
+
 0.5.11 2018-01-10
-  * Bugfix (regression) - It was possible to nest menu elements into each 
-    other for which it was not supposed to be allowed.
+  * Bugfix (regression) - Under certain conditions new items or 
+    (pipe) menus were inserted into the currently selected menu element 
+    instead of placed after it.
   * Bugfix (regression) - When mixing new menus with new items, the 
-    deletion of menus often did not delete the corresponding menu ID in the 
-    internal list.
+    deletion of menus often did not delete the corresponding menu ID in 
+    the internal list.
   * Fixed memory leak.
   * Minor/cosmetical changes.
 
@@ -643,29 +684,30 @@
 
   * It is now possible to drop rows onto other rows, they are added as a 
     new last child of the row they are dropped upon.
-  * When a new file is created or loaded after a previous one, the treeview 
-    columns are now autosized. The same applies to collapsing rows via the 
-    context menu.
-  * Bugfix - Moving an option to an action that has already the same option 
-    is now prevented. It is now also being prevented that a prompt option 
-    with a value other than "yes" and "no" is moved into an "Exit" or 
-    "SessionLogout" action.
-  * Bugfix - Options are now autosorted when having been moved via drag and 
-    drop and if autosorting is activated.
+  * When a new file is created or loaded after a previous one,  
+    the treeview columns are now autosized. The same applies to 
+    collapsing rows via the context menu.
+  * Bugfix - Moving an option to an action that has already the 
+    same option is now prevented. It is now also being prevented that a 
+    prompt option with a value other than "yes" and "no" is moved into 
+    an "Exit" or "SessionLogout" action.
+  * Bugfix - Options are now autosorted when having been moved via 
+    drag and drop and if autosorting is activated.
   * Bugfix - Unused or invisible menus are being dealt with properly now 
     when they are part of a drag and drop process.
   * Bugfix - Prompt options can now be moved into SessionLogout actions.
     (This bug was irrelevant, since dropping onto empty rows had not been 
     implemented yet.)
-  * Bugfix - Memory of string disassembling array was not freed after use.
+  * Bugfix - Memory of string disassembling array was not 
+    freed after use.
   * The README file had not been updated with the drag_and_drop file.
   * Code optimisation, minor changes and removal of redundant code.
 
 0.4 Beta 2011-07-13
 
   * Solved the problem that dropping was done one row before the marked 
-    dropped zone if the dragged row was shown with more than its upper half 
-    above the marking.
+    dropped zone if the dragged row was shown with more than its 
+    upper half above the marking.
   * Added expand/collapse row in context menu for convenience.
   * Moved the settings file from ~/.config/openbox/menu_editor_settings 
     to ~/.kickshawrc, since this is no file created by Openbox itself and 
@@ -681,26 +723,27 @@
 
 0.3.14 2011-07-08
 
-  * Bugfix - If not located on a toplevel, a separator without a label still 
-    received a label="" in the xml file because of outdated code that had 
-    not been removed until now.
+  * Bugfix - If not located on a toplevel, a separator without a label 
+    still received a label="" in the xml file because of outdated code 
+    that had not been removed until now.
   * Code optimisation, also removal of redundant code.
 
 0.3.13 2011-07-07
 
-  * Bugfix - If a boolean field inside the tree view was selected, a variable 
-    was set internally that a change was done, even without one actually done, 
-    so a question would appear when leaving the program or creating a new/
-    opening another file whether to continue dispite unsaved changes.
-    The same applies for text fields, if there has been no change or the same 
-    value was entered, the variable is no longer set.
+  * Bugfix - If a boolean field inside the tree view was selected, 
+    a variable was set internally that a change was done, even without 
+    one actually done, so a question would appear when leaving 
+    the program or creating a new/opening another file whether to 
+    continue dispite unsaved changes.
+    The same applies for text fields, if there has been no change or 
+    the same value was entered, the variable is no longer set.
 
 0.3.12 2011-07-06
 
-  * Bugfix - If a Menu ID cell was edited directly in the tree view, the 
-    new value was shown, but the old value was still kept internally in the 
-    list of Menu ID, which could result in double Menu IDs if new ones were
-    added.
+  * Bugfix - If a Menu ID cell was edited directly in the tree view, 
+    the new value was shown, but the old value was still kept internally 
+    in the list of Menu ID, which could result in double Menu IDs if new 
+    ones were added.
   * Some code rewriting and optimisation.
 
 0.3.11 2010-12-06
@@ -711,9 +754,9 @@
     not deleted via the row references method.
   * If menus without corresponding entries in the root menu and/or root 
     menus without content are initialised or deleted, the menu can now be 
-    saved directly right from the start with the save toolbar button without 
-    using the save as toolbutton as "workaraound", since the menu has 
-    already been changed.
+    saved directly right from the start with the save toolbar button 
+    without using the save as toolbutton as "workaraound", since the menu 
+    has already been changed.
   * Minor/cosmetical changes.
 
 0.3.10 2010-12-05
@@ -725,14 +768,16 @@
 
 0.3.9 2010-11-28
 
-  * Bugfix - If a menu was saved a second time, the root menu wasn't created 
-    correctly, because some variables were not properly reset after the first 
-    save.
+  * Bugfix - If a menu was saved a second time, the root menu wasn't 
+    created correctly, because some variables were not properly reset 
+    after the first save.
   * Bugfix - The removal of the "(No label)" indicator wasn't done at one 
-    place in the code so separators without label were not written correctly.
-  * Bugfix - If a cell has been edited, the entry fields are now immediately 
-    updated. The "save" toolbutton is now shown if this modification was done 
-    as first modification after the start of the program.
+    place in the code so separators without label were not written 
+    correctly.
+  * Bugfix - If a cell has been edited, the entry fields are now 
+    immediately updated. The "save" toolbutton is now shown if this 
+    modification was done as first modification after the start of the 
+    program.
 
 0.3.8 2010-11-20
 
@@ -749,14 +794,14 @@
 
 0.3.6 2010-11-18
 
-  * Added the possibilty to regularise an unused or invisible toplevel menu
-    via the context menu.
+  * Added the possibilty to regularise an unused or invisible toplevel 
+    menu via the context menu.
   * Removed the possibility to change a toplevel menu status to invisible 
-    or unused. Even though this can be done by editing the menu xml file by 
-    hand, this is something that would usually not be considered as a useful 
-    option inside a program.
-  * Bugfix - Menus that are inserted as a sub element of a toplevel menu no 
-    longer unnecessarily receive a value for the toplevel menu status. 
+    or unused. Even though this can be done by editing the menu xml file 
+    by hand, this is something that would usually not be considered as a 
+    useful option inside a program.
+  * Bugfix - Menus that are inserted as a sub element of a toplevel menu 
+    no longer unnecessarily receive a value for the toplevel menu status. 
   * Minor/cosmetical changes and code cleanup.
 
 0.3.5 2010-11-18
@@ -812,8 +857,8 @@
 
 0.3 Beta 2 2010-11-11
 
-  * Empty Execute and startupnotify actions are now expanded if options are 
-    added to them.
+  * Empty Execute and startupnotify actions are now expanded if options 
+    are added to them.
   * Bugfix (regression) - Reinserted default dummy value for action combo 
     box, otherwise an insertion of a Reconfigure action before a first use 
     of the combo box leads to a crash.
@@ -838,8 +883,8 @@
 
 0.2.1 2010-11-09
 
-  * Bugfix (regression) - It was not possible to insert pipe menus, the last
-    chosen element was inserted again instead.
+  * Bugfix (regression) - It was not possible to insert pipe menus, 
+    the last chosen element was inserted again instead.
 
 0.2 2010-11-07
 
@@ -849,7 +894,8 @@
 
   * Slightly enhanced makefile that supports several jobs at the same time 
     (make -j option) and clean option.
-  * Switched to a much shorter way to check if X is running which also works on BSDs.
+  * Switched to a much shorter way to check if X is running which also 
+    works on BSDs.
   * FreeBSD binaries for x86 and amd64 added.
 
 0.2 Beta 2010-11-04
@@ -857,7 +903,8 @@
   * Added context menus.
   * Removed the possibilty to add menu elements at toplevel when several 
     menu elements are selected, since this is no action that would be 
-    considered when selecting multiple elements and could even be confusing.
+    considered when selecting multiple elements and could even be 
+    confusing.
   * Fixed several bugs.
 
 0.1 2010-11-02
@@ -879,7 +926,8 @@
 
 0.1 Alpha 2 2010-10-25
 
-  * Fixed realloc crash that happened when a menu was loaded on x86 machines.
+  * Fixed realloc crash that happened when a menu was loaded on 
+    x86 machines.
   * Faster xml parsing.
 
 0.1 Alpha 2010-10-24

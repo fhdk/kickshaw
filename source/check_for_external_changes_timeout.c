@@ -11,9 +11,9 @@
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-   GNU General Public License for more details.       
+   GNU General Public License for more details.
 
-   You should have received a copy of the GNU General Public License along 
+   You should have received a copy of the GNU General Public License along
    with Kickshaw. If not, see http://www.gnu.org/licenses/.
 */
 
@@ -25,7 +25,7 @@
 gboolean check_for_external_file_and_settings_changes (G_GNUC_UNUSED gpointer identifier);
 void stop_timeout (void);
 
-/* 
+/*
 
     Checks if...
     ...a valid icon file path has become invalid; if so, changes the icon to a broken one.
@@ -64,13 +64,13 @@ gboolean check_for_external_file_and_settings_changes (G_GNUC_UNUSED gpointer id
         ks.font_size = font_size_updated;
         create_new_invalid_icon_imgs = TRUE;
 
-		if (gtk_widget_get_visible (ks.change_values_label)) {
-			const gchar *label_txt = gtk_label_get_text (GTK_LABEL (ks.change_values_label));
-			gchar *label_markup = g_strdup_printf ("<span font='%i'>%s</span>", ks.font_size + 2, label_txt);
-    		gtk_label_set_markup (GTK_LABEL (ks.change_values_label), label_markup);
-			// Cleanup
-			g_free (label_markup);
-		}
+        if (gtk_widget_get_visible (ks.change_values_label)) {
+            const gchar *label_txt = gtk_label_get_text (GTK_LABEL (ks.change_values_label));
+            gchar *label_markup = g_strdup_printf ("<span font='%i'>%s</span>", ks.font_size + 2, label_txt);
+            gtk_label_set_markup (GTK_LABEL (ks.change_values_label), label_markup);
+            // Cleanup
+            g_free (label_markup);
+        }
     }
 
     // Check if icon theme has changed.
@@ -85,16 +85,16 @@ gboolean check_for_external_file_and_settings_changes (G_GNUC_UNUSED gpointer id
         create_invalid_icon_imgs ();
     }
 
-    for (rows_with_icons_loop = ks.rows_with_icons; 
-         rows_with_icons_loop; 
+    for (rows_with_icons_loop = ks.rows_with_icons;
+         rows_with_icons_loop;
          rows_with_icons_loop = rows_with_icons_loop->next) {
         path_loop = rows_with_icons_loop->data;
         gtk_tree_model_get_iter (ks.model, &iter_loop, path_loop);
- 
+
         gtk_tree_model_get (ks.model, &iter_loop,
-                            TS_ICON_IMG_STATUS, &icon_img_status_uint_loop, 
+                            TS_ICON_IMG_STATUS, &icon_img_status_uint_loop,
                             TS_ICON_MODIFICATION_TIME, &icon_modification_time_txt_loop,
-                            TS_ICON_PATH, &icon_path_txt_loop, 
+                            TS_ICON_PATH, &icon_path_txt_loop,
                             -1);
 
         replacement_done = FALSE; // Default
@@ -104,12 +104,12 @@ gboolean check_for_external_file_and_settings_changes (G_GNUC_UNUSED gpointer id
             Case 2: Invalid path to an icon image has become valid.
             Case 3: Icon image file is replaced with another one.
         */
-        if (G_LIKELY (icon_img_status_uint_loop != INVALID_PATH) && 
+        if (G_LIKELY (icon_img_status_uint_loop != INVALID_PATH) &&
             G_UNLIKELY (!g_file_test (icon_path_txt_loop, G_FILE_TEST_EXISTS))) { // Case 1
-            gtk_tree_store_set (ks.treestore, &iter_loop, 
-                                TS_ICON_IMG, ks.invalid_icon_imgs[INVALID_PATH_ICON], 
-                                TS_ICON_IMG_STATUS, INVALID_PATH, 
-                                TS_ICON_MODIFICATION_TIME, NULL, 
+            gtk_tree_store_set (ks.treestore, &iter_loop,
+                                TS_ICON_IMG, ks.invalid_icon_imgs[INVALID_PATH_ICON],
+                                TS_ICON_IMG_STATUS, INVALID_PATH,
+                                TS_ICON_MODIFICATION_TIME, NULL,
                                 -1);
 
             if (number_of_selected_rows == 1 && gtk_tree_selection_iter_is_selected (selection, &iter_loop)) {
@@ -123,17 +123,18 @@ gboolean check_for_external_file_and_settings_changes (G_GNUC_UNUSED gpointer id
 
             if (G_UNLIKELY (icon_img_status_uint_loop == INVALID_PATH ||
                             !STREQ (time_stamp, icon_modification_time_txt_loop))) {
-				// Case 2 & 3, FALSE == don't show error message when error occurs.
-                if (G_UNLIKELY (!set_icon (&iter_loop, icon_path_txt_loop, FALSE))) { 
-                    gtk_tree_store_set (ks.treestore, &iter_loop, 
-                                        TS_ICON_IMG, ks.invalid_icon_imgs[INVALID_FILE_ICON], 
-                                        TS_ICON_IMG_STATUS, INVALID_FILE, 
-                                        TS_ICON_MODIFICATION_TIME, time_stamp, 
+                // Case 2 & 3, FALSE == don't show error message when error occurs.
+                if (G_UNLIKELY (!set_icon (&iter_loop, icon_path_txt_loop, FALSE))) {
+                    gtk_tree_store_set (ks.treestore, &iter_loop,
+                                        TS_ICON_IMG, ks.invalid_icon_imgs[INVALID_FILE_ICON],
+                                        TS_ICON_IMG_STATUS, INVALID_FILE,
+                                        TS_ICON_MODIFICATION_TIME, time_stamp,
                                         -1);
                 }
 
                 if (number_of_selected_rows == 1 && gtk_tree_selection_iter_is_selected (selection, &iter_loop)) {
-                    gtk_style_context_remove_class (gtk_widget_get_style_context (ks.entry_fields[ICON_PATH_ENTRY]), "bg_class");
+                    gtk_style_context_remove_class (gtk_widget_get_style_context (ks.entry_fields[ICON_PATH_ENTRY]),
+                                                    "mandatory_missing");
                 }
 
                 replacement_done = TRUE;
@@ -147,14 +148,14 @@ gboolean check_for_external_file_and_settings_changes (G_GNUC_UNUSED gpointer id
             If the font size or icon theme has changed, replace the icon images accordingly,
             but only if the icons have not been replaced already, since the replacement icons already have the new size.
         */
-        if (G_UNLIKELY ((recreate_icon_images || (create_new_invalid_icon_imgs && icon_img_status_uint_loop)) && 
+        if (G_UNLIKELY ((recreate_icon_images || (create_new_invalid_icon_imgs && icon_img_status_uint_loop)) &&
                         !replacement_done)) {
             if (!icon_img_status_uint_loop) { // Icon path is OK and valid icon exists = create and store larger or smaller icon
                 set_icon (&iter_loop, icon_path_txt_loop, FALSE); // FALSE == don't show error message when error occurs.
             }
             else { // Icon path is wrong or icon image is invalid = store broken icon with larger or smaller size
-                gtk_tree_store_set (ks.treestore, &iter_loop, TS_ICON_IMG, 
-                                    ks.invalid_icon_imgs[(icon_img_status_uint_loop == INVALID_PATH) ? 
+                gtk_tree_store_set (ks.treestore, &iter_loop, TS_ICON_IMG,
+                                    ks.invalid_icon_imgs[(icon_img_status_uint_loop == INVALID_PATH) ?
                                                          INVALID_PATH_ICON : INVALID_FILE_ICON], -1);
             }
 
@@ -172,7 +173,7 @@ gboolean check_for_external_file_and_settings_changes (G_GNUC_UNUSED gpointer id
     return TRUE; // Keep timeout function up and running.
 }
 
-/* 
+/*
 
     Stops the timer and erases the list of icon occourrences.
 

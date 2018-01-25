@@ -13,7 +13,7 @@
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
    GNU General Public License for more details.
 
-   You should have received a copy of the GNU General Public License along 
+   You should have received a copy of the GNU General Public License along
    with Kickshaw. If not, see http://www.gnu.org/licenses/.
 */
 
@@ -26,15 +26,15 @@
 // ED = editing, indicating that the enums are only used here
 enum { ED_FILTER_SELECTED_PATH, ED_VISUALISE_RECURSIVELY, ED_NUMBER_OF_FILTER_VISUALISATION_ELEMENTS };
 
-void sort_execute_or_startupnotify_options_after_insertion (GtkTreeSelection *selection, GtkTreeIter *parent, 
+void sort_execute_or_startupnotify_options_after_insertion (GtkTreeSelection *selection, GtkTreeIter *parent,
                                                             gchar *execute_or_startupnotify, gchar *option);
 static void sort_execute_or_startupnotify_options (GtkTreeIter *parent, gchar *execute_or_startupnotify);
 gboolean sort_loop_after_sorting_activation (GtkTreeModel *foreach_model, GtkTreePath *foreach_path,
                                              GtkTreeIter *foreach_iter);
 void key_pressed (G_GNUC_UNUSED GtkWidget *widget, GdkEventKey *event);
 void move_selection (gpointer direction_pointer);
-static gboolean check_and_adjust_dependent_element_visibilities (GtkTreeModel *filter_model, GtkTreePath *filter_path, 
-                                                                 GtkTreeIter *filter_iter, 
+static gboolean check_and_adjust_dependent_element_visibilities (GtkTreeModel *filter_model, GtkTreePath *filter_path,
+                                                                 GtkTreeIter *filter_iter,
                                                                  gpointer *filter_visualisation);
 void visualise_menus_items_and_separators (gpointer recursively_pointer);
 static gboolean image_type_filter (const GtkFileFilterInfo *filter_info);
@@ -43,22 +43,22 @@ void icon_choosing_by_button_or_context_menu (void);
 gboolean set_icon (GtkTreeIter *icon_iter, gchar *icon_path, gboolean display_err_msg);
 void remove_icons_from_menus_or_items (void);
 void change_row (void);
-void cell_edited (G_GNUC_UNUSED GtkCellRendererText *renderer, 
-                                gchar               *path, 
-                                gchar               *new_text, 
+void cell_edited (G_GNUC_UNUSED GtkCellRendererText *renderer,
+                                gchar               *path,
+                                gchar               *new_text,
                                 gpointer             column_number_pointer);
 static void empty_label_msg (void);
 void boolean_toggled (void);
 
-/* 
+/*
 
     First initiates the sorting of Execute or startupnotify options, then selects the inserted option.
 
 */
 
-void sort_execute_or_startupnotify_options_after_insertion (GtkTreeSelection *selection, 
-                                                            GtkTreeIter      *parent, 
-                                                            gchar            *execute_or_startupnotify, 
+void sort_execute_or_startupnotify_options_after_insertion (GtkTreeSelection *selection,
+                                                            GtkTreeIter      *parent,
+                                                            gchar            *execute_or_startupnotify,
                                                             gchar            *option)
 {
     GtkTreeIter iter_loop;
@@ -81,7 +81,7 @@ void sort_execute_or_startupnotify_options_after_insertion (GtkTreeSelection *se
     gtk_tree_selection_select_iter (selection, &iter_loop);
 }
 
-/* 
+/*
 
     Sorts Execute or startupnotify options according to the order
     Execute: 1. prompt, 2. command, 3. startupnotify.
@@ -89,7 +89,7 @@ void sort_execute_or_startupnotify_options_after_insertion (GtkTreeSelection *se
 
 */
 
-static void sort_execute_or_startupnotify_options (GtkTreeIter *parent, 
+static void sort_execute_or_startupnotify_options (GtkTreeIter *parent,
                                                    gchar       *execute_or_startupnotify)
 {
     gboolean execute = (STREQ (execute_or_startupnotify, "Execute"));
@@ -105,17 +105,17 @@ static void sort_execute_or_startupnotify_options (GtkTreeIter *parent,
         gtk_tree_model_iter_nth_child (ks.model, &iter_loop1, parent, ch_cnt);
         gtk_tree_model_get (ks.model, &iter_loop1, TS_MENU_ELEMENT, &menu_element_txt_loop1, -1);
         for (opt_cnt = 0; opt_cnt < number_of_options; opt_cnt++) {
-            if (STREQ (menu_element_txt_loop1, 
+            if (STREQ (menu_element_txt_loop1,
                 (execute) ? ks.execute_options[opt_cnt] : ks.startupnotify_options[opt_cnt])) {
                 break;
             }
             else {
                 for (foll_ch_cnt = ch_cnt + 1;
-                     foll_ch_cnt < gtk_tree_model_iter_n_children (ks.model, parent); 
+                     foll_ch_cnt < gtk_tree_model_iter_n_children (ks.model, parent);
                      foll_ch_cnt++) {
                     gtk_tree_model_iter_nth_child (ks.model, &iter_loop2, parent, foll_ch_cnt);
                     gtk_tree_model_get (ks.model, &iter_loop2, TS_MENU_ELEMENT, &menu_element_txt_loop2, -1);
-                    if (STREQ ((execute) ? ks.execute_options[opt_cnt] : ks.startupnotify_options[opt_cnt], 
+                    if (STREQ ((execute) ? ks.execute_options[opt_cnt] : ks.startupnotify_options[opt_cnt],
                         menu_element_txt_loop2)) {
                         gtk_tree_store_swap (ks.treestore, &iter_loop1, &iter_loop2);
                         // Cleanup
@@ -133,14 +133,14 @@ static void sort_execute_or_startupnotify_options (GtkTreeIter *parent,
     }
 }
 
-/* 
+/*
 
     This function is run after autosorting of options has been activated.
     All Execute and startupnotify options of the treestore are sorted by it.
 
 */
 
-gboolean sort_loop_after_sorting_activation (GtkTreeModel *foreach_model, 
+gboolean sort_loop_after_sorting_activation (GtkTreeModel *foreach_model,
                                              GtkTreePath  *foreach_path,
                                              GtkTreeIter  *foreach_iter)
 {
@@ -151,12 +151,12 @@ gboolean sort_loop_after_sorting_activation (GtkTreeModel *foreach_model,
     gchar *menu_element_txt_loop;
     gchar *type_txt_loop;
 
-    gtk_tree_model_get (foreach_model, foreach_iter, 
-                        TS_MENU_ELEMENT, &menu_element_txt_loop, 
+    gtk_tree_model_get (foreach_model, foreach_iter,
+                        TS_MENU_ELEMENT, &menu_element_txt_loop,
                         TS_TYPE, &type_txt_loop,
                         -1);
 
-    if ((STREQ (type_txt_loop, "action") && STREQ (menu_element_txt_loop, "Execute")) || 
+    if ((STREQ (type_txt_loop, "action") && STREQ (menu_element_txt_loop, "Execute")) ||
          STREQ (type_txt_loop, "option block")) {
         sort_execute_or_startupnotify_options (foreach_iter, menu_element_txt_loop);
     }
@@ -168,12 +168,12 @@ gboolean sort_loop_after_sorting_activation (GtkTreeModel *foreach_model,
     return FALSE;
 }
 
-/* 
+/*
 
     Function that deals with key press events, currently only used for "Delete" key.
 
-    Because the callback function for the "key-press-event" event receives three arguments 
-    (widget, event and user data), the function can't be called via g_signal_connect_swapped, 
+    Because the callback function for the "key-press-event" event receives three arguments
+    (widget, event and user data), the function can't be called via g_signal_connect_swapped,
     so the widget argument has to remain (it is marked as unused). The "user data" argument is omitted.
 
 */
@@ -186,7 +186,7 @@ void key_pressed (G_GNUC_UNUSED GtkWidget *widget, GdkEventKey *event)
     }
 }
 
-/* 
+/*
 
     Moves selection up or down, to the top or bottom.
 
@@ -219,16 +219,16 @@ void move_selection (gpointer direction_pointer)
     row_selected ();
 }
 
-/* 
+/*
 
-    Sets element visibility of menus, pipe menus, items and separators 
+    Sets element visibility of menus, pipe menus, items and separators
     that are dependent on the menu element that has been visualised.
 
 */
 
-static gboolean check_and_adjust_dependent_element_visibilities (GtkTreeModel *filter_model, 
-                                                                 GtkTreePath  *filter_path, 
-                                                                 GtkTreeIter  *filter_iter, 
+static gboolean check_and_adjust_dependent_element_visibilities (GtkTreeModel *filter_model,
+                                                                 GtkTreePath  *filter_path,
+                                                                 GtkTreeIter  *filter_iter,
                                                                  gpointer     *filter_visualisation)
 {
     gchar *element_visibility_txt;
@@ -252,28 +252,28 @@ static gboolean check_and_adjust_dependent_element_visibilities (GtkTreeModel *f
         If the selected path is on toplevel, filter_visualisation[ED_FILTER_SELECTED_PATH] == NULL.
     */
     GtkTreePath *filter_selected_path = (GtkTreePath *) filter_visualisation[ED_FILTER_SELECTED_PATH];
-    gboolean recursively_and_row_is_dsct = (GPOINTER_TO_UINT (filter_visualisation[ED_VISUALISE_RECURSIVELY]) && 
+    gboolean recursively_and_row_is_dsct = (GPOINTER_TO_UINT (filter_visualisation[ED_VISUALISE_RECURSIVELY]) &&
                                             (!filter_selected_path || // Selected path is on toplevel = dsct. of NULL.
                                             gtk_tree_path_is_descendant (filter_path, filter_selected_path)));
 
-    gtk_tree_model_get (filter_model, filter_iter, 
-                        TS_MENU_ELEMENT, &menu_element_txt_filter, 
-                        TS_TYPE, &type_txt_filter, 
+    gtk_tree_model_get (filter_model, filter_iter,
+                        TS_MENU_ELEMENT, &menu_element_txt_filter,
+                        TS_TYPE, &type_txt_filter,
                         -1);
     gtk_tree_model_filter_convert_iter_to_child_iter ((GtkTreeModelFilter *) filter_model, &model_iter, filter_iter);
 
     /*
         Current row is an ancestor of the selected row or the selected row itself.
 
-        A menu element can only be visible if its ancestors are visible as well, 
-        so if a visualisation is done for a (pipe) menu, item or separator, the visibility statuses for all ancestors are 
-        set to "visible". 
-        To keep the code simple there is no check if the visibility status is already set to "visible", it is done anyway. 
+        A menu element can only be visible if its ancestors are visible as well,
+        so if a visualisation is done for a (pipe) menu, item or separator, the visibility statuses for all ancestors are
+        set to "visible".
+        To keep the code simple there is no check if the visibility status is already set to "visible", it is done anyway.
          Visualised menus and items get a "dummy" label, whilst separators don't, because they are always visible if they
         are not descendants of an invisible menu, whether they have a label or not.
     */
     if (filter_selected_path && // Selected path is not on toplevel.
-        (gtk_tree_path_is_ancestor (filter_path, filter_selected_path) || 
+        (gtk_tree_path_is_ancestor (filter_path, filter_selected_path) ||
         gtk_tree_path_compare (filter_path, filter_selected_path) == 0)) {
         gtk_tree_store_set (ks.treestore, &model_iter, TS_ELEMENT_VISIBILITY, "visible", -1);
         if (!menu_element_txt_filter && !STREQ (type_txt_filter, "separator")) {
@@ -285,9 +285,9 @@ static gboolean check_and_adjust_dependent_element_visibilities (GtkTreeModel *f
         guint8 invisible_ancestor = check_if_invisible_ancestor_exists (filter_model, filter_path);
         gboolean unlabeled_menu_or_item = !menu_element_txt_filter && !STREQ (type_txt_filter, "separator");
 
-        gchar *new_element_visibility_txt = 
-            (invisible_ancestor || (!recursively_and_row_is_dsct && unlabeled_menu_or_item)) ? 
-            ((invisible_ancestor) ? "invisible dsct. of invisible menu" : 
+        gchar *new_element_visibility_txt =
+            (invisible_ancestor || (!recursively_and_row_is_dsct && unlabeled_menu_or_item)) ?
+            ((invisible_ancestor) ? "invisible dsct. of invisible menu" :
             ((STREQ (type_txt_filter, "item") ? "invisible item" : "invisible menu"))) : "visible";
 
         if (recursively_and_row_is_dsct && unlabeled_menu_or_item) {
@@ -304,7 +304,7 @@ static gboolean check_and_adjust_dependent_element_visibilities (GtkTreeModel *f
     return FALSE;
 }
 
-/* 
+/*
 
     Changes the status of one or more menus, pipe menus, items and separators to visible.
 
@@ -361,13 +361,13 @@ void visualise_menus_items_and_separators (gpointer recursively_pointer)
 
             is converted to NULL.
         */
-        filter_visualisation[ED_FILTER_SELECTED_PATH] =  
-            (gpointer) gtk_tree_model_filter_convert_child_path_to_path ((GtkTreeModelFilter *) filter_model, 
+        filter_visualisation[ED_FILTER_SELECTED_PATH] =
+            (gpointer) gtk_tree_model_filter_convert_child_path_to_path ((GtkTreeModelFilter *) filter_model,
                                                                          selected_rows_loop->data);
 
         filter_visualisation[ED_VISUALISE_RECURSIVELY] = recursively_pointer;
 
-        gtk_tree_model_foreach (filter_model, (GtkTreeModelForeachFunc) check_and_adjust_dependent_element_visibilities, 
+        gtk_tree_model_foreach (filter_model, (GtkTreeModelForeachFunc) check_and_adjust_dependent_element_visibilities,
                                 filter_visualisation);
 
         // Cleanup
@@ -382,13 +382,13 @@ void visualise_menus_items_and_separators (gpointer recursively_pointer)
 
     activate_change_done ();
     /*
-        If just the txt_fields array would be repopulated, 
+        If just the txt_fields array would be repopulated,
         the menu bar sensivity for visualisation wouldn't be updated.
     */
     row_selected ();
 }
 
-/* 
+/*
 
     File filter is limited to display only image files.
 
@@ -399,7 +399,7 @@ static gboolean image_type_filter (const GtkFileFilterInfo *filter_info)
     return (g_regex_match_simple ("image/.*", filter_info->mime_type, 0, 0));
 }
 
-/* 
+/*
 
     Dialog for choosing an icon for a (pipe) menu or item.
 
@@ -410,10 +410,10 @@ static gboolean image_type_filter (const GtkFileFilterInfo *filter_info)
 gchar *choose_icon (void)
 {
     GtkWidget *dialog = gtk_file_chooser_dialog_new ("Open Image File",
-                                                     GTK_WINDOW (ks.window), 
+                                                     GTK_WINDOW (ks.window),
                                                      GTK_FILE_CHOOSER_ACTION_OPEN,
-                                                     "_Cancel", GTK_RESPONSE_CANCEL, 
-                                                     "_Open", GTK_RESPONSE_ACCEPT, 
+                                                     "_Cancel", GTK_RESPONSE_CANCEL,
+                                                     "_Open", GTK_RESPONSE_ACCEPT,
                                                      NULL);
 
     GtkFileFilter *open_image_file_filter = gtk_file_filter_new ();
@@ -423,7 +423,7 @@ gchar *choose_icon (void)
 
     gtk_file_filter_set_name (open_image_file_filter, "Image files");
     // The last two arguments (data and function to call to free data) aren't used.
-    gtk_file_filter_add_custom (open_image_file_filter, GTK_FILE_FILTER_MIME_TYPE, (GtkFileFilterFunc) image_type_filter, 
+    gtk_file_filter_add_custom (open_image_file_filter, GTK_FILE_FILTER_MIME_TYPE, (GtkFileFilterFunc) image_type_filter,
                                 NULL, NULL);
     gtk_file_chooser_add_filter (GTK_FILE_CHOOSER (dialog), open_image_file_filter);
 
@@ -436,7 +436,7 @@ gchar *choose_icon (void)
     return icon_filename;
 }
 
-/* 
+/*
 
     Lets the user choose an icon after (s)he clicked on the icon chooser button or
     (s)he chose the corresponding action from the context menu.
@@ -461,14 +461,14 @@ void icon_choosing_by_button_or_context_menu (void)
     }
 }
 
-/* 
+/*
 
     Adds an icon, if possible, at a position passed to this function.
 
 */
 
-gboolean set_icon (GtkTreeIter *icon_iter, 
-                   gchar       *icon_path, 
+gboolean set_icon (GtkTreeIter *icon_iter,
+                   gchar       *icon_path,
                    gboolean     display_err_msg)
 {
     GdkPixbuf *icon_in_original_size;
@@ -478,13 +478,13 @@ gboolean set_icon (GtkTreeIter *icon_iter,
         if (display_err_msg) {
             GString *error_message = g_string_new ("The following error occurred while trying to ");
             if (gtk_widget_get_visible (ks.remove_icon)) { // When entry fields are displayed at the bottom.
-                g_string_append_printf (error_message, "add an icon to the %s '%s'", 
+                g_string_append_printf (error_message, "add an icon to the %s '%s'",
                                         ks.txt_fields[TYPE_TXT], ks.txt_fields[MENU_ELEMENT_TXT]);
             }
             else { // When entry fields are displayed at the top (during the entry of a new menu element).
-                g_string_append_printf (error_message, "add an icon to the new %s",   
-                                        (gtk_widget_get_visible (ks.entry_fields[EXECUTE_ENTRY])) ? 
-                                        "pipe menu" : (gtk_widget_get_visible (ks.entry_fields[MENU_ID_ENTRY])) ? 
+                g_string_append_printf (error_message, "add an icon to the new %s",
+                                        (gtk_widget_get_visible (ks.entry_fields[EXECUTE_ENTRY])) ?
+                                        "pipe menu" : (gtk_widget_get_visible (ks.entry_fields[MENU_ID_ENTRY])) ?
                                         "menu" : "item");
             }
             g_string_append_printf (error_message, ":\n\n<span foreground='#8a1515'>%s</span>", error->message);
@@ -518,11 +518,11 @@ gboolean set_icon (GtkTreeIter *icon_iter,
 
     icon_modification_time = get_modification_time_for_icon (icon_path);
 
-    gtk_tree_store_set (GTK_TREE_STORE (ks.model), icon_iter, 
-                        TS_ICON_IMG, icon, 
-                        TS_ICON_IMG_STATUS, NONE_OR_NORMAL, 
-                        TS_ICON_PATH, icon_path, 
-                        TS_ICON_MODIFICATION_TIME, icon_modification_time, 
+    gtk_tree_store_set (GTK_TREE_STORE (ks.model), icon_iter,
+                        TS_ICON_IMG, icon,
+                        TS_ICON_IMG_STATUS, NONE_OR_NORMAL,
+                        TS_ICON_PATH, icon_path,
+                        TS_ICON_MODIFICATION_TIME, icon_modification_time,
                         -1);
 
     // Cleanup
@@ -533,12 +533,12 @@ gboolean set_icon (GtkTreeIter *icon_iter,
     if (gtk_tree_selection_count_selected_rows (selection)) {
         repopulate_txt_fields_array (); // There is no need to change the status of any menu- or toolbar widget.
         set_entry_fields ();
-    } 
+    }
 
     return TRUE;
 }
 
-/* 
+/*
 
     Removes icons from menus or items.
 
@@ -548,7 +548,7 @@ void remove_icons_from_menus_or_items (void)
 {
     GtkTreeSelection *selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (ks.treeview));
     GList *selected_rows = gtk_tree_selection_get_selected_rows (selection, &ks.model);
-  
+
     GList *selected_rows_loop;
     GtkTreeIter iter_loop;
 
@@ -557,8 +557,8 @@ void remove_icons_from_menus_or_items (void)
         gtk_tree_store_set (GTK_TREE_STORE (ks.model), &iter_loop,
                             TS_ICON_IMG, NULL,
                             TS_ICON_IMG_STATUS, NONE_OR_NORMAL,
-                            TS_ICON_MODIFICATION_TIME, NULL, 
-                            TS_ICON_PATH, NULL, 
+                            TS_ICON_MODIFICATION_TIME, NULL,
+                            TS_ICON_PATH, NULL,
                             -1);
     }
 
@@ -573,7 +573,7 @@ void remove_icons_from_menus_or_items (void)
     activate_change_done ();
 }
 
-/* 
+/*
 
     Changes one or more values of a row after at least one of the entry fields has been altered.
 
@@ -612,13 +612,15 @@ void change_row (void)
             if (ks.txt_fields[ICON_PATH_TXT] && !(*entry_txt[ICON_PATH_ENTRY])) {
                 remove_icons_from_menus_or_items ();
             }
-            else if (*entry_txt[ICON_PATH_ENTRY] && !STREQ (entry_txt[ICON_PATH_ENTRY], ks.txt_fields[ICON_PATH_TXT]) && 
-                     set_icon (&ks.iter, (gchar *) entry_txt[ICON_PATH_ENTRY], TRUE)) { // TRUE = display error message when error occurs.
-                gtk_style_context_remove_class (gtk_widget_get_style_context (ks.entry_fields[ICON_PATH_ENTRY]), "bg_class");
+            else if (*entry_txt[ICON_PATH_ENTRY] && !STREQ (entry_txt[ICON_PATH_ENTRY], ks.txt_fields[ICON_PATH_TXT]) &&
+                     // TRUE = display error message when error occurs.
+                     set_icon (&ks.iter, (gchar *) entry_txt[ICON_PATH_ENTRY], TRUE)) {
+                gtk_style_context_remove_class (gtk_widget_get_style_context (ks.entry_fields[ICON_PATH_ENTRY]),
+                                                "mandatory_missing");
                 gtk_widget_set_sensitive (ks.remove_icon, TRUE);
             }
         }
-        gtk_tree_store_set (ks.treestore, &ks.iter, TS_MENU_ELEMENT, 
+        gtk_tree_store_set (ks.treestore, &ks.iter, TS_MENU_ELEMENT,
                             (*entry_txt[MENU_ELEMENT_OR_VALUE_ENTRY]) ? entry_txt[MENU_ELEMENT_OR_VALUE_ENTRY] : NULL, -1);
     }
     // Option. Enabled is never shown, since it is edited directly inside the treeview.
@@ -628,7 +630,7 @@ void change_row (void)
 
     /*
         There is no need to change the status of any menu- or toolbar widget.
-        A repopulation of the text fields array is also necessary for the case 
+        A repopulation of the text fields array is also necessary for the case
         the same entry field is modified at least twice in a row.
     */
     repopulate_txt_fields_array ();
@@ -636,15 +638,15 @@ void change_row (void)
     activate_change_done ();
 }
 
-/* 
+/*
 
     Adopts changes from editable cells, in case it's a menu ID prevents a duplicate.
 
 */
 
-void cell_edited (G_GNUC_UNUSED GtkCellRendererText *renderer, 
-                                gchar               *path, 
-                                gchar               *new_text, 
+void cell_edited (G_GNUC_UNUSED GtkCellRendererText *renderer,
+                                gchar               *path,
+                                gchar               *new_text,
                                 gpointer             column_number_pointer)
 {
     guint column_number = GPOINTER_TO_UINT (column_number_pointer);
@@ -696,7 +698,7 @@ void cell_edited (G_GNUC_UNUSED GtkCellRendererText *renderer,
     activate_change_done ();
 }
 
-/* 
+/*
 
     Empty labels for menus, pipe menus or items are blocked, because they would make these elements invisible.
 
@@ -709,7 +711,7 @@ static void empty_label_msg (void)
                                         "since it would make the %s invisible.</b>\n\n"
                                         "Existing menus with invisible menu elements may be opened; "
                                         "these menu elements can be visualised or deleted at once, "
-                                        "otherwise they are highlighted.", 
+                                        "otherwise they are highlighted.",
                                         ks.txt_fields[TYPE_TXT], ks.txt_fields[TYPE_TXT]);
 
     create_dialog (&dialog, "Entry of empty label blocked", "dialog-error", label_txt, "Close", NULL, NULL, TRUE);
@@ -721,7 +723,7 @@ static void empty_label_msg (void)
     gtk_widget_destroy (dialog);
 }
 
-/* 
+/*
 
     Toggles value of toggle buttons in the treeview.
 
@@ -729,6 +731,6 @@ static void empty_label_msg (void)
 
 void boolean_toggled (void)
 {
-    gtk_tree_store_set (GTK_TREE_STORE (ks.model), &ks.iter, TS_VALUE, 
+    gtk_tree_store_set (GTK_TREE_STORE (ks.model), &ks.iter, TS_VALUE,
                         (STREQ (ks.txt_fields[VALUE_TXT], "yes")) ? "no" : "yes", -1);
 }

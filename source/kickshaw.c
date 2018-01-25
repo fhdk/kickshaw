@@ -13,7 +13,7 @@
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
    GNU General Public License for more details.
 
-   You should have received a copy of the GNU General Public License along 
+   You should have received a copy of the GNU General Public License along
    with Kickshaw. If not, see http://www.gnu.org/licenses/.
 */
 
@@ -26,32 +26,32 @@
 #include "kickshaw.h"
 
 ks_data ks = {
-    .options_label_txts = { " Prompt (optional): ", " Command: ", " Startupnotify " }, 
-    .actions = { "Execute", "Exit", "Reconfigure", "Restart", "SessionLogout" }, 
-    .execute_options = { "prompt", "command", "startupnotify" }, 
-    .startupnotify_options = { "enabled", "name", "wmclass", "icon" }, 
-    
-    .execute_displayed_txts = { "Prompt", "Command", "Startupnotify" }, 
+    .options_label_txts = { " Prompt: ", "", " Startupnotify " }, // "Command" is set later with markup.
+    .actions = { "Execute", "Exit", "Reconfigure", "Restart", "SessionLogout" },
+    .execute_options = { "prompt", "command", "startupnotify" },
+    .startupnotify_options = { "enabled", "name", "wmclass", "icon" },
+
+    .execute_displayed_txts = { "Prompt", "Command", "Startupnotify" },
     .startupnotify_displayed_txts = { "Enabled", "Name", "WM_CLASS", "Icon" },
 
-    .column_header_txts = { "Menu Element", "Type", "Value", "Menu ID", "Execute", "Element Visibility" }, 
+    .column_header_txts = { "Menu Element", "Type", "Value", "Menu ID", "Execute", "Element Visibility" },
 
     .enable_list = {{ "STRING", GTK_TARGET_SAME_WIDGET, 0 }}
 };
 
 static void general_initialisiation (void);
 static void add_button_content (GtkWidget *button, gchar *label_text);
-gboolean selection_block_unblock (G_GNUC_UNUSED GtkTreeSelection *selection, 
+gboolean selection_block_unblock (G_GNUC_UNUSED GtkTreeSelection *selection,
                                   G_GNUC_UNUSED GtkTreeModel     *model,
-                                  G_GNUC_UNUSED GtkTreePath      *path, 
-                                  G_GNUC_UNUSED gboolean          path_currently_selected, 
+                                  G_GNUC_UNUSED GtkTreePath      *path,
+                                  G_GNUC_UNUSED gboolean          path_currently_selected,
                                   gpointer                        block_state);
 static gboolean mouse_pressed (GtkTreeView *treeview, GdkEventButton *event);
 static gboolean mouse_released (void);
-static void set_column_attributes (G_GNUC_UNUSED GtkTreeViewColumn *cell_column, 
+static void set_column_attributes (G_GNUC_UNUSED GtkTreeViewColumn *cell_column,
                                                  GtkCellRenderer   *txt_renderer,
-                                                 GtkTreeModel      *cell_model, 
-                                                 GtkTreeIter       *cell_iter, 
+                                                 GtkTreeModel      *cell_model,
+                                                 GtkTreeIter       *cell_iter,
                                                  gpointer           column_number_pointer);
 static void change_view_and_options (gpointer activated_menu_item_pointer);
 static void expand_or_collapse_all (gpointer expand_pointer);
@@ -70,7 +70,7 @@ void show_msg_in_statusbar (gchar *message);
 
 int main (G_GNUC_UNUSED int argc, char *argv[])
 {
-    // --- Startup checks --- 
+    // --- Startup checks ---
 
 
     // ### Display program version. ###
@@ -107,7 +107,7 @@ int main (G_GNUC_UNUSED int argc, char *argv[])
     return status;
 }
 
-/* 
+/*
 
     Creates GUI and signals, also loads settings and standard menu file, if they exist.
 
@@ -129,7 +129,7 @@ static void general_initialisiation (void)
     GSList *element_visibility_menu_item_group = NULL, *grid_menu_item_group = NULL;
     GtkWidget *mb_file, *mb_find, *mb_view, *mb_help,
               *mb_show_element_visibility_column, *mb_show_grid, *mb_about;
-    enum { FILE_MENU, EDIT_MENU, SEARCH_MENU, VIEW_MENU, OPTIONS_MENU, HELP_MENU, 
+    enum { FILE_MENU, EDIT_MENU, SEARCH_MENU, VIEW_MENU, OPTIONS_MENU, HELP_MENU,
            SHOW_ELEMENT_VISIBILITY_COLUMN_MENU, SHOW_GRID_MENU, NUMBER_OF_SUBMENUS };
     GtkWidget *submenus[NUMBER_OF_SUBMENUS];
     GtkMenuShell *view_submenu;
@@ -147,9 +147,9 @@ static void general_initialisiation (void)
     guint8 txts_cnt;
 
     GtkWidget *toolbar;
-    gchar *button_IDs[] = { "document-new", "document-open", "document-save", "document-save-as", "go-up", 
+    gchar *button_IDs[] = { "document-new", "document-open", "document-save", "document-save-as", "go-up",
                             "go-down", "list-remove", "edit-find", "zoom-in", "zoom-out", "application-exit"};
-    gchar *tb_tooltips[] = { "New menu", "Open menu", "Save menu", "Save menu as...", "Move up", 
+    gchar *tb_tooltips[] = { "New menu", "Open menu", "Save menu", "Save menu as...", "Move up",
                              "Move down", "Remove", "Find", "Expand all", "Collapse all", "Quit" };
     GtkToolItem *tb_separator;
 
@@ -180,7 +180,7 @@ static void general_initialisiation (void)
 
     gchar *new_filename;
 
-    guint8 buttons_cnt, columns_cnt, entry_fields_cnt, grids_cnt, mb_menu_items_cnt, 
+    guint8 buttons_cnt, columns_cnt, entry_fields_cnt, grids_cnt, mb_menu_items_cnt,
            options_cnt, snotify_opts_cnt, submenus_cnt, view_and_opts_cnt;
 
 
@@ -232,7 +232,7 @@ static void general_initialisiation (void)
         if (mb_menu_items_cnt != MB_SEPARATOR_FILE) {
             ks.mb_file_menu_items[mb_menu_items_cnt] = gtk_menu_item_new_with_mnemonic (file_menu_item_txts[mb_menu_items_cnt]);
             gtk_accelerator_parse (file_menu_item_accelerators[mb_menu_items_cnt], &accel_key, &accel_mod);
-            gtk_widget_add_accelerator (ks.mb_file_menu_items[mb_menu_items_cnt], "activate", accel_group, 
+            gtk_widget_add_accelerator (ks.mb_file_menu_items[mb_menu_items_cnt], "activate", accel_group,
                                         accel_key, accel_mod, GTK_ACCEL_VISIBLE);
         }
         else {
@@ -301,33 +301,33 @@ static void general_initialisiation (void)
     mb_show_element_visibility_column = gtk_menu_item_new_with_label ("Show Element Visibility column");
     ks.mb_view_and_options[SHOW_ICONS] = gtk_check_menu_item_new_with_label ("Show icons");
     ks.mb_view_and_options[SET_OFF_SEPARATORS] = gtk_check_menu_item_new_with_label ("Set off separators");
-    ks.mb_view_and_options[DRAW_ROWS_IN_ALT_COLOURS] = 
+    ks.mb_view_and_options[DRAW_ROWS_IN_ALT_COLOURS] =
         gtk_check_menu_item_new_with_label ("Draw rows in altern. colours (theme dep.)");
-    ks.mb_view_and_options[SHOW_TREE_LINES] = gtk_check_menu_item_new_with_label ("Show tree lines"); 
+    ks.mb_view_and_options[SHOW_TREE_LINES] = gtk_check_menu_item_new_with_label ("Show tree lines");
     mb_show_grid = gtk_menu_item_new_with_label ("Show grid");
 
     for (mb_menu_items_cnt = SHOW_ELEMENT_VISIBILITY_COL_ACTVTD, txts_cnt = 0;
-         mb_menu_items_cnt <= SHOW_ELEMENT_VISIBILITY_COL_DONT_KEEP_HIGHL; 
+         mb_menu_items_cnt <= SHOW_ELEMENT_VISIBILITY_COL_DONT_KEEP_HIGHL;
          mb_menu_items_cnt++, txts_cnt++) {
         if (mb_menu_items_cnt == SHOW_ELEMENT_VISIBILITY_COL_ACTVTD) {
             ks.mb_view_and_options[mb_menu_items_cnt] = gtk_check_menu_item_new_with_label (visibility_txts[txts_cnt]);
         }
         else {
-            ks.mb_view_and_options[mb_menu_items_cnt] = gtk_radio_menu_item_new_with_label (element_visibility_menu_item_group, 
+            ks.mb_view_and_options[mb_menu_items_cnt] = gtk_radio_menu_item_new_with_label (element_visibility_menu_item_group,
                                                                                             visibility_txts[txts_cnt]);
             element_visibility_menu_item_group =
                 gtk_radio_menu_item_get_group (GTK_RADIO_MENU_ITEM (ks.mb_view_and_options[mb_menu_items_cnt]));
         }
-        gtk_menu_shell_append (GTK_MENU_SHELL (submenus[SHOW_ELEMENT_VISIBILITY_COLUMN_MENU]), 
+        gtk_menu_shell_append (GTK_MENU_SHELL (submenus[SHOW_ELEMENT_VISIBILITY_COLUMN_MENU]),
                                ks.mb_view_and_options[mb_menu_items_cnt]);
     }
-    gtk_menu_item_set_submenu (GTK_MENU_ITEM (mb_show_element_visibility_column), 
+    gtk_menu_item_set_submenu (GTK_MENU_ITEM (mb_show_element_visibility_column),
         submenus[SHOW_ELEMENT_VISIBILITY_COLUMN_MENU]);
 
     for (mb_menu_items_cnt = NO_GRID_LINES, txts_cnt = 0;
          mb_menu_items_cnt <= BOTH;
          mb_menu_items_cnt++, txts_cnt++) {
-        ks.mb_view_and_options[mb_menu_items_cnt] = gtk_radio_menu_item_new_with_label (grid_menu_item_group, 
+        ks.mb_view_and_options[mb_menu_items_cnt] = gtk_radio_menu_item_new_with_label (grid_menu_item_group,
                                                     grid_txts[txts_cnt]);
         grid_menu_item_group = gtk_radio_menu_item_get_group (GTK_RADIO_MENU_ITEM (ks.mb_view_and_options[mb_menu_items_cnt]));
         gtk_menu_shell_append (GTK_MENU_SHELL (submenus[SHOW_GRID_MENU]), ks.mb_view_and_options[mb_menu_items_cnt]);
@@ -361,11 +361,11 @@ static void general_initialisiation (void)
 
     // Options
     ks.mb_options = gtk_menu_item_new_with_mnemonic ("_Options");
-    ks.mb_view_and_options[CREATE_BACKUP_BEFORE_OVERWRITING_MENU] = 
+    ks.mb_view_and_options[CREATE_BACKUP_BEFORE_OVERWRITING_MENU] =
         gtk_check_menu_item_new_with_label ("Create backup before overwriting menu");
-    ks.mb_view_and_options[SORT_EXECUTE_AND_STARTUPN_OPTIONS] = 
+    ks.mb_view_and_options[SORT_EXECUTE_AND_STARTUPN_OPTIONS] =
         gtk_check_menu_item_new_with_label ("Sort execute/startupnotify options");
-    ks.mb_view_and_options[NOTIFY_ABOUT_EXECUTE_OPT_CONVERSIONS] = 
+    ks.mb_view_and_options[NOTIFY_ABOUT_EXECUTE_OPT_CONVERSIONS] =
         gtk_check_menu_item_new_with_label ("Always notify about execute opt. conversions");
 
     gtk_menu_shell_append (GTK_MENU_SHELL (submenus[OPTIONS_MENU]), ks.mb_view_and_options[CREATE_BACKUP_BEFORE_OVERWRITING_MENU]);
@@ -433,15 +433,15 @@ static void general_initialisiation (void)
     gtk_container_add (GTK_CONTAINER (main_grid), ks.change_values_label);
     gtk_widget_set_margin_bottom (ks.change_values_label, 12);
     change_values_label_css_provider = gtk_css_provider_new ();
-    gtk_style_context_add_provider (gtk_widget_get_style_context (ks.change_values_label), 
-                                    GTK_STYLE_PROVIDER (change_values_label_css_provider), 
+    gtk_style_context_add_provider (gtk_widget_get_style_context (ks.change_values_label),
+                                    GTK_STYLE_PROVIDER (change_values_label_css_provider),
                                     GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
-    gtk_css_provider_load_from_data (change_values_label_css_provider, 
+    gtk_css_provider_load_from_data (change_values_label_css_provider,
                                      ".label { border-top-style:groove;"
-                                     "         border-bottom-style:groove;" 
-                                     "         border-width: 2px;"
+                                     "         border-bottom-style:groove;"
+                                     "         border-width:2px;"
                                      "         border-color:#a8a8a8;"
-                                     "         padding:3px; }", 
+                                     "         padding:3px; }",
                                      -1, NULL);
 
 
@@ -482,7 +482,7 @@ static void general_initialisiation (void)
 
     g_object_unref (ks.action_option_combo_box_liststore);
 
-    gtk_cell_layout_set_cell_data_func (GTK_CELL_LAYOUT (ks.action_option), action_option_combo_box_renderer, 
+    gtk_cell_layout_set_cell_data_func (GTK_CELL_LAYOUT (ks.action_option), action_option_combo_box_renderer,
                                         option_list_with_headlines, NULL, NULL); // No user data, no destroy notify for user data.*/
     gtk_container_add (GTK_CONTAINER (ks.new_action_option_grid), ks.action_option);
 
@@ -503,20 +503,23 @@ static void general_initialisiation (void)
 
     for (options_cnt = 0; options_cnt < NUMBER_OF_EXECUTE_OPTS; options_cnt++) {
         ks.options_labels[options_cnt] = gtk_label_new (ks.options_label_txts[options_cnt]);
+        if (options_cnt == COMMAND) {
+            gtk_label_set_markup (GTK_LABEL (ks.options_labels[options_cnt]), " Command (<span foreground='darkred'>*</span>): ");
+        }
 
         gtk_widget_set_halign (ks.options_labels[options_cnt], GTK_ALIGN_START);
 
         if (options_cnt < SN_OR_PROMPT) {
             ks.options_fields[options_cnt] = gtk_entry_new ();
             ks.execute_options_css_providers[options_cnt] = gtk_css_provider_new ();
-            gtk_style_context_add_provider (gtk_widget_get_style_context (ks.options_fields[options_cnt]), 
-                                            GTK_STYLE_PROVIDER (ks.execute_options_css_providers[options_cnt]), 
+            gtk_style_context_add_provider (gtk_widget_get_style_context (ks.options_fields[options_cnt]),
+                                            GTK_STYLE_PROVIDER (ks.execute_options_css_providers[options_cnt]),
                                             GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
             gtk_widget_set_hexpand (ks.options_fields[options_cnt], TRUE);
         }
-        gtk_grid_attach (GTK_GRID (ks.options_grid), ks.options_labels[options_cnt], 0, options_cnt, 
+        gtk_grid_attach (GTK_GRID (ks.options_grid), ks.options_labels[options_cnt], 0, options_cnt,
                          (options_cnt < SN_OR_PROMPT) ? 2 : 1, 1);
-        gtk_grid_attach (GTK_GRID (ks.options_grid), ks.options_fields[options_cnt], 
+        gtk_grid_attach (GTK_GRID (ks.options_grid), ks.options_fields[options_cnt],
                          (options_cnt < SN_OR_PROMPT) ? 2 : 1, options_cnt, 1, 1);
     }
 
@@ -537,14 +540,18 @@ static void general_initialisiation (void)
         ks.suboptions_fields[snotify_opts_cnt] = (snotify_opts_cnt == ENABLED) ? gtk_check_button_new () : gtk_entry_new ();
         if (snotify_opts_cnt > ENABLED) {
             ks.suboptions_fields_css_providers[snotify_opts_cnt - 1] = gtk_css_provider_new ();
-            gtk_style_context_add_provider (gtk_widget_get_style_context (ks.suboptions_fields[snotify_opts_cnt]), 
-                                            GTK_STYLE_PROVIDER (ks.suboptions_fields_css_providers[snotify_opts_cnt - 1]), 
+            gtk_style_context_add_provider (gtk_widget_get_style_context (ks.suboptions_fields[snotify_opts_cnt]),
+                                            GTK_STYLE_PROVIDER (ks.suboptions_fields_css_providers[snotify_opts_cnt - 1]),
                                             GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
         }
         gtk_grid_attach (GTK_GRID (ks.suboptions_grid), ks.suboptions_fields[snotify_opts_cnt], 1, snotify_opts_cnt, 1, 1);
 
         gtk_widget_set_hexpand (ks.suboptions_fields[snotify_opts_cnt], TRUE);
     }
+
+    ks.mandatory = gtk_label_new (NULL);
+    gtk_label_set_markup (GTK_LABEL (ks.mandatory), "(<span foreground='darkred'>*</span>) = mandatory");
+    gtk_container_add (GTK_CONTAINER (ks.main_box), ks.mandatory);
 
     ks.separator = gtk_separator_new (GTK_ORIENTATION_HORIZONTAL);
     gtk_widget_set_margin_top (ks.separator, 10);
@@ -555,7 +562,7 @@ static void general_initialisiation (void)
     gtk_grid_set_column_spacing (GTK_GRID (ks.change_values_buttons_grid), 10);
     gtk_widget_set_margin_bottom (ks.change_values_buttons_grid, 10);
     gtk_container_add (GTK_CONTAINER (ks.main_box), ks.change_values_buttons_grid);
-    
+
     change_values_cancel = gtk_button_new_with_label ("Cancel");
     change_values_reset = gtk_button_new_with_label ("Reset");
     change_values_done = gtk_button_new_with_label ("Done");
@@ -585,11 +592,11 @@ static void general_initialisiation (void)
 
     for (buttons_cnt = 0; buttons_cnt < NUMBER_OF_FIND_ENTRY_BUTTONS; buttons_cnt++) {
 #if GTK_CHECK_VERSION(3,10,0)
-        ks.find_entry_buttons[buttons_cnt] = gtk_button_new_from_icon_name (find_entry_buttons_imgs[buttons_cnt], 
+        ks.find_entry_buttons[buttons_cnt] = gtk_button_new_from_icon_name (find_entry_buttons_imgs[buttons_cnt],
                                                                             GTK_ICON_SIZE_BUTTON);
 #else
         ks.find_entry_buttons[buttons_cnt] = gtk_button_new ();
-        gtk_button_set_image (GTK_BUTTON (ks.find_entry_buttons[buttons_cnt]), 
+        gtk_button_set_image (GTK_BUTTON (ks.find_entry_buttons[buttons_cnt]),
         gtk_image_new_from_stock (ks.find_entry_buttons_imgs[buttons_cnt], GTK_ICON_SIZE_BUTTON));
 #endif
         gtk_widget_set_tooltip_text (GTK_WIDGET (ks.find_entry_buttons[buttons_cnt]), find_entry_buttons_tooltips[buttons_cnt]);
@@ -598,8 +605,8 @@ static void general_initialisiation (void)
 
     ks.find_entry = gtk_entry_new ();
     ks.find_entry_css_provider = gtk_css_provider_new ();
-    gtk_style_context_add_provider (gtk_widget_get_style_context (ks.find_entry), 
-                                    GTK_STYLE_PROVIDER (ks.find_entry_css_provider), 
+    gtk_style_context_add_provider (gtk_widget_get_style_context (ks.find_entry),
+                                    GTK_STYLE_PROVIDER (ks.find_entry_css_provider),
                                     GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
 
     gtk_widget_set_hexpand (ks.find_entry, TRUE);
@@ -610,16 +617,16 @@ static void general_initialisiation (void)
         gtk_container_add (GTK_CONTAINER (find_subgrids[COLUMNS_SELECTION]), ks.find_in_columns[columns_cnt]);
 
         ks.find_in_columns_css_providers[columns_cnt] = gtk_css_provider_new ();
-        gtk_style_context_add_provider (gtk_widget_get_style_context (ks.find_in_columns[columns_cnt]), 
-                                        GTK_STYLE_PROVIDER (ks.find_in_columns_css_providers[columns_cnt]), 
+        gtk_style_context_add_provider (gtk_widget_get_style_context (ks.find_in_columns[columns_cnt]),
+                                        GTK_STYLE_PROVIDER (ks.find_in_columns_css_providers[columns_cnt]),
                                         GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
     }
 
     ks.find_in_all_columns = gtk_check_button_new_with_label ("All columns");
     gtk_container_add (GTK_CONTAINER (find_subgrids[COLUMNS_SELECTION]), ks.find_in_all_columns);
     ks.find_in_all_columns_css_provider = gtk_css_provider_new ();
-    gtk_style_context_add_provider (gtk_widget_get_style_context (ks.find_in_all_columns), 
-                                    GTK_STYLE_PROVIDER (ks.find_in_all_columns_css_provider), 
+    gtk_style_context_add_provider (gtk_widget_get_style_context (ks.find_in_all_columns),
+                                    GTK_STYLE_PROVIDER (ks.find_in_all_columns_css_provider),
                                     GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
 
     ks.find_match_case = gtk_check_button_new_with_label ("Match case");
@@ -647,7 +654,7 @@ static void general_initialisiation (void)
             ks.renderers[EXCL_TXT_RENDERER] = gtk_cell_renderer_text_new ();
             gtk_tree_view_column_pack_start (ks.columns[COL_MENU_ELEMENT], ks.renderers[PIXBUF_RENDERER], FALSE);
             gtk_tree_view_column_pack_start (ks.columns[COL_MENU_ELEMENT], ks.renderers[EXCL_TXT_RENDERER], FALSE);
-            gtk_tree_view_column_set_attributes (ks.columns[COL_MENU_ELEMENT], ks.renderers[PIXBUF_RENDERER], 
+            gtk_tree_view_column_set_attributes (ks.columns[COL_MENU_ELEMENT], ks.renderers[PIXBUF_RENDERER],
                                                  "pixbuf", TS_ICON_IMG, NULL);
         }
         else if (columns_cnt == COL_VALUE) {
@@ -659,13 +666,13 @@ static void general_initialisiation (void)
         ks.renderers[TXT_RENDERER] = gtk_cell_renderer_text_new ();
         g_signal_connect (ks.renderers[TXT_RENDERER], "edited", G_CALLBACK (cell_edited), GUINT_TO_POINTER (columns_cnt));
         gtk_tree_view_column_pack_start (ks.columns[columns_cnt], ks.renderers[TXT_RENDERER], FALSE);
-        // TREEVIEW_COLUMN_OFFSET is used to skip the icon related columns in the treestore. 
-        gtk_tree_view_column_set_attributes (ks.columns[columns_cnt], ks.renderers[TXT_RENDERER], 
+        // TREEVIEW_COLUMN_OFFSET is used to skip the icon related columns in the treestore.
+        gtk_tree_view_column_set_attributes (ks.columns[columns_cnt], ks.renderers[TXT_RENDERER],
                                              "text", columns_cnt + TREEVIEW_COLUMN_OFFSET, NULL);
 
-        gtk_tree_view_column_set_cell_data_func (ks.columns[columns_cnt], ks.renderers[TXT_RENDERER], 
-                                                 (GtkTreeCellDataFunc) set_column_attributes, 
-                                                 GUINT_TO_POINTER (columns_cnt), 
+        gtk_tree_view_column_set_cell_data_func (ks.columns[columns_cnt], ks.renderers[TXT_RENDERER],
+                                                 (GtkTreeCellDataFunc) set_column_attributes,
+                                                 GUINT_TO_POINTER (columns_cnt),
                                                  NULL); // NULL -> no destroy notify for user data.
         gtk_tree_view_column_set_resizable (ks.columns[columns_cnt], TRUE);
         gtk_tree_view_append_column (GTK_TREE_VIEW (ks.treeview), ks.columns[columns_cnt]);
@@ -677,11 +684,11 @@ static void general_initialisiation (void)
     // Set treestore and model.
 
     /*
-        Order: icon img, icon img status, icon img modification time, icon path, 
+        Order: icon img, icon img status, icon img modification time, icon path,
                menu element, type, value, menu ID, execute, element visibility
     */
-    ks.treestore = gtk_tree_store_new (NUMBER_OF_TS_ELEMENTS, GDK_TYPE_PIXBUF, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING, 
-                                       G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, 
+    ks.treestore = gtk_tree_store_new (NUMBER_OF_TS_ELEMENTS, GDK_TYPE_PIXBUF, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING,
+                                       G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
                                        G_TYPE_STRING);
 
     gtk_tree_view_set_model (GTK_TREE_VIEW (ks.treeview), GTK_TREE_MODEL (ks.treestore));
@@ -715,8 +722,8 @@ static void general_initialisiation (void)
 
     ks.entry_fields[MENU_ELEMENT_OR_VALUE_ENTRY] = gtk_entry_new ();
     ks.menu_element_or_value_entry_css_provider = gtk_css_provider_new ();
-    gtk_style_context_add_provider (gtk_widget_get_style_context (ks.entry_fields[MENU_ELEMENT_OR_VALUE_ENTRY]), 
-                                    GTK_STYLE_PROVIDER (ks.menu_element_or_value_entry_css_provider), 
+    gtk_style_context_add_provider (gtk_widget_get_style_context (ks.entry_fields[MENU_ELEMENT_OR_VALUE_ENTRY]),
+                                    GTK_STYLE_PROVIDER (ks.menu_element_or_value_entry_css_provider),
                                     GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
     gtk_widget_set_hexpand (ks.entry_fields[MENU_ELEMENT_OR_VALUE_ENTRY], TRUE);
     gtk_grid_attach (GTK_GRID (ks.entry_grid), ks.entry_fields[MENU_ELEMENT_OR_VALUE_ENTRY], 1, 0, 1, 1);
@@ -744,7 +751,7 @@ static void general_initialisiation (void)
 
     ks.entry_fields[ICON_PATH_ENTRY] = gtk_entry_new ();
     ks.icon_path_entry_css_provider = gtk_css_provider_new ();
-    gtk_style_context_add_provider (gtk_widget_get_style_context (ks.entry_fields[ICON_PATH_ENTRY]), 
+    gtk_style_context_add_provider (gtk_widget_get_style_context (ks.entry_fields[ICON_PATH_ENTRY]),
                                     GTK_STYLE_PROVIDER (ks.icon_path_entry_css_provider), GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
     gtk_widget_set_hexpand (ks.entry_fields[ICON_PATH_ENTRY], TRUE);
     gtk_grid_attach (GTK_GRID (ks.entry_grid), ks.entry_fields[ICON_PATH_ENTRY], 5, 0, 1, 1);
@@ -775,7 +782,7 @@ static void general_initialisiation (void)
     ks.handler_id_row_selected = g_signal_connect (selection, "changed", G_CALLBACK (row_selected), NULL);
     g_signal_connect (ks.treeview, "row-expanded", G_CALLBACK (set_status_of_expand_and_collapse_buttons_and_menu_items),
                       NULL);
-    g_signal_connect (ks.treeview, "row-collapsed", G_CALLBACK (set_status_of_expand_and_collapse_buttons_and_menu_items), 
+    g_signal_connect (ks.treeview, "row-collapsed", G_CALLBACK (set_status_of_expand_and_collapse_buttons_and_menu_items),
                       NULL);
     g_signal_connect (ks.treeview, "button-press-event", G_CALLBACK (mouse_pressed), NULL);
     g_signal_connect (ks.treeview, "button-release-event", G_CALLBACK (mouse_released), NULL);
@@ -793,14 +800,14 @@ static void general_initialisiation (void)
     g_signal_connect (ks.mb_file_menu_items[MB_QUIT], "activate", G_CALLBACK (quit_program), NULL);
 
     for (mb_menu_items_cnt = TOP; mb_menu_items_cnt <= BOTTOM; mb_menu_items_cnt++) {
-        g_signal_connect_swapped (ks.mb_edit_menu_items[mb_menu_items_cnt], "activate", 
+        g_signal_connect_swapped (ks.mb_edit_menu_items[mb_menu_items_cnt], "activate",
                                   G_CALLBACK (move_selection), GUINT_TO_POINTER (mb_menu_items_cnt));
     }
     g_signal_connect_swapped (ks.mb_edit_menu_items[MB_REMOVE], "activate", G_CALLBACK (remove_rows), "menu bar");
     g_signal_connect (ks.mb_edit_menu_items[MB_REMOVE_ALL_CHILDREN], "activate", G_CALLBACK (remove_all_children), NULL);
-    g_signal_connect_swapped (ks.mb_edit_menu_items[MB_VISUALISE], "activate", 
+    g_signal_connect_swapped (ks.mb_edit_menu_items[MB_VISUALISE], "activate",
                               G_CALLBACK (visualise_menus_items_and_separators), GUINT_TO_POINTER (FALSE));
-    g_signal_connect_swapped (ks.mb_edit_menu_items[MB_VISUALISE_RECURSIVELY], "activate", 
+    g_signal_connect_swapped (ks.mb_edit_menu_items[MB_VISUALISE_RECURSIVELY], "activate",
                               G_CALLBACK (visualise_menus_items_and_separators), GUINT_TO_POINTER (TRUE));
 
     g_signal_connect (mb_find, "activate", G_CALLBACK (show_or_hide_find_grid), NULL);
@@ -808,7 +815,7 @@ static void general_initialisiation (void)
     g_signal_connect_swapped (ks.mb_expand_all_nodes, "activate", G_CALLBACK (expand_or_collapse_all), GUINT_TO_POINTER (TRUE));
     g_signal_connect_swapped (ks.mb_collapse_all_nodes, "activate", G_CALLBACK (expand_or_collapse_all), GUINT_TO_POINTER (FALSE));
     for (mb_menu_items_cnt = 0; mb_menu_items_cnt < NUMBER_OF_VIEW_AND_OPTIONS; mb_menu_items_cnt++) {
-        g_signal_connect_swapped (ks.mb_view_and_options[mb_menu_items_cnt], "activate", 
+        g_signal_connect_swapped (ks.mb_view_and_options[mb_menu_items_cnt], "activate",
                                   G_CALLBACK (change_view_and_options), GUINT_TO_POINTER (mb_menu_items_cnt));
     }
 
@@ -831,20 +838,20 @@ static void general_initialisiation (void)
         g_signal_connect_swapped (ks.bt_add[buttons_cnt], "clicked", G_CALLBACK (add_new), add_txts[buttons_cnt]);
     }
     /*
-        The signal for the "Action/Option" button is always disconnected first, before it is reconnected with the 
-        currently appropriate function. This means that the function and parameter are meaningless here since the signal 
-        is an unused "dummy", but nevertheless necessary because there has to be a signal that can be disconnected before 
+        The signal for the "Action/Option" button is always disconnected first, before it is reconnected with the
+        currently appropriate function. This means that the function and parameter are meaningless here since the signal
+        is an unused "dummy", but nevertheless necessary because there has to be a signal that can be disconnected before
         adding a new one.
     */
-    ks.handler_id_action_option_button_clicked = g_signal_connect_swapped (ks.bt_add[ACTION_OR_OPTION], "clicked", 
+    ks.handler_id_action_option_button_clicked = g_signal_connect_swapped (ks.bt_add[ACTION_OR_OPTION], "clicked",
                                                                            G_CALLBACK (add_new), NULL);
 
-    ks.handler_id_including_action_check_button = g_signal_connect_swapped (ks.including_action_check_button, "clicked", 
-                                                                            G_CALLBACK (one_of_the_change_values_buttons_pressed), 
+    ks.handler_id_including_action_check_button = g_signal_connect_swapped (ks.including_action_check_button, "clicked",
+                                                                            G_CALLBACK (one_of_the_change_values_buttons_pressed),
                                                                             "incl. action");
-    g_signal_connect_swapped (change_values_reset, "clicked", 
+    g_signal_connect_swapped (change_values_reset, "clicked",
                               G_CALLBACK (one_of_the_change_values_buttons_pressed), "reset");
-    g_signal_connect_swapped (change_values_done, "clicked", 
+    g_signal_connect_swapped (change_values_done, "clicked",
                               G_CALLBACK (one_of_the_change_values_buttons_pressed), "done");
 
     // This "simulates" a click on another row.
@@ -852,18 +859,18 @@ static void general_initialisiation (void)
     ks.handler_id_action_option_combo_box = g_signal_connect (ks.action_option, "changed", G_CALLBACK (show_action_options), NULL);
     g_signal_connect_swapped (ks.action_option_done, "clicked", G_CALLBACK (action_option_insert), "by combo box");
     g_signal_connect_swapped (ks.action_option_cancel, "clicked", G_CALLBACK (hide_action_option_grid), "cancel button");
-    ks.handler_id_show_startupnotify_options = g_signal_connect (ks.options_fields[SN_OR_PROMPT], "toggled", 
+    ks.handler_id_show_startupnotify_options = g_signal_connect (ks.options_fields[SN_OR_PROMPT], "toggled",
                                                                  G_CALLBACK (show_startupnotify_options), NULL);
 
     g_signal_connect (ks.find_entry_buttons[CLOSE], "clicked", G_CALLBACK (show_or_hide_find_grid), NULL);
     for (buttons_cnt = BACK; buttons_cnt <= FORWARD; buttons_cnt++) {
-        g_signal_connect_swapped (ks.find_entry_buttons[buttons_cnt], "clicked", 
+        g_signal_connect_swapped (ks.find_entry_buttons[buttons_cnt], "clicked",
                                   G_CALLBACK (jump_to_previous_or_next_occurrence),
                                   GUINT_TO_POINTER ((buttons_cnt == FORWARD)));
     }
     g_signal_connect (ks.find_entry, "activate", G_CALLBACK (run_search), NULL);
     for (columns_cnt = 0; columns_cnt < NUMBER_OF_COLUMNS - 1; columns_cnt++) {
-        ks.handler_id_find_in_columns[columns_cnt] = g_signal_connect_swapped (ks.find_in_columns[columns_cnt], "clicked", 
+        ks.handler_id_find_in_columns[columns_cnt] = g_signal_connect_swapped (ks.find_in_columns[columns_cnt], "clicked",
                                                                                G_CALLBACK (find_buttons_management), "specif");
     }
     g_signal_connect_swapped (ks.find_in_all_columns, "clicked", G_CALLBACK (find_buttons_management), "all");
@@ -871,7 +878,7 @@ static void general_initialisiation (void)
     g_signal_connect_swapped (ks.find_regular_expression, "clicked", G_CALLBACK (find_buttons_management), NULL);
 
     for (entry_fields_cnt = 0; entry_fields_cnt < NUMBER_OF_ENTRY_FIELDS; entry_fields_cnt++) {
-        ks.handler_id_entry_fields[entry_fields_cnt] = g_signal_connect (ks.entry_fields[entry_fields_cnt], "activate", 
+        ks.handler_id_entry_fields[entry_fields_cnt] = g_signal_connect (ks.entry_fields[entry_fields_cnt], "activate",
                                                                          G_CALLBACK (change_row), NULL);
     }
     g_signal_connect (ks.icon_chooser, "clicked", G_CALLBACK (icon_choosing_by_button_or_context_menu), NULL);
@@ -893,8 +900,8 @@ static void general_initialisiation (void)
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ks.find_in_all_columns), TRUE); // Deactivate user defined column search.
 
     /*
-        The height of the message label is set to be identical to the one of the buttons, so the button grid doesn't 
-        shrink if the buttons are missing. This can only be done after all widgets have already been added to the grid, 
+        The height of the message label is set to be identical to the one of the buttons, so the button grid doesn't
+        shrink if the buttons are missing. This can only be done after all widgets have already been added to the grid,
         because only then the height of the button grid (with buttons shown) can be determined correctly.
     */
     gtk_widget_set_size_request (ks.bt_bar_label, -1, gtk_widget_get_allocated_height (ks.bt_add[0]));
@@ -904,6 +911,7 @@ static void general_initialisiation (void)
     // Default
     gtk_widget_hide (ks.action_option_grid);
     gtk_widget_hide (ks.find_grid);
+    gtk_widget_hide (ks.mandatory);
     gtk_widget_hide (ks.separator);
     gtk_widget_hide (ks.change_values_buttons_grid);
     gtk_widget_hide (ks.inside_menu_label);
@@ -912,8 +920,8 @@ static void general_initialisiation (void)
     gtk_widget_hide (ks.including_action_check_button);
 
     /*
-        The height of the message label is set to be identical to the one of the buttons, so the button grid doesn't 
-        shrink if the buttons are missing. This can only be done after all widgets have already been added to the grid, 
+        The height of the message label is set to be identical to the one of the buttons, so the button grid doesn't
+        shrink if the buttons are missing. This can only be done after all widgets have already been added to the grid,
         because only then the height of the button grid (with buttons shown) can be determined correctly.
     */
     gtk_widget_set_size_request (ks.bt_bar_label, -1, gtk_widget_get_allocated_height (ks.bt_add[0]));
@@ -927,38 +935,38 @@ static void general_initialisiation (void)
         GKeyFile *settings_file = g_key_file_new ();
         GError *settings_file_error = NULL;
 
-        if (G_LIKELY (g_key_file_load_from_file (settings_file, settings_file_path, 
+        if (G_LIKELY (g_key_file_load_from_file (settings_file, settings_file_path,
                       G_KEY_FILE_KEEP_COMMENTS, &settings_file_error))) {
             gchar *comment = NULL;
             if (!g_key_file_get_comment (settings_file, NULL, NULL, NULL)) { // Versions up to 0.5.7 don't have a comment in the settings file.
                 GtkWidget *dialog;
 
-                create_dialog (&dialog, "Settings resetted due to change in settings setup", "gtk-info", 
+                create_dialog (&dialog, "Settings reset due to change in settings setup", "gtk-info",
                                "Due to a change in the setup of the settings the settings file has been rewritten "
-                               "and the settings have been reset to defaults. Use \"View\" and \"Options\" " 
-                               "in the menu bar to readjust the settings.",  
+                               "and the settings have been reset to defaults. Use \"View\" and \"Options\" "
+                               "in the menu bar to readjust the settings.",
                                "Close", NULL, NULL, TRUE);
 
                 write_settings ();
-                
+
                 gtk_dialog_run (GTK_DIALOG (dialog));
                 gtk_widget_destroy (dialog);
-                g_free (comment);                                
+                g_free (comment);
             }
             else {
                 for (view_and_opts_cnt = 0; view_and_opts_cnt < NUMBER_OF_VIEW_AND_OPTIONS; view_and_opts_cnt++) {
-                    gtk_check_menu_item_set_active 
-                        (GTK_CHECK_MENU_ITEM (ks.mb_view_and_options[view_and_opts_cnt]), 
-                                              g_key_file_get_boolean (settings_file, 
-                                              (view_and_opts_cnt < CREATE_BACKUP_BEFORE_OVERWRITING_MENU) ? "VIEW" : "OPTIONS", 
-                                              gtk_menu_item_get_label ((GtkMenuItem *) ks.mb_view_and_options[view_and_opts_cnt]), 
+                    gtk_check_menu_item_set_active
+                        (GTK_CHECK_MENU_ITEM (ks.mb_view_and_options[view_and_opts_cnt]),
+                                              g_key_file_get_boolean (settings_file,
+                                              (view_and_opts_cnt < CREATE_BACKUP_BEFORE_OVERWRITING_MENU) ? "VIEW" : "OPTIONS",
+                                              gtk_menu_item_get_label ((GtkMenuItem *) ks.mb_view_and_options[view_and_opts_cnt]),
                                               NULL));
                 }
             }
         }
         else {
             gchar *errmsg_txt = g_strdup_printf ("<b>Could not open settings file</b>\n<tt>%s</tt>\n<b>for reading!\n\n"
-                                                 "<span foreground='#8a1515'>%s</span></b>", 
+                                                 "<span foreground='darkred'>%s</span></b>",
                                                  settings_file_path, settings_file_error->message);
 
             show_errmsg (errmsg_txt);
@@ -982,7 +990,7 @@ static void general_initialisiation (void)
     // --- Load standard menu file, if existent. ---
 
 
-    if (G_LIKELY (g_file_test (new_filename = g_strconcat (g_getenv ("HOME"), "/.config/openbox/menu.xml", NULL), 
+    if (G_LIKELY (g_file_test (new_filename = g_strconcat (g_getenv ("HOME"), "/.config/openbox/menu.xml", NULL),
                   G_FILE_TEST_EXISTS))) {
         get_menu_elements_from_file (new_filename);
     }
@@ -997,7 +1005,7 @@ static void general_initialisiation (void)
     gtk_widget_grab_focus (ks.treeview);
 }
 
-/* 
+/*
 
     Creates a label for an "Add new" button, adds it to a grid with additional margin, which is added to the button.
 
@@ -1014,22 +1022,22 @@ static void add_button_content (GtkWidget *button, gchar *label_text)
 }
 
 
-/* 
+/*
 
     Sets if the selection state of a node may be toggled.
 
 */
 
-gboolean selection_block_unblock (G_GNUC_UNUSED GtkTreeSelection *selection, 
+gboolean selection_block_unblock (G_GNUC_UNUSED GtkTreeSelection *selection,
                                   G_GNUC_UNUSED GtkTreeModel     *model,
-                                  G_GNUC_UNUSED GtkTreePath      *path, 
-                                  G_GNUC_UNUSED gboolean          path_currently_selected, 
+                                  G_GNUC_UNUSED GtkTreePath      *path,
+                                  G_GNUC_UNUSED gboolean          path_currently_selected,
                                                 gpointer          block_state)
 {
     return GPOINTER_TO_INT (block_state);
 }
 
-/* 
+/*
 
     A right click inside the treeview opens the context menu, a left click activates blocking of
     selection changes if more than one row has been selected and one of these rows has been clicked again.
@@ -1060,7 +1068,7 @@ static gboolean mouse_pressed (GtkTreeView *treeview, GdkEventButton *event)
 
             if (gtk_tree_selection_path_is_selected (selection, path)) {
                 // NULL == No destroy function for user data.
-                gtk_tree_selection_set_select_function (selection, (GtkTreeSelectionFunc) selection_block_unblock, 
+                gtk_tree_selection_set_select_function (selection, (GtkTreeSelectionFunc) selection_block_unblock,
                                                         GINT_TO_POINTER (FALSE), NULL);
             }
 
@@ -1071,7 +1079,7 @@ static gboolean mouse_pressed (GtkTreeView *treeview, GdkEventButton *event)
     return FALSE; // Propagate the event further.
 }
 
-/* 
+/*
 
     Unblocks selection changes.
 
@@ -1086,23 +1094,23 @@ static gboolean mouse_released (void)
     }
 
     // NULL == No destroy function for user data.
-    gtk_tree_selection_set_select_function (gtk_tree_view_get_selection (GTK_TREE_VIEW (ks.treeview)), 
+    gtk_tree_selection_set_select_function (gtk_tree_view_get_selection (GTK_TREE_VIEW (ks.treeview)),
                                             (GtkTreeSelectionFunc) selection_block_unblock, GINT_TO_POINTER (TRUE), NULL);
 
     return FALSE;
 }
 
-/* 
+/*
 
-    Sets attributes like foreground and background colour, visibility of cell renderers and 
+    Sets attributes like foreground and background colour, visibility of cell renderers and
     editability of cells according to certain conditions. Also highlights search results.
 
 */
 
-static void set_column_attributes (G_GNUC_UNUSED GtkTreeViewColumn *cell_column, 
+static void set_column_attributes (G_GNUC_UNUSED GtkTreeViewColumn *cell_column,
                                                  GtkCellRenderer   *txt_renderer,
-                                                 GtkTreeModel      *cell_model, 
-                                                 GtkTreeIter       *cell_iter, 
+                                                 GtkTreeModel      *cell_model,
+                                                 GtkTreeIter       *cell_iter,
                                                  gpointer           column_number_pointer)
 {
     GtkTreeSelection *selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (ks.treeview));
@@ -1121,34 +1129,34 @@ static void set_column_attributes (G_GNUC_UNUSED GtkTreeViewColumn *cell_column,
     // Defaults
     gchar *background = NULL;
     gboolean background_set = FALSE;
-    gchar *highlighted_txt = NULL;
+    GString *txt_with_markup = NULL;
 
     gboolean show_icons = gtk_check_menu_item_get_active (GTK_CHECK_MENU_ITEM (ks.mb_view_and_options[SHOW_ICONS]));
-    gboolean set_off_separators = 
+    gboolean set_off_separators =
         gtk_check_menu_item_get_active (GTK_CHECK_MENU_ITEM (ks.mb_view_and_options[SET_OFF_SEPARATORS]));
-    gboolean keep_highlighting = 
-        gtk_check_menu_item_get_active (GTK_CHECK_MENU_ITEM 
+    gboolean keep_highlighting =
+        gtk_check_menu_item_get_active (GTK_CHECK_MENU_ITEM
                                         (ks.mb_view_and_options[SHOW_ELEMENT_VISIBILITY_COL_KEEP_HIGHL]));
 
-    gtk_tree_model_get (cell_model, cell_iter, 
-                        TS_ICON_IMG_STATUS, &cell_data_icon_img_status, 
-                        TS_ICON_PATH, &cell_data[ICON_PATH_TXT], 
-                        TS_MENU_ELEMENT, &cell_data[MENU_ELEMENT_TXT], 
-                        TS_TYPE, &cell_data[TYPE_TXT], 
-                        TS_VALUE, &cell_data[VALUE_TXT], 
-                        TS_MENU_ID, &cell_data[MENU_ID_TXT], 
-                        TS_EXECUTE, &cell_data[EXECUTE_TXT], 
-                        TS_ELEMENT_VISIBILITY, &cell_data[ELEMENT_VISIBILITY_TXT], 
+    gtk_tree_model_get (cell_model, cell_iter,
+                        TS_ICON_IMG_STATUS, &cell_data_icon_img_status,
+                        TS_ICON_PATH, &cell_data[ICON_PATH_TXT],
+                        TS_MENU_ELEMENT, &cell_data[MENU_ELEMENT_TXT],
+                        TS_TYPE, &cell_data[TYPE_TXT],
+                        TS_VALUE, &cell_data[VALUE_TXT],
+                        TS_MENU_ID, &cell_data[MENU_ID_TXT],
+                        TS_EXECUTE, &cell_data[EXECUTE_TXT],
+                        TS_ELEMENT_VISIBILITY, &cell_data[ELEMENT_VISIBILITY_TXT],
                         -1);
 
     gboolean icon_to_be_shown = show_icons && cell_data[ICON_PATH_TXT];
 
     /*
-        Set the cell renderer type of the "Value" column to toggle if it is a "prompt" option of a non-Execute action or 
+        Set the cell renderer type of the "Value" column to toggle if it is a "prompt" option of a non-Execute action or
         an "enabled" option of a "startupnotify" option block.
     */
 
-    if (column_number == COL_VALUE && STREQ (cell_data[TYPE_TXT], "option") && 
+    if (column_number == COL_VALUE && STREQ (cell_data[TYPE_TXT], "option") &&
         streq_any (cell_data[MENU_ELEMENT_TXT], "prompt", "enabled", NULL)) {
         GtkTreeIter parent;
         gchar *cell_data_menu_element_parent_txt;
@@ -1167,108 +1175,150 @@ static void set_column_attributes (G_GNUC_UNUSED GtkTreeViewColumn *cell_column,
     g_object_set (txt_renderer, "visible", visualise_txt_renderer, NULL);
     g_object_set (ks.renderers[BOOL_RENDERER], "visible", visualise_bool_renderer, NULL);
     g_object_set (ks.renderers[PIXBUF_RENDERER], "visible", icon_to_be_shown, NULL);
-    g_object_set (ks.renderers[EXCL_TXT_RENDERER], "visible", 
+    g_object_set (ks.renderers[EXCL_TXT_RENDERER], "visible",
                   G_UNLIKELY (icon_to_be_shown && cell_data_icon_img_status), NULL);
 
     /*
-        If the icon is one of the two built-in types that indicate an invalid path or icon image, 
+        If the icon is one of the two built-in types that indicate an invalid path or icon image,
         set two red exclamation marks behind it to clearly distinguish this icon from icons of valid image files.
-    */ 
+    */
     if (G_UNLIKELY (column_number == COL_MENU_ELEMENT && cell_data_icon_img_status)) {
-        g_object_set (ks.renderers[EXCL_TXT_RENDERER], "markup", "<span foreground='red'><b>!!</b></span>", NULL);
+        g_object_set (ks.renderers[EXCL_TXT_RENDERER], "markup", "<span foreground='darkred'><b>!!</b></span>", NULL);
     }
 
     // Emphasis that a menu, pipe menu or item has no label (=invisible).
-    if (G_UNLIKELY (column_number == COL_MENU_ELEMENT && 
+    if (G_UNLIKELY (column_number == COL_MENU_ELEMENT &&
                     streq_any (cell_data[TYPE_TXT], "menu", "pipe menu", "item", NULL) && !cell_data[MENU_ELEMENT_TXT])) {
         g_object_set (txt_renderer, "text", "(No label)", NULL);
     }
 
     if (keep_highlighting) {
         guint8 visibility_of_parent = NONE_OR_VISIBLE_ANCESTOR; // Default
-        if (G_UNLIKELY ((cell_data[ELEMENT_VISIBILITY_TXT] && !STREQ (cell_data[ELEMENT_VISIBILITY_TXT], "visible")) || 
+        if (G_UNLIKELY ((cell_data[ELEMENT_VISIBILITY_TXT] && !STREQ (cell_data[ELEMENT_VISIBILITY_TXT], "visible")) ||
                         (visibility_of_parent = check_if_invisible_ancestor_exists (cell_model, cell_path)))) {
-            background = ((cell_data[ELEMENT_VISIBILITY_TXT] && 
-                          g_str_has_suffix (cell_data[ELEMENT_VISIBILITY_TXT], "orphaned menu")) || 
+            background = ((cell_data[ELEMENT_VISIBILITY_TXT] &&
+                          g_str_has_suffix (cell_data[ELEMENT_VISIBILITY_TXT], "orphaned menu")) ||
                           visibility_of_parent == INVISIBLE_ORPHANED_ANCESTOR) ? "#364074" : "#656772";
             background_set = TRUE;
         }
     }
 
     // If a search is going on, highlight all matches.
-    if (*ks.search_term->str && column_number < COL_ELEMENT_VISIBILITY && !gtk_widget_get_visible (ks.action_option_grid) && 
-        gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (ks.find_in_columns[column_number])) && 
+    if (*ks.search_term->str && column_number < COL_ELEMENT_VISIBILITY && !gtk_widget_get_visible (ks.action_option_grid) &&
+        gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (ks.find_in_columns[column_number])) &&
         check_for_match (cell_iter, column_number)) {
         // cell_data starts with ICON_PATH, but this is not part of the treeview.
-        gchar *cell_txt = cell_data[column_number + 1];
-        gchar *search_term_str_escaped = (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (ks.find_regular_expression))) ? 
+        gchar *original_cell_txt = cell_data[column_number + 1]; // Only introduced for better readability.
+        gchar *search_term_str_escaped = (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (ks.find_regular_expression))) ?
                                          NULL : g_regex_escape_string (ks.search_term->str, -1);
-        GRegex *regex = g_regex_new ((search_term_str_escaped) ? search_term_str_escaped : ks.search_term->str, 
-                                     (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (ks.find_match_case))) ? 
+        GRegex *regex = g_regex_new ((search_term_str_escaped) ? search_term_str_escaped : ks.search_term->str,
+                                     (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (ks.find_match_case))) ?
                                      0 : G_REGEX_CASELESS, 0, NULL);
-        GMatchInfo *match_info = NULL;
-        gchar *match;
-        GSList *matches = NULL;
-        GSList *replacement_txts = NULL;
-        GHashTable *hash_table = g_hash_table_new (g_str_hash, g_str_equal);
-        gchar *highlighted_txt_core;
+        GMatchInfo *match_info;
 
-        g_regex_match (regex, cell_txt, 0, &match_info);
+        gchar *counter_char = original_cell_txt; // counter_char will move through all the characters of original_cell_txt.
+        gint counter;
+
+        gunichar unichar;
+        gchar utf8_char[6]; // Six bytes is the buffer size needed later by g_unichar_to_utf8 ().
+        gint utf8_length;
+        gchar *utf8_escaped;
+
+        enum { KS_START_POS, KS_END_POS };
+        GArray *positions[2];
+        positions[KS_START_POS] = g_array_new (FALSE, FALSE, sizeof (gint));
+        positions[KS_END_POS] = g_array_new (FALSE, FALSE, sizeof (gint));
+        gint start_position, end_position;
+
+        txt_with_markup = g_string_new ((!background_set) ? "" : "<span foreground='white'>");
+
+        g_regex_match (regex, original_cell_txt, 0, &match_info);
+
         while (g_match_info_matches (match_info)) {
-            match = g_match_info_fetch (match_info, 0);
-            if (!g_slist_find_custom (matches, match = g_match_info_fetch (match_info, 0), (GCompareFunc) strcmp)) {
-                matches = g_slist_prepend (matches, g_strdup (match));
-                replacement_txts = g_slist_prepend (replacement_txts, 
-                                                    g_strconcat ("<span background='", 
-                                                                 (row_is_selected) ? "black'>" : "yellow' foreground='black'>", 
-                                                                 match, "</span>", NULL));
-                g_hash_table_insert (hash_table, matches->data, replacement_txts->data);
-            }
+            g_match_info_fetch_pos (match_info, 0, &start_position, &end_position);
+            g_array_append_val (positions[KS_START_POS], start_position);
+            g_array_append_val (positions[KS_END_POS], end_position);
             g_match_info_next (match_info, NULL);
-
-            // Cleanup
-            g_free (match);
         }
 
-        /*
-            Replace all findings with a highlighted version at once.
-            -1 == nul-terminated string, 0 == start position, 0 == no match flags.
-        */
-        highlighted_txt_core = g_regex_replace_eval (regex, cell_txt, -1, 0, 0, 
-                               multiple_str_replacement_callback_func, hash_table, NULL);
-        highlighted_txt = (!background_set) ? 
-                          g_strdup (highlighted_txt_core) : 
-                          g_strdup_printf ("<span foreground='white'>%s</span>", highlighted_txt_core);
+        do {
+            unichar = g_utf8_get_char (counter_char);
+            counter = counter_char - original_cell_txt; // pointer arithmetic
 
-        g_object_set (txt_renderer, "markup", highlighted_txt, NULL);
+            if (counter == g_array_index (positions[KS_END_POS], gint, 0)) {
+                txt_with_markup = g_string_append (txt_with_markup, "</span>");
+                // It's simpler to always access the first element instead of looping through the whole array.
+                g_array_remove_index (positions[KS_END_POS], 0);
+            }
+            /*
+                No "else if" is used here, since if there is a search for a single character going on and
+                such a character appears double as 'm' in "command", between both m's a span tag has to be
+                closed and opened at the same position.
+            */
+            if (counter == g_array_index (positions[KS_START_POS], gint, 0)) {
+                txt_with_markup = g_string_append (txt_with_markup,
+                                                  (row_is_selected) ?
+                                                  "<span background='black' foreground='white'>" :
+                                                  "<span background='yellow' foreground='black'>");
+                // See the comment for the similar instruction above.
+                g_array_remove_index (positions[KS_START_POS], 0);
+            }
+
+            utf8_length = g_unichar_to_utf8 (unichar, utf8_char);
+            /*
+                Instead of using a switch statement to check whether the current character needs to be escaped,
+                for simplicity the character is sent to the escape function regardless of whether there will be
+                any escaping done by it or not.
+            */
+            utf8_escaped = g_markup_escape_text (utf8_char, utf8_length);
+
+            txt_with_markup = g_string_append (txt_with_markup, utf8_escaped);
+
+            // Cleanup
+            g_free (utf8_escaped);
+
+            counter_char = g_utf8_find_next_char (counter_char, NULL);
+        } while (*counter_char != '\0');
+
+        /*
+            There is a '</span>' to set at the end; because the end position is one position after the string size
+            this couldn't be done inside the preceding loop.
+        */
+        if (positions[KS_END_POS]->len) {
+            g_string_append (txt_with_markup, "</span>");
+        }
+
+        if (background_set) {
+            txt_with_markup = g_string_append (txt_with_markup, "</span>");
+        }
+
+        g_object_set (txt_renderer, "markup", txt_with_markup->str, NULL);
 
         // Cleanup
         g_free (search_term_str_escaped);
         g_regex_unref (regex);
         g_match_info_free (match_info);
-        g_slist_free_full (matches, (GDestroyNotify) g_free);
-        g_slist_free_full (replacement_txts, (GDestroyNotify) g_free);
-        g_hash_table_destroy (hash_table);
-        g_free (highlighted_txt_core);
+        g_array_free (positions[KS_START_POS], TRUE);
+        g_array_free (positions[KS_END_POS], TRUE);
     }
 
     // Set foreground and background font and cell colours. Also set editability of cells.
-    g_object_set (txt_renderer, "weight", (set_off_separators && STREQ (cell_data[TYPE_TXT], "separator")) ? 1000 : 400, 
+    g_object_set (txt_renderer, "weight", (set_off_separators && STREQ (cell_data[TYPE_TXT], "separator")) ? 1000 : 400,
 
-                  "family", (STREQ (cell_data[TYPE_TXT], "separator") && set_off_separators) ? 
+                  "family", (STREQ (cell_data[TYPE_TXT], "separator") && set_off_separators) ?
                             "monospace, courier new, courier" : "sans, sans-serif, arial, helvetica",
- 
-                  "foreground", "white", "foreground-set", (row_is_selected || (background_set && !highlighted_txt)),
-                  "background", background, "background-set", background_set, 
 
-                  "editable", 
-                  (((column_number == COL_MENU_ELEMENT && 
-                  (STREQ (cell_data[TYPE_TXT], "separator") || 
+                  "foreground", "white", "foreground-set", (row_is_selected || (background_set && !txt_with_markup)),
+                  "background", background, "background-set", background_set,
+
+                  "editable",
+                  (((column_number == COL_MENU_ELEMENT &&
+                  (STREQ (cell_data[TYPE_TXT], "separator") ||
                   (cell_data[MENU_ELEMENT_TXT] &&
-                  streq_any (cell_data[TYPE_TXT], "menu", "pipe menu", "item", NULL)))) || 
-                  (column_number == COL_VALUE && STREQ (cell_data[TYPE_TXT], "option")) || 
+                  streq_any (cell_data[TYPE_TXT], "menu", "pipe menu", "item", NULL)))) ||
+                  (column_number == COL_VALUE && STREQ (cell_data[TYPE_TXT], "option")) ||
                   (column_number == COL_MENU_ID && streq_any (cell_data[TYPE_TXT], "menu", "pipe menu", NULL)) ||
-                  (column_number == COL_EXECUTE && STREQ (cell_data[TYPE_TXT], "pipe menu")))), 
+                  (column_number == COL_EXECUTE && STREQ (cell_data[TYPE_TXT], "pipe menu")))),
 
                   NULL);
 
@@ -1276,17 +1326,19 @@ static void set_column_attributes (G_GNUC_UNUSED GtkTreeViewColumn *cell_column,
         g_object_set (ks.renderers[renderer_cnt], "cell-background", background, "cell-background-set", background_set, NULL);
     }
 
-    if (highlighted_txt && gtk_cell_renderer_get_visible (ks.renderers[BOOL_RENDERER])) {
+    if (txt_with_markup && gtk_cell_renderer_get_visible (ks.renderers[BOOL_RENDERER])) {
         g_object_set (ks.renderers[BOOL_RENDERER], "cell-background", "yellow", "cell-background-set", TRUE, NULL);
     }
 
     // Cleanup
-    g_free (highlighted_txt);
+    if (txt_with_markup) {
+        g_string_free (txt_with_markup, TRUE);
+    }
     gtk_tree_path_free (cell_path);
     free_elements_of_static_string_array (cell_data, NUMBER_OF_TXT_FIELDS, FALSE);
 }
 
-/* 
+/*
 
     Changes certain aspects of the tree view or misc. settings.
 
@@ -1296,7 +1348,7 @@ static void change_view_and_options (gpointer activated_menu_item_pointer)
 {
     guint8 activated_menu_item = GPOINTER_TO_UINT (activated_menu_item_pointer);
 
-    gboolean menu_item_activated = 
+    gboolean menu_item_activated =
         (gtk_check_menu_item_get_active (GTK_CHECK_MENU_ITEM (ks.mb_view_and_options[activated_menu_item])));
 
     if (activated_menu_item <= SHOW_ELEMENT_VISIBILITY_COL_ACTVTD) {
@@ -1311,7 +1363,7 @@ static void change_view_and_options (gpointer activated_menu_item_pointer)
 
         if (column_position == COL_ELEMENT_VISIBILITY) {
             if (!menu_item_activated) {
-                gtk_check_menu_item_set_active (GTK_CHECK_MENU_ITEM 
+                gtk_check_menu_item_set_active (GTK_CHECK_MENU_ITEM
                                                 (ks.mb_view_and_options[SHOW_ELEMENT_VISIBILITY_COL_KEEP_HIGHL]), TRUE);
             }
             gtk_widget_set_sensitive (ks.mb_view_and_options[SHOW_ELEMENT_VISIBILITY_COL_KEEP_HIGHL], menu_item_activated);
@@ -1324,8 +1376,8 @@ static void change_view_and_options (gpointer activated_menu_item_pointer)
     else if (activated_menu_item >= NO_GRID_LINES && activated_menu_item <= BOTH) {
         guint8 grid_settings_cnt, grid_lines_type_cnt;
 
-        for (grid_settings_cnt = NO_GRID_LINES, grid_lines_type_cnt = GTK_TREE_VIEW_GRID_LINES_NONE; 
-             grid_settings_cnt <= BOTH; 
+        for (grid_settings_cnt = NO_GRID_LINES, grid_lines_type_cnt = GTK_TREE_VIEW_GRID_LINES_NONE;
+             grid_settings_cnt <= BOTH;
              grid_settings_cnt++, grid_lines_type_cnt++) {
             if (gtk_check_menu_item_get_active (GTK_CHECK_MENU_ITEM (ks.mb_view_and_options[grid_settings_cnt]))) {
                 gtk_tree_view_set_grid_lines (GTK_TREE_VIEW (ks.treeview), grid_lines_type_cnt);
@@ -1341,7 +1393,7 @@ static void change_view_and_options (gpointer activated_menu_item_pointer)
             gtk_tree_model_foreach (ks.model, (GtkTreeModelForeachFunc) sort_loop_after_sorting_activation, NULL);
         }
         /*
-            A change of the activation status of autosorting requires 
+            A change of the activation status of autosorting requires
             (de)activation of the movement arrows of the menu- and toolbar.
         */
         row_selected ();
@@ -1353,7 +1405,7 @@ static void change_view_and_options (gpointer activated_menu_item_pointer)
     write_settings ();
 }
 
-/* 
+/*
 
     Expands the tree view so the whole structure is visible or
     collapses the tree view so just the toplevel elements are visible.
@@ -1392,37 +1444,37 @@ void set_status_of_expand_and_collapse_buttons_and_menu_items (void)
     gtk_tree_model_foreach (ks.model, (GtkTreeModelForeachFunc) check_expansion_statuses_of_nodes, expansion_statuses_of_nodes);
 
     gtk_widget_set_sensitive (ks.mb_collapse_all_nodes, expansion_statuses_of_nodes[AT_LEAST_ONE_IS_EXPANDED]);
-    gtk_widget_set_sensitive ((GtkWidget *) ks.tb[TB_COLLAPSE_ALL], 
+    gtk_widget_set_sensitive ((GtkWidget *) ks.tb[TB_COLLAPSE_ALL],
                               expansion_statuses_of_nodes[AT_LEAST_ONE_IS_EXPANDED]);
     gtk_widget_set_sensitive (ks.mb_expand_all_nodes, expansion_statuses_of_nodes[AT_LEAST_ONE_IS_COLLAPSED]);
-    gtk_widget_set_sensitive ((GtkWidget *) ks.tb[TB_EXPAND_ALL], 
+    gtk_widget_set_sensitive ((GtkWidget *) ks.tb[TB_EXPAND_ALL],
                               expansion_statuses_of_nodes[AT_LEAST_ONE_IS_COLLAPSED]);
 }
 
-/* 
+/*
 
     Dialog window that shows the program name and version, a short description, the website, author and license.
 
 */
 
-static void about (void) 
+static void about (void)
 {
     gchar *authors[] = { "Marcus Schaetzle", NULL };
 
-    gtk_show_about_dialog (GTK_WINDOW (ks.window), 
-                           "program-name", "Kickshaw", 
-                           "version", KICKSHAW_VERSION, 
-                           "comments", "A menu editor for Openbox", 
-                           "website", "https://savannah.nongnu.org/projects/obladi/", 
-                           "website_label", "Project page at GNU Savannah", 
-                           "copyright", "(c) 2010-2018 Marcus Schaetzle", 
-                           "license-type", GTK_LICENSE_GPL_2_0, 
+    gtk_show_about_dialog (GTK_WINDOW (ks.window),
+                           "program-name", "Kickshaw",
+                           "version", KICKSHAW_VERSION,
+                           "comments", "A menu editor for Openbox",
+                           "website", "https://savannah.nongnu.org/projects/obladi/",
+                           "website_label", "Project page at GNU Savannah",
+                           "copyright", "(c) 2010-2018 Marcus Schaetzle",
+                           "license-type", GTK_LICENSE_GPL_2_0,
 
-                           "authors", authors, 
+                           "authors", authors,
                            NULL);
 }
 
-/* 
+/*
 
     Asks whether to continue if there are unsaved changes.
 
@@ -1436,7 +1488,7 @@ gboolean continue_despite_unsaved_changes (void)
 
     #define CONTINUE_DESPITE_UNSAVED_CHANGES 2
 
-    create_dialog (&dialog, "Menu has unsaved changes", "dialog-warning", 
+    create_dialog (&dialog, "Menu has unsaved changes", "dialog-warning",
                    "<b>This menu has unsaved changes. Continue anyway?</b>", "_Cancel", "_Yes", NULL, TRUE);
 
     result = gtk_dialog_run (GTK_DIALOG (dialog));
@@ -1446,7 +1498,7 @@ gboolean continue_despite_unsaved_changes (void)
     return (result == CONTINUE_DESPITE_UNSAVED_CHANGES);
 }
 
-/* 
+/*
 
     Clears the data that is held throughout the running time of the program.
 
@@ -1471,7 +1523,7 @@ void clear_global_data (void)
     ks.statusbar_msg_shown = FALSE;
 }
 
-/* 
+/*
 
     Clears treestore and global variables, also resets window title and menu-/tool-/button bar widgets accordingly.
 
@@ -1492,13 +1544,13 @@ static void new_menu (void)
     row_selected (); // Switches the settings for menu- and toolbar to that of an empty menu.
 }
 
-/* 
+/*
 
     Quits program, if there are unsaved changes a confirmation dialog window is shown.
 
 */
 
-static void quit_program (void) 
+static void quit_program (void)
 {
     if (ks.change_done && !continue_despite_unsaved_changes ()) {
         return;
@@ -1511,7 +1563,7 @@ static void quit_program (void)
 #endif
 }
 
-/* 
+/*
 
     Refreshes the txt_fields array with the values of the currently selected row.
 
@@ -1521,7 +1573,7 @@ void repopulate_txt_fields_array (void)
 {
     // FALSE = Don't set array elements to NULL after freeing.
     free_elements_of_static_string_array (ks.txt_fields, NUMBER_OF_TXT_FIELDS, FALSE);
-    gtk_tree_model_get (ks.model, &ks.iter, 
+    gtk_tree_model_get (ks.model, &ks.iter,
                         TS_ICON_PATH, &ks.txt_fields[ICON_PATH_TXT],
                         TS_MENU_ELEMENT, &ks.txt_fields[MENU_ELEMENT_TXT],
                         TS_TYPE, &ks.txt_fields[TYPE_TXT],
@@ -1532,11 +1584,11 @@ void repopulate_txt_fields_array (void)
                         -1);
 }
 
-/* 
+/*
 
     Activates "Save" menubar item/toolbar button (provided that there is a filename) if a change has been done.
     Also sets a global veriable so a program-wide check for a change is possible.
-    If a search is still active, the list of results is recreated.     
+    If a search is still active, the list of results is recreated.
     A list of rows with icons is (re)created, too.
 
 */
@@ -1560,7 +1612,7 @@ void activate_change_done (void)
     ks.change_done = TRUE;
 }
 
-/* 
+/*
 
     Writes all view and option settings into a file.
 
@@ -1572,7 +1624,7 @@ static void write_settings (void)
     gchar *settings_file_path = g_strconcat (g_getenv ("HOME"), "/.kickshawrc", NULL);
 
     if (G_UNLIKELY (!(settings_file = fopen (settings_file_path, "w")))) {
-        gchar *errmsg_txt = g_strdup_printf ("<b>Could not open settings file</b>\n<tt>%s</tt>\n<b>for writing!</b>", 
+        gchar *errmsg_txt = g_strdup_printf ("<b>Could not open settings file</b>\n<tt>%s</tt>\n<b>for writing!</b>",
                                              settings_file_path);
 
         show_errmsg (errmsg_txt);
@@ -1593,15 +1645,15 @@ static void write_settings (void)
         if (view_and_opts_cnt == CREATE_BACKUP_BEFORE_OVERWRITING_MENU) {
             fputs ("\n[OPTIONS]\n\n", settings_file);
         }
-        fprintf (settings_file, "%s=%s\n", gtk_menu_item_get_label ((GtkMenuItem *) ks.mb_view_and_options[view_and_opts_cnt]), 
-                 (gtk_check_menu_item_get_active (GTK_CHECK_MENU_ITEM (ks.mb_view_and_options[view_and_opts_cnt]))) ? 
+        fprintf (settings_file, "%s=%s\n", gtk_menu_item_get_label ((GtkMenuItem *) ks.mb_view_and_options[view_and_opts_cnt]),
+                 (gtk_check_menu_item_get_active (GTK_CHECK_MENU_ITEM (ks.mb_view_and_options[view_and_opts_cnt]))) ?
                  "true" : "false");
     }
 
     fclose (settings_file);
 }
 
-/* 
+/*
 
     Replaces the filename and window title.
 
@@ -1622,7 +1674,7 @@ void set_filename_and_window_title (gchar *new_filename)
     g_free (window_title);
 }
 
-/* 
+/*
 
     Shows an error message dialog.
 
@@ -1642,7 +1694,7 @@ void show_errmsg (gchar *errmsg_raw_txt)
     gtk_widget_destroy (dialog);
 }
 
-/* 
+/*
 
     Shows a message in the statusbar at the botton for information.
 

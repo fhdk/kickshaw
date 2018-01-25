@@ -12,7 +12,7 @@
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
    GNU General Public License for more details.
-   You should have received a copy of the GNU General Public License along 
+   You should have received a copy of the GNU General Public License along
    with Kickshaw. If not, see http://www.gnu.org/licenses/.
 */
 
@@ -25,13 +25,13 @@ extern void activate_change_done (void);
 extern guint8 check_if_invisible_ancestor_exists (GtkTreeModel *local_model, GtkTreePath *local_path);
 extern void remove_rows (gchar *origin);
 extern void row_selected (void);
-extern gboolean selection_block_unblock (G_GNUC_UNUSED GtkTreeSelection *selection, 
+extern gboolean selection_block_unblock (G_GNUC_UNUSED GtkTreeSelection *selection,
                                          G_GNUC_UNUSED GtkTreeModel *model,
-                                         G_GNUC_UNUSED GtkTreePath  *path, 
-                                         G_GNUC_UNUSED gboolean  path_currently_selected, 
+                                         G_GNUC_UNUSED GtkTreePath  *path,
+                                         G_GNUC_UNUSED gboolean  path_currently_selected,
                                          gpointer  block_state);
 extern void show_msg_in_statusbar (gchar *message);
-extern void sort_execute_or_startupnotify_options_after_insertion (GtkTreeSelection *selection, GtkTreeIter *parent, 
+extern void sort_execute_or_startupnotify_options_after_insertion (GtkTreeSelection *selection, GtkTreeIter *parent,
    gchar *execute_or_startupnotify, gchar *option);
 extern gboolean streq_any (const gchar *string, ...) G_GNUC_NULL_TERMINATED;
 

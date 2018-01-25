@@ -1,49 +1,32 @@
 # Kickshaw - A Menu Editor for Openbox
 
-Copyright (c) 2010-2017        Marcus Schaetzle
-
-This program is free software; you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation; either version 2 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License along
-with Kickshaw. If not, see http://www.gnu.org/licenses/.
-
+This is my git mirror of [Kickshaw](https://savannah.nongnu.org/projects/obladi) used for primarily for Arch packaging
 
 ![alt text](https://cdn.scrot.moe/images/2017/08/04/kickshaw.png)
 
-# INSTALLATION
+## INSTALLATION
 
-If you are on Arch you can get from the AUR with
+If on Arch you can get the package in the AUR with
 
-yaourt -S kickshaw
-
-or
-
-packer -S kickshaw
+    yaourt -S kickshaw
 
 
 A simple script is provided to build and install from source if you prefer
 
-git clone https://github.com/natemaia/kickshaw
+    git clone https://github.com/natemaia/kickshaw
 
-cd kickshaw/
+    cd kickshaw/
 
-./install && exit
+    ./install && exit
 
 
-A makefile is provided. Running 'make' then 'sudo make install'
-in ../kickshaw/source/ is all that's required for installation
+Running `make` then `sudo make install`
+
+inside `../kickshaw/source/` is all that's required for installation
 
 ---
 
-# REQUIREMENTS
+## REQUIREMENTS
 
 Dependencies: GTK version 3; the code makes use of GNU extensions.
 Kickshaw is not dependent on Openbox; it can be used inside all window
@@ -52,7 +35,7 @@ edit menu files. A makefile is included in the source directory. "make"
 and "make install" are sufficient to compile and install this program;
 there is no configure script file which has to be started first.
 
-# IMPORTANT NOTES
+## IMPORTANT NOTES
 
 From version 0.5 on this program has all essential plus some additional
 features. This is the first release considered by the author to be stable
@@ -69,7 +52,7 @@ are nested into each other, the menu xml file has to be syntactically
 correct, or it won't be loaded properly or at all. In this case the
 program gives a detailed error message, if possible.
 
-# FEATURES
+## FEATURES
 
 - Dynamic, context sensitive interface
 - The tree view can be customised (show/hide columns, grid etc.)
@@ -97,14 +80,14 @@ program gives a detailed error message, if possible.
   only one additional settings file created by the program itself,
   no use of Glade)
 
-# SPECIAL NOTE ABOUT DRAG AND DROP
+## SPECIAL NOTE ABOUT DRAG AND DROP
 
 GTK does not support multirow drag and drop, that's why only one row is
 shown as dragged if mulitple rows have been selected for drag and drop.
 There is a workaround for this, but as good as it works for list views
 it doesn't for tree views, so it wasn't implemented here.
 
-# GTK 2 > 3 > 4
+## GTK 2 > 3 > 4
 
 The program was ported relatively early to GTK 3. I am aware of complaints
 about GTK 3 regarding RAM usage, but in some respects working with GTK 2
@@ -117,3 +100,20 @@ I won't do a GTK 4 version until GTK 4 is at a mature stage, since one can
 expect quite a lot of changes coming up during the updates for GTK 4. As long
 there aren't improvements that make it worth porting Kickshaw to GTK 4, it's
 simply not worth the effort as long as GTK 3 is still in use.
+
+## License
+
+Copyright (c) 2010-2017        Marcus Schaetzle
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along
+with Kickshaw. If not, see http://www.gnu.org/licenses/.

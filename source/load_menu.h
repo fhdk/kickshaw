@@ -13,7 +13,7 @@
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
    GNU General Public License for more details.
 
-   You should have received a copy of the GNU General Public License along 
+   You should have received a copy of the GNU General Public License along
    with Kickshaw. If not, see http://www.gnu.org/licenses/.
 */
 
@@ -26,8 +26,8 @@ extern guint8 check_if_invisible_ancestor_exists (GtkTreeModel *local_model, Gtk
 extern gchar *choose_icon (void);
 extern void clear_global_data (void);
 extern gboolean continue_despite_unsaved_changes (void);
-extern GtkWidget *create_dialog (GtkWidget **dialog, gchar *dialog_title, gchar *icon_name, gchar *label_txt, 
-                                 gchar *button_txt_1, gchar *button_txt_2, gchar *button_txt_3, 
+extern GtkWidget *create_dialog (GtkWidget **dialog, gchar *dialog_title, gchar *icon_name, gchar *label_txt,
+                                 gchar *button_txt_1, gchar *button_txt_2, gchar *button_txt_3,
                                  gboolean show_immediately);
 extern void create_file_dialog (GtkWidget **dialog, gboolean open);
 extern void create_list_of_icon_occurrences (void);

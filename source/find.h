@@ -13,7 +13,7 @@
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
    GNU General Public License for more details.
 
-   You should have received a copy of the GNU General Public License along 
+   You should have received a copy of the GNU General Public License along
    with Kickshaw. If not, see http://www.gnu.org/licenses/.
 */
 
@@ -23,6 +23,7 @@
 extern ks_data ks;
 
 extern void row_selected (void);
+extern void show_errmsg (gchar *errmsg_raw_txt);
 extern void wrong_or_missing (GtkWidget *widget, GtkCssProvider *css_provider);
 
 #endif
