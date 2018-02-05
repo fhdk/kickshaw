@@ -1,7 +1,7 @@
 /*
    Kickshaw - A Menu Editor for Openbox
 
-   Copyright (c) 2010-2018        Marcus Schaetzle
+   Copyright (c) 2010–2018        Marcus Schätzle
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -13,7 +13,7 @@
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
    GNU General Public License for more details.    g_free (filename);
 
-   You should have received a copy of the GNU General Public License along
+   You should have received a copy of the GNU General Public License along 
    with Kickshaw. If not, see http://www.gnu.org/licenses/.
 */
 

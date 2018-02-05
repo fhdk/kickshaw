@@ -1,6 +1,6 @@
    Kickshaw - A Menu Editor for Openbox
 
-   Copyright (c) 2010-2018        Marcus Schaetzle
+   Copyright (c) 2010-2018        Marcus Schätzle
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -18,11 +18,68 @@
 
 ---
 
+0.5.20 2018-02-05
+  * Bugfix - If a startupnofity option block had been added, that option 
+    block had been the only missing action in an "Execute" action and 
+    the new menu element screen was opened afterwards for adding a new 
+    item, the sensitivity of the action combo box was still deactivated.
+  * Bugfix - If the action for an item was changed inside the new menu 
+    element screen, the "(*) = mandatory" label was hidden for all actions 
+    beside "Execute".
+  * Minor changes.
+
+0.5.19 2018-02-04
+  * Fixed memory leak.
+
+0.5.18 2018-02-03
+  * Inside buttons with text labels, mnemonics are now used throughout the 
+    program.
+  * The "image-missing" icon is no longer shown inside the "About" dialog; 
+    since Kickshaw doesn't provide its own icon file, this display has been 
+    deactivated.
+  * Minor/cosmetical changes.
+  * Bugfix - If no "execute" value for a new pipe menu had been entered in 
+    the new menu element screen and the entering process was subsequently 
+    cancelled, the red border around the "execute" entry field was not 
+    erased.
+  * Fixed memory leak.
+
+0.5.17 2018-01-31
+  * In the new menu element screen, deactivating the "startupnotify" 
+    option will now reset all startupnotify fields. This prevents that 
+    these are added to the new "Execute" option if "startupnotify" has been 
+    deactivated.
+  * Bugfix - When adding new items with an "Exit or "SessionLogout" action, 
+    the "Prompt" option was always set to "yes", regardless the setting.
+  * Fixed memory leaks.
+  * Minor/cosmetical changes.
+
+0.5.16 2018-01-26
+  * Added some type casts to avoid compiler warnings for older 
+    GLib/compiler versions.
+  * The "mandatory" status of the "Command" entry field for a new 
+    "Restart" action has been removed again; this had been mistakenly 
+    added. The status has also been removed when a "Restart" action is 
+    added together with an item.
+  * Bugfixes (regressions) - Fixed bugs that would result in compilation 
+    errors for GTK versions < 3.12.
+  * Bugfix - If the new menu element screen is open, it is no longer 
+    possible to rightclick outside the tree view, to open the context menu 
+    with this and to chose a new menu element again. This caused 
+    non-critical errors with hander IDs of check buttons.
+  * Cosmetical changes.
+
+0.5.15 2018-01-25
+  * Entering a command for "Execute" of a new pipe menu is now mandatory. 
+    Deleting such a command without a replacement is no longer possible. 
+    This was introduced since Openbox will show an error message if no 
+    command has been provided for a pipe menu.
+  * Bugfix - If the addition of a new (pipe) menu was blocked due to a 
+    missing label, the currently entered menu ID for this menu was added 
+    to the menu IDs list despite the new (pipe) menu not having been added 
+    yet.
+
 0.5.14 2018-01-24
-  * Bugfix (to some extent a regression) - If a (pipe) menu or item with 
-    an incorrect icon path was selected, in the screen for adding a new 
-    (pipe) menu or item the field for the icon path was shown with a red 
-    background, thus still indicating an incorrect path.
   * Mandatory fields are now always shown with an asterisk inside the 
     corresponding label. There is also a new label that indicates that 
     the asterisk stands for a mandatory field.
@@ -34,6 +91,10 @@
     is now higher.
   * Filling out the "Command" entry field for a new "Restart" action is 
     now mandatory.
+  * Bugfix (to some extent a regression) - If a (pipe) menu or item with 
+    an incorrect icon path was selected, in the screen for adding a new 
+    (pipe) menu or item the field for the icon path was shown with a red 
+    background, thus still indicating an incorrect path.
   * Minor changes.
 
 0.5.13 2018-01-20
@@ -132,15 +193,15 @@
 
 0.5.0 2017-12-09
 
+  * Leading and trailing whitespace of text of options is now removed.
+  * The dialog texts for fixing invisible and orphaned menus do no 
+    longer exceed the requested width.
+  * Corrected position of GNU macros.
   * Bugfix (regression) - Entries of single fields completed with "return" 
     and not by clicking on the "Done" button are working properly again.
   * Bugfix (regression) - Visualisation of menus/items without label 
     from the dialog is working again.
   * Bugfix (regression) - Invalid attributes are rejected again.
-  * Leading and trailing whitespace of text of options is now removed.
-  * The dialog texts for fixing invisible and orphaned menus do no 
-    longer exceed the requested width.
-  * Corrected position of GNU macros.
   * Code optimisation, minor/cosmetical changes and removal of redundant 
     code.
 

@@ -1,3 +1,22 @@
+/*
+   Kickshaw - A Menu Editor for Openbox
+
+   Copyright (c) 2010–2018        Marcus Schätzle
+
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 2 of the License, or
+   (at your option) any later version.
+
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+   GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along 
+   with Kickshaw. If not, see http://www.gnu.org/licenses/.
+*/
+
 #ifndef __definitions_and_enumerations_h
 #define __definitions_and_enumerations_h
 
@@ -25,30 +44,30 @@ enum { INVALID_PATH_ICON, INVALID_FILE_ICON, NUMBER_OF_INVALID_ICON_IMGS };
 enum { NONE_OR_NORMAL, INVALID_PATH, INVALID_FILE };
 // menu bar items file and edit
 enum { MB_NEW, MB_OPEN, MB_SAVE, MB_SAVE_AS, MB_SEPARATOR_FILE, MB_QUIT, NUMBER_OF_FILE_MENU_ITEMS};
-enum { MB_MOVE_TOP, MB_MOVE_UP, MB_MOVE_DOWN, MB_MOVE_BOTTOM, MB_SEPARATOR_EDIT1, MB_REMOVE, MB_REMOVE_ALL_CHILDREN,
+enum { MB_MOVE_TOP, MB_MOVE_UP, MB_MOVE_DOWN, MB_MOVE_BOTTOM, MB_SEPARATOR_EDIT1, MB_REMOVE, MB_REMOVE_ALL_CHILDREN, 
        MB_SEPARATOR_EDIT2, MB_VISUALISE, MB_VISUALISE_RECURSIVELY, NUMBER_OF_EDIT_MENU_ITEMS };
 // menu bar items view and options
-enum { SHOW_MENU_ID_COL, SHOW_EXECUTE_COL, SHOW_ELEMENT_VISIBILITY_COL_ACTVTD, SHOW_ELEMENT_VISIBILITY_COL_KEEP_HIGHL,
-       SHOW_ELEMENT_VISIBILITY_COL_DONT_KEEP_HIGHL, SHOW_ICONS, SET_OFF_SEPARATORS, DRAW_ROWS_IN_ALT_COLOURS,
-       SHOW_TREE_LINES, NO_GRID_LINES, SHOW_GRID_HOR, SHOW_GRID_VER, BOTH, CREATE_BACKUP_BEFORE_OVERWRITING_MENU,
+enum { SHOW_MENU_ID_COL, SHOW_EXECUTE_COL, SHOW_ELEMENT_VISIBILITY_COL_ACTVTD, SHOW_ELEMENT_VISIBILITY_COL_KEEP_HIGHL, 
+       SHOW_ELEMENT_VISIBILITY_COL_DONT_KEEP_HIGHL, SHOW_ICONS, SET_OFF_SEPARATORS, DRAW_ROWS_IN_ALT_COLOURS, 
+       SHOW_TREE_LINES, NO_GRID_LINES, SHOW_GRID_HOR, SHOW_GRID_VER, BOTH, CREATE_BACKUP_BEFORE_OVERWRITING_MENU, 
        SORT_EXECUTE_AND_STARTUPN_OPTIONS, NOTIFY_ABOUT_EXECUTE_OPT_CONVERSIONS, NUMBER_OF_VIEW_AND_OPTIONS };
 // move row
 enum { TOP, UP, DOWN, BOTTOM };
 // startupnotify options
 enum { ENABLED, NAME, WM_CLASS, ICON, NUMBER_OF_STARTUPNOTIFY_OPTS };
 // toolbar buttons
-enum { TB_NEW, TB_OPEN, TB_SAVE, TB_SAVE_AS, TB_MOVE_UP, TB_MOVE_DOWN, TB_REMOVE,
+enum { TB_NEW, TB_OPEN, TB_SAVE, TB_SAVE_AS, TB_MOVE_UP, TB_MOVE_DOWN, TB_REMOVE, 
        TB_FIND, TB_EXPAND_ALL, TB_COLLAPSE_ALL, TB_QUIT, NUMBER_OF_TB_BUTTONS };
 // treestore elements
-enum { TS_ICON_IMG, TS_ICON_IMG_STATUS, TS_ICON_MODIFICATION_TIME, TS_ICON_PATH, TS_MENU_ELEMENT,
+enum { TS_ICON_IMG, TS_ICON_IMG_STATUS, TS_ICON_MODIFICATION_TIME, TS_ICON_PATH, TS_MENU_ELEMENT, 
        TS_TYPE, TS_VALUE, TS_MENU_ID, TS_EXECUTE, TS_ELEMENT_VISIBILITY, NUMBER_OF_TS_ELEMENTS };
 // text fields
-enum { ICON_PATH_TXT, MENU_ELEMENT_TXT, TYPE_TXT, VALUE_TXT, MENU_ID_TXT,
+enum { ICON_PATH_TXT, MENU_ELEMENT_TXT, TYPE_TXT, VALUE_TXT, MENU_ID_TXT, 
        EXECUTE_TXT, ELEMENT_VISIBILITY_TXT, NUMBER_OF_TXT_FIELDS };
 // renderer for treeview
 enum { TXT_RENDERER, EXCL_TXT_RENDERER, PIXBUF_RENDERER, BOOL_RENDERER, NUMBER_OF_RENDERERS };
 
-#define KICKSHAW_VERSION "0.5.14"
+#define KICKSHAW_VERSION "0.5.20"
 #define TREEVIEW_COLUMN_OFFSET NUMBER_OF_TS_ELEMENTS - NUMBER_OF_COLUMNS
 #define FREE_AND_REASSIGN(string, new_value) { g_free (string); string = new_value; }
 #define NOT_NULL_AND_NOT_EMPTY(string) (string && *string)
@@ -107,7 +126,7 @@ typedef struct {
     GtkCssProvider *find_entry_css_provider;
     GtkWidget *find_in_columns[NUMBER_OF_COLUMNS - 1], *find_in_all_columns;
     GtkCssProvider *find_in_columns_css_providers[NUMBER_OF_COLUMNS - 1], *find_in_all_columns_css_provider;
-    GtkWidget *find_match_case, *find_regular_expression;
+    GtkWidget *find_match_case, *find_regular_expression; 
     GString *search_term; // = automatically NULL
     GList *rows_with_found_occurrences; // = automatically NULL
 
@@ -125,7 +144,7 @@ typedef struct {
 
     GtkWidget *entry_grid;
     GtkWidget *entry_labels[NUMBER_OF_ENTRY_FIELDS], *entry_fields[NUMBER_OF_ENTRY_FIELDS];
-    GtkCssProvider *menu_element_or_value_entry_css_provider, *icon_path_entry_css_provider;
+    GtkCssProvider *menu_element_or_value_entry_css_provider, *icon_path_entry_css_provider, *execute_entry_css_provider;
     GtkWidget *icon_chooser, *remove_icon;
 
     GSList *source_paths; // = automatically NULL
@@ -151,11 +170,11 @@ typedef struct {
     gboolean change_done; // = automatically FALSE
     gboolean autosort_options; // = automatically FALSE
 
-    gint handler_id_row_selected,
-         handler_id_action_option_combo_box, handler_id_action_option_button_clicked,
-         handler_id_show_startupnotify_options,
-         handler_id_find_in_columns[NUMBER_OF_COLUMNS],
-         handler_id_entry_fields[NUMBER_OF_ENTRY_FIELDS],
+    gint handler_id_row_selected, 
+         handler_id_action_option_combo_box, handler_id_action_option_button_clicked, 
+         handler_id_show_or_hide_startupnotify_options, 
+         handler_id_find_in_columns[NUMBER_OF_COLUMNS], 
+         handler_id_entry_fields[NUMBER_OF_ENTRY_FIELDS], 
          handler_id_including_action_check_button;
 } ks_data;
 

@@ -1,7 +1,7 @@
 /*
    Kicks.haw - A Menu Editor for Openbox
 
-   Copyright (c) 2010-2018        Marcus Schaetzle
+   Copyright (c) 2010–2018        Marcus Schätzle
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -13,7 +13,7 @@
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
    GNU General Public License for more details.
 
-   You should have received a copy of the GNU General Public License along
+   You should have received a copy of the GNU General Public License along 
    with Kicks.haw. If not, see http://www.gnu.org/licenses/.
 */
 
@@ -24,14 +24,14 @@
 
 static void all_options_have_been_set_msg (gchar *action_option_txt);
 static gboolean check_for_selected_dsct (              GtkTreeModel *filter_model,
-                                                       GtkTreePath  *filter_path,
-                                         G_GNUC_UNUSED GtkTreeIter  *filter_iter,
+                                                       GtkTreePath  *filter_path, 
+                                         G_GNUC_UNUSED GtkTreeIter  *filter_iter, 
                                                        gboolean     *selected_row_has_selected_dsct);
 void row_selected (void);
 static gboolean avoid_overlapping (void);
 void set_entry_fields (void);
 
-/*
+/* 
 
     Displays a message if all options for execute or startupnotify have been set.
 
@@ -50,20 +50,20 @@ static void all_options_have_been_set_msg (gchar *action_option_txt)
     g_free (msg_label_txt);
 }
 
-/*
+/* 
 
     Checks if a selected node has a descendant that has also been selected.
 
 */
 
 static gboolean check_for_selected_dsct (              GtkTreeModel *filter_model,
-                                                       GtkTreePath  *filter_path,
-                                         G_GNUC_UNUSED GtkTreeIter  *filter_iter,
+                                                       GtkTreePath  *filter_path, 
+                                         G_GNUC_UNUSED GtkTreeIter  *filter_iter, 
                                                        gboolean     *selected_row_has_selected_dsct)
 {
     GtkTreeSelection *selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (ks.treeview));
     // The path of the model, not filter model, is needed to check whether the row is selected.
-    GtkTreePath *model_path = gtk_tree_model_filter_convert_path_to_child_path ((GtkTreeModelFilter *) filter_model,
+    GtkTreePath *model_path = gtk_tree_model_filter_convert_path_to_child_path ((GtkTreeModelFilter *) filter_model, 
                                                                                 filter_path);
 
     if (gtk_tree_selection_path_is_selected (selection, model_path)) {
@@ -76,12 +76,12 @@ static gboolean check_for_selected_dsct (              GtkTreeModel *filter_mode
     return *selected_row_has_selected_dsct; // Stop iteration if a selected descendant has been found.
 }
 
-/*
+/* 
 
-    If one or more rows have been selected, all (in)appropriate actions for them are (de)activated according to
-    criteria as e.g. their type (menu, item, etc.), expansion and visibility status, position and the number of
+    If one or more rows have been selected, all (in)appropriate actions for them are (de)activated according to 
+    criteria as e.g. their type (menu, item, etc.), expansion and visibility status, position and the number of 
     selected rows.
-    If there is currently no selected row left after an unselection,
+    If there is currently no selected row left after an unselection, 
     all actions that would be eligible in case of a selection are deactivated.
 
 */
@@ -116,6 +116,13 @@ void row_selected (void)
         ks.statusbar_msg_shown = FALSE;
     }
     gtk_tree_view_enable_model_drag_source (GTK_TREE_VIEW (ks.treeview), GDK_BUTTON1_MASK, ks.enable_list, 1, GDK_ACTION_MOVE);
+    /*
+        If a startupnotify option block is chosen as a new menu element and that option was the only missing option 
+        in an "Execute" action, the sensitivity of ks.action_option is set to FALSE, so after adding the new startupnotify  
+        option block the sensitivity is reset here to TRUE.
+        For simplicity, it is not checked if the sensitivity is currently set to FALSE.
+    */
+    gtk_widget_set_sensitive (ks.action_option, TRUE);
 
     // Check if dragging has to be blocked.
     if (number_of_selected_rows > 1) {
@@ -128,7 +135,7 @@ void row_selected (void)
         gboolean option_selected = FALSE;
         gboolean at_least_one_option_more_than_once_selected = FALSE;
 
-        gchar *all_options[] = { "prompt", "command", "startupnotify", "enabled", "name", "wmclass", "icon" };
+        gchar *all_options[] = { "prompt", "command", "startupnotify", "enabled", "name", "wmclass", "icon" }; 
         const guint NUMBER_OF_ALL_OPTIONS = G_N_ELEMENTS (all_options);
         G_GNUC_EXTENSION guint number_of_options_selected_per_opt[] = { [0 ... NUMBER_OF_ALL_OPTIONS - 1] = 0 };
 
@@ -137,9 +144,9 @@ void row_selected (void)
         for (selected_rows_loop = selected_rows; selected_rows_loop; selected_rows_loop = selected_rows_loop->next) {
             path_loop = selected_rows_loop->data;
             gtk_tree_model_get_iter (ks.model, &iter_loop, path_loop);
-            gtk_tree_model_get (ks.model, &iter_loop,
+            gtk_tree_model_get (ks.model, &iter_loop, 
                                 TS_MENU_ELEMENT, &menu_element_txt_loop,
-                                TS_TYPE, &type_txt_loop,
+                                TS_TYPE, &type_txt_loop, 
                                 -1);
             // Check if a selected row has a selected child.
             if (gtk_tree_model_iter_has_child (ks.model, &iter_loop)) {
@@ -176,12 +183,12 @@ void row_selected (void)
             g_free (type_txt_loop);
         }
 
-        if ((menu_pipemenu_item_separator_selected && (action_selected || option_selected)) ||
-            (action_selected && option_selected) ||
-            (at_least_one_prompt_command_startupnotify_selected && at_least_one_enabled_name_wmclass_icon_selected) ||
-            at_least_one_option_more_than_once_selected ||
+        if ((menu_pipemenu_item_separator_selected && (action_selected || option_selected)) || 
+            (action_selected && option_selected) || 
+            (at_least_one_prompt_command_startupnotify_selected && at_least_one_enabled_name_wmclass_icon_selected) || 
+            at_least_one_option_more_than_once_selected || 
             selected_row_has_selected_dsct) { // Dragging is blocked
-            GString *statusbar_msg = g_string_new ("");
+            GString *statusbar_msg = g_string_new (NULL);
 
             dragging_enabled = FALSE;
             if (menu_pipemenu_item_separator_selected && (action_selected || option_selected)) {
@@ -231,12 +238,14 @@ void row_selected (void)
             g_slist_free_full (ks.change_values_user_settings, (GDestroyNotify) g_free);
             ks.change_values_user_settings = NULL;
             gtk_box_reorder_child (GTK_BOX (ks.main_box), ks.entry_grid, -1);
-            gtk_style_context_remove_class (gtk_widget_get_style_context (ks.entry_fields[MENU_ELEMENT_OR_VALUE_ENTRY]),
+            gtk_style_context_remove_class (gtk_widget_get_style_context (ks.entry_fields[MENU_ELEMENT_OR_VALUE_ENTRY]), 
+                                            "mandatory_missing");
+            gtk_style_context_remove_class (gtk_widget_get_style_context (ks.entry_fields[EXECUTE_ENTRY]), 
                                             "mandatory_missing");
             gtk_entry_set_text (GTK_ENTRY (ks.entry_fields[ICON_PATH_ENTRY]), "");
             for (entry_fields_cnt = 0; entry_fields_cnt < NUMBER_OF_ENTRY_FIELDS; entry_fields_cnt++) {
                 if (!g_signal_handler_is_connected (ks.entry_fields[entry_fields_cnt], ks.handler_id_entry_fields[entry_fields_cnt])) {
-                    ks.handler_id_entry_fields[entry_fields_cnt] = g_signal_connect (ks.entry_fields[entry_fields_cnt], "activate",
+                    ks.handler_id_entry_fields[entry_fields_cnt] = g_signal_connect (ks.entry_fields[entry_fields_cnt], "activate", 
                                                                                      G_CALLBACK (change_row), NULL);
                 }
             }
@@ -296,7 +305,7 @@ void row_selected (void)
         if (gtk_tree_model_iter_has_child (ks.model, &iter_loop)) {
             filter_model = gtk_tree_model_filter_new (ks.model, path_loop);
             gtk_tree_model_foreach (filter_model,
-                                    (GtkTreeModelForeachFunc) check_if_invisible_descendant_exists,
+                                    (GtkTreeModelForeachFunc) check_if_invisible_descendant_exists, 
                                     &at_least_one_descendant_is_invisible);
 
             // Cleanup
@@ -310,8 +319,8 @@ void row_selected (void)
         g_free (element_visibility_txt_loop);
     }
     gtk_widget_set_sensitive (ks.mb_edit_menu_items[MB_REMOVE_ALL_CHILDREN], !at_least_one_selected_row_has_no_children);
-    gtk_widget_set_sensitive (ks.mb_edit_menu_items[MB_VISUALISE_RECURSIVELY],
-                              (gtk_widget_get_sensitive (ks.mb_edit_menu_items[MB_VISUALISE]) &&
+    gtk_widget_set_sensitive (ks.mb_edit_menu_items[MB_VISUALISE_RECURSIVELY], 
+                              (gtk_widget_get_sensitive (ks.mb_edit_menu_items[MB_VISUALISE]) && 
                               at_least_one_descendant_is_invisible));
 
     gtk_widget_set_sensitive (ks.mb_search, !treestore_is_empty);
@@ -336,7 +345,7 @@ void row_selected (void)
             for (buttons_cnt = 0; buttons_cnt < NUMBER_OF_ADD_BUTTONS; buttons_cnt++) {
                 gtk_widget_hide (ks.bt_add[buttons_cnt]);
             }
-            gtk_label_set_text (GTK_LABEL (ks.bt_bar_label),
+            gtk_label_set_text (GTK_LABEL (ks.bt_bar_label), 
                                 " Addition of new menu elements deactivated due to multiple selections.");
         }
 
@@ -355,15 +364,15 @@ void row_selected (void)
     GtkTreePath *path = selected_rows->data;
     gint path_depth = gtk_tree_path_get_depth (path);
     GtkTreeIter parent;
-    gchar *menu_element_txt_parent = NULL, *type_txt_parent = NULL; // defaults
+    gchar *menu_element_txt_parent = NULL, *type_txt_parent = NULL; // Defaults
 
     gtk_tree_model_get_iter (ks.model, &ks.iter, path);
 
     if (path_depth > 1) {
         gtk_tree_model_iter_parent (ks.model, &parent, &ks.iter);
-        gtk_tree_model_get (ks.model, &parent,
-                            TS_MENU_ELEMENT, &menu_element_txt_parent,
-                            TS_TYPE, &type_txt_parent,
+        gtk_tree_model_get (ks.model, &parent, 
+                            TS_MENU_ELEMENT, &menu_element_txt_parent, 
+                            TS_TYPE, &type_txt_parent, 
                             -1);
     }
 
@@ -378,16 +387,16 @@ void row_selected (void)
     repopulate_txt_fields_array ();
 
     for (mb_menu_items_cnt = MB_MOVE_TOP; mb_menu_items_cnt <= MB_MOVE_BOTTOM; mb_menu_items_cnt++) {
-        gtk_widget_set_sensitive (ks.mb_edit_menu_items[mb_menu_items_cnt],
+        gtk_widget_set_sensitive (ks.mb_edit_menu_items[mb_menu_items_cnt], 
                                   ((mb_menu_items_cnt < MB_MOVE_DOWN) ? not_at_top : not_at_bottom) && !option_and_autosort);
     }
     gtk_widget_set_sensitive ((GtkWidget *) ks.tb[TB_MOVE_UP], not_at_top && !option_and_autosort);
     gtk_widget_set_sensitive ((GtkWidget *) ks.tb[TB_MOVE_DOWN], not_at_bottom && !option_and_autosort);
 
     if (ks.rows_with_found_occurrences) {
-        gtk_widget_set_sensitive (ks.find_entry_buttons[BACK],
+        gtk_widget_set_sensitive (ks.find_entry_buttons[BACK], 
                                   gtk_tree_path_compare (path, ks.rows_with_found_occurrences->data) > 0);
-        gtk_widget_set_sensitive (ks.find_entry_buttons[FORWARD],
+        gtk_widget_set_sensitive (ks.find_entry_buttons[FORWARD], 
         gtk_tree_path_compare (path, g_list_last (ks.rows_with_found_occurrences)->data) < 0);
     }
 
@@ -397,10 +406,10 @@ void row_selected (void)
     // Item selected?
     if (STREQ (ks.txt_fields[TYPE_TXT], "item")) {
         gtk_widget_show (ks.bt_add[ACTION_OR_OPTION]);
-        gtk_label_set_text (GTK_LABEL (ks.bt_add_action_option_label), "Action");
+        gtk_label_set_text_with_mnemonic (GTK_LABEL (ks.bt_add_action_option_label), "_Action");
         g_signal_handler_disconnect (ks.bt_add[ACTION_OR_OPTION], ks.handler_id_action_option_button_clicked);
-        ks.handler_id_action_option_button_clicked = g_signal_connect_swapped (ks.bt_add[ACTION_OR_OPTION], "clicked",
-                                                                               G_CALLBACK (generate_items_for_action_option_combo_box),
+        ks.handler_id_action_option_button_clicked = g_signal_connect_swapped (ks.bt_add[ACTION_OR_OPTION], "clicked", 
+                                                                               G_CALLBACK (generate_items_for_action_option_combo_box), 
                                                                                NULL);
     }
 
@@ -422,38 +431,39 @@ void row_selected (void)
 
         // Default callback function
         g_signal_handler_disconnect (ks.bt_add[ACTION_OR_OPTION], ks.handler_id_action_option_button_clicked);
-        ks.handler_id_action_option_button_clicked = g_signal_connect_swapped (ks.bt_add[ACTION_OR_OPTION], "clicked",
-                                                                               G_CALLBACK (generate_items_for_action_option_combo_box),
+        ks.handler_id_action_option_button_clicked = g_signal_connect_swapped (ks.bt_add[ACTION_OR_OPTION], "clicked", 
+                                                                               G_CALLBACK (generate_items_for_action_option_combo_box), 
                                                                                NULL);
 
         // Action selected
         if (STREQ (ks.txt_fields[TYPE_TXT], "action")) {
-            gtk_label_set_text (GTK_LABEL (ks.bt_add_action_option_label),
-                                (!STREQ (ks.txt_fields[MENU_ELEMENT_TXT], "Reconfigure") &&
-                                 ((STREQ (ks.txt_fields[MENU_ELEMENT_TXT], "Execute") &&
-                                  number_of_children_of_iter < NUMBER_OF_EXECUTE_OPTS) || number_of_children_of_iter == 0)) ?
-                                "Action/Option" : "Action");
+            gtk_label_set_text_with_mnemonic (GTK_LABEL (ks.bt_add_action_option_label), 
+                                              (!STREQ (ks.txt_fields[MENU_ELEMENT_TXT], "Reconfigure") && 
+                                               ((STREQ (ks.txt_fields[MENU_ELEMENT_TXT], "Execute") &&
+                                               number_of_children_of_iter < NUMBER_OF_EXECUTE_OPTS) || 
+                                               number_of_children_of_iter == 0)) ? 
+                                              "_Action/Option" : "_Action");
         }
 
         // "prompt" or "command" option selected and action is "Execute"?
-        if (STREQ (ks.txt_fields[TYPE_TXT], "option") &&
-            streq_any (ks.txt_fields[MENU_ELEMENT_TXT], "prompt", "command", NULL) &&
+        if (STREQ (ks.txt_fields[TYPE_TXT], "option") && 
+            streq_any (ks.txt_fields[MENU_ELEMENT_TXT], "prompt", "command", NULL) && 
             STREQ (menu_element_txt_parent, "Execute")) {
             prompt_or_command_selected_and_action_is_Execute = TRUE;
         }
 
         // Startupnotify or option of it selected?
-        if (streq_any (ks.txt_fields[TYPE_TXT], "option", "option block", NULL) &&
+        if (streq_any (ks.txt_fields[TYPE_TXT], "option", "option block", NULL) && 
             !streq_any (ks.txt_fields[MENU_ELEMENT_TXT], "prompt", "command", NULL)) {
             startupnotify_or_option_of_it_selected = TRUE;
         }
 
         // Default button text for a selected option
         if (prompt_or_command_selected_and_action_is_Execute || startupnotify_or_option_of_it_selected) {
-            gtk_label_set_text (GTK_LABEL (ks.bt_add_action_option_label), "Option");
+            gtk_label_set_text_with_mnemonic (GTK_LABEL (ks.bt_add_action_option_label), "Op_tion");
         }
 
-        if (prompt_or_command_selected_and_action_is_Execute ||
+        if (prompt_or_command_selected_and_action_is_Execute || 
             (STREQ (ks.txt_fields[TYPE_TXT], "option block") && number_of_children_of_iter == NUMBER_OF_STARTUPNOTIFY_OPTS)) {
             // All options of "Execute" are set.
             if (number_of_children_of_parent == NUMBER_OF_EXECUTE_OPTS) {
@@ -462,6 +472,7 @@ void row_selected (void)
             // One option of "Execute" is not set.
             else if (number_of_children_of_parent == NUMBER_OF_EXECUTE_OPTS - 1) {
                 gboolean execute_options_status[NUMBER_OF_EXECUTE_OPTS] = { 0 };
+                gchar *execute_opts_with_mnemonic[] = { "Pro_mpt", "_Command", "Start_upnotify" };
 
                 guint8 execute_opts_cnt;
 
@@ -470,13 +481,14 @@ void row_selected (void)
                 for (execute_opts_cnt = 0; execute_opts_cnt < NUMBER_OF_EXECUTE_OPTS; execute_opts_cnt++) {
                     if (!execute_options_status[execute_opts_cnt]) {
                         g_signal_handler_disconnect (ks.bt_add[ACTION_OR_OPTION], ks.handler_id_action_option_button_clicked);
-                        ks.handler_id_action_option_button_clicked =
-                            g_signal_connect_swapped (ks.bt_add[ACTION_OR_OPTION], "clicked",
-                                                      G_CALLBACK ((execute_opts_cnt != STARTUPNOTIFY) ?
-                                                                  add_new : generate_items_for_action_option_combo_box),
-                                                      (execute_opts_cnt != STARTUPNOTIFY) ?
+                        ks.handler_id_action_option_button_clicked = 
+                            g_signal_connect_swapped (ks.bt_add[ACTION_OR_OPTION], "clicked", 
+                                                      G_CALLBACK ((execute_opts_cnt != STARTUPNOTIFY) ? 
+                                                                  add_new : generate_items_for_action_option_combo_box), 
+                                                      (execute_opts_cnt != STARTUPNOTIFY) ? 
                                                       ks.execute_options[execute_opts_cnt] : "Startupnotify");
-                        gtk_label_set_text (GTK_LABEL (ks.bt_add_action_option_label), ks.execute_displayed_txts[execute_opts_cnt]);
+                        gtk_label_set_text_with_mnemonic (GTK_LABEL (ks.bt_add_action_option_label), 
+                                                          execute_opts_with_mnemonic[execute_opts_cnt]);
                     }
                 }
             }
@@ -484,20 +496,21 @@ void row_selected (void)
 
         if (startupnotify_or_option_of_it_selected) {
             // "startupnotify" option block or option of it selected and all options of "startupnotify" are set.
-            if ((STREQ (ks.txt_fields[TYPE_TXT], "option block") &&
-                number_of_children_of_iter == NUMBER_OF_STARTUPNOTIFY_OPTS &&
-                number_of_children_of_parent == NUMBER_OF_EXECUTE_OPTS) ||
-                (STREQ (ks.txt_fields[TYPE_TXT], "option") &&
+            if ((STREQ (ks.txt_fields[TYPE_TXT], "option block") && 
+                number_of_children_of_iter == NUMBER_OF_STARTUPNOTIFY_OPTS && 
+                number_of_children_of_parent == NUMBER_OF_EXECUTE_OPTS) || 
+                (STREQ (ks.txt_fields[TYPE_TXT], "option") && 
                 number_of_children_of_parent == NUMBER_OF_STARTUPNOTIFY_OPTS)) {
                 all_options_have_been_set_msg ("startupnotify");
             }
             // "startupnotify" option block or option of it selected and one option of "startupnotify" not set.
-            else if ((STREQ (ks.txt_fields[TYPE_TXT], "option block") &&
-                     number_of_children_of_iter == NUMBER_OF_STARTUPNOTIFY_OPTS - 1 &&
-                     number_of_children_of_parent == NUMBER_OF_EXECUTE_OPTS) ||
-                     (STREQ (ks.txt_fields[TYPE_TXT], "option") &&
+            else if ((STREQ (ks.txt_fields[TYPE_TXT], "option block") && 
+                     number_of_children_of_iter == NUMBER_OF_STARTUPNOTIFY_OPTS - 1 && 
+                     number_of_children_of_parent == NUMBER_OF_EXECUTE_OPTS) || 
+                     (STREQ (ks.txt_fields[TYPE_TXT], "option") && 
                      number_of_children_of_parent == NUMBER_OF_STARTUPNOTIFY_OPTS - 1)) {
                 gboolean startupnotify_options_status[NUMBER_OF_STARTUPNOTIFY_OPTS] = { 0 };
+                gchar *startupnotify_opts_with_mnemonic[] = { "E_nabled", "N_ame", "_WM__CLASS", "_Icon" };
 
                 guint8 snotify_opts_cnt;
 
@@ -505,17 +518,17 @@ void row_selected (void)
                     parent = ks.iter;
                 }
 
-                check_for_existing_options (&parent, NUMBER_OF_STARTUPNOTIFY_OPTS,
+                check_for_existing_options (&parent, NUMBER_OF_STARTUPNOTIFY_OPTS, 
                                             ks.startupnotify_options, startupnotify_options_status);
 
                 for (snotify_opts_cnt = 0; snotify_opts_cnt < NUMBER_OF_STARTUPNOTIFY_OPTS; snotify_opts_cnt++) {
                     if (!startupnotify_options_status[snotify_opts_cnt]) {
                         g_signal_handler_disconnect (ks.bt_add[ACTION_OR_OPTION], ks.handler_id_action_option_button_clicked);
-                        ks.handler_id_action_option_button_clicked =
-                            g_signal_connect_swapped (ks.bt_add[ACTION_OR_OPTION], "clicked",
+                        ks.handler_id_action_option_button_clicked = 
+                            g_signal_connect_swapped (ks.bt_add[ACTION_OR_OPTION], "clicked", 
                                                       G_CALLBACK (add_new), ks.startupnotify_options[snotify_opts_cnt]);
-                        gtk_label_set_text (GTK_LABEL (ks.bt_add_action_option_label),
-                                                       ks.startupnotify_displayed_txts[snotify_opts_cnt]);
+                        gtk_label_set_text_with_mnemonic (GTK_LABEL (ks.bt_add_action_option_label), 
+                                                          startupnotify_opts_with_mnemonic[snotify_opts_cnt]);
                         break;
                     }
                 }
@@ -526,11 +539,11 @@ void row_selected (void)
             "prompt" option selected and action is "Exit" or "SessionLogout" or
             "command" option selected and action is "Restart".
         */
-        if (STREQ (ks.txt_fields[TYPE_TXT], "option") && streq_any (ks.txt_fields[MENU_ELEMENT_TXT], "prompt", "command", NULL) &&
+        if (STREQ (ks.txt_fields[TYPE_TXT], "option") && streq_any (ks.txt_fields[MENU_ELEMENT_TXT], "prompt", "command", NULL) && 
             streq_any (menu_element_txt_parent, "Exit", "Restart", "SessionLogout", NULL)) {
-            msg_label_txt = g_strconcat ("this ",
-                                         (STREQ (menu_element_txt_parent, "Exit")) ?
-                                         "Exit" : ((STREQ (menu_element_txt_parent, "Restart")) ?
+            msg_label_txt = g_strconcat ("this ", 
+                                         (STREQ (menu_element_txt_parent, "Exit")) ? 
+                                         "Exit" : ((STREQ (menu_element_txt_parent, "Restart")) ? 
                                                    "Restart" : "SessionLogout"), " action", NULL);
             all_options_have_been_set_msg (msg_label_txt);
 
@@ -540,9 +553,9 @@ void row_selected (void)
     }
 
     // Set entry fields if not one of the conditions below applies.
-    if (!(streq_any (ks.txt_fields[TYPE_TXT], "action", "option block", NULL) ||
-        (STREQ (ks.txt_fields[TYPE_TXT], "option") &&
-        (STREQ (ks.txt_fields[MENU_ELEMENT_TXT], "enabled") ||
+    if (!(streq_any (ks.txt_fields[TYPE_TXT], "action", "option block", NULL) || 
+        (STREQ (ks.txt_fields[TYPE_TXT], "option") && 
+        (STREQ (ks.txt_fields[MENU_ELEMENT_TXT], "enabled") || 
         streq_any (menu_element_txt_parent, "Exit", "SessionLogout", NULL))))) {
         set_entry_fields ();
     }
@@ -554,7 +567,7 @@ void row_selected (void)
     gtk_widget_queue_draw (ks.treeview); // Force redrawing of treeview.
 }
 
-/*
+/* 
 
     Avoids overlapping of a row by the entry grid.
 
@@ -573,7 +586,7 @@ static gboolean avoid_overlapping (void)
     return FALSE;
 }
 
-/*
+/* 
 
     Sets the entry fields that appear below the treeview when a modifiable menu element has been selected.
 
@@ -588,6 +601,7 @@ void set_entry_fields (void)
 
     // Default settings
     gtk_label_set_text (GTK_LABEL (ks.entry_labels[MENU_ELEMENT_OR_VALUE_ENTRY]), " Label: ");
+    gtk_label_set_text (GTK_LABEL (ks.entry_labels[EXECUTE_ENTRY]), " Execute: ");
     gtk_widget_set_sensitive (ks.entry_fields[MENU_ELEMENT_OR_VALUE_ENTRY], TRUE);
     gtk_widget_hide (ks.icon_chooser);
     gtk_widget_hide (ks.remove_icon);
@@ -597,7 +611,7 @@ void set_entry_fields (void)
     }
 
     if (ks.txt_fields[ELEMENT_VISIBILITY_TXT]) { // = menu, pipe menu, item or separator
-        gtk_entry_set_text (GTK_ENTRY (ks.entry_fields[MENU_ELEMENT_OR_VALUE_ENTRY]),
+        gtk_entry_set_text (GTK_ENTRY (ks.entry_fields[MENU_ELEMENT_OR_VALUE_ENTRY]), 
                             (ks.txt_fields[MENU_ELEMENT_TXT]) ? ks.txt_fields[MENU_ELEMENT_TXT] : "");
         if (!STREQ (ks.txt_fields[TYPE_TXT], "separator")) {
             if (G_UNLIKELY (!ks.txt_fields[MENU_ELEMENT_TXT])) {
@@ -610,7 +624,7 @@ void set_entry_fields (void)
             gtk_widget_show (ks.entry_labels[ICON_PATH_ENTRY]);
             gtk_widget_show (ks.entry_fields[ICON_PATH_ENTRY]);
             gtk_widget_set_sensitive (ks.remove_icon, ks.txt_fields[ICON_PATH_TXT] != NULL);
-            gtk_entry_set_text (GTK_ENTRY (ks.entry_fields[ICON_PATH_ENTRY]),
+            gtk_entry_set_text (GTK_ENTRY (ks.entry_fields[ICON_PATH_ENTRY]), 
                                 (ks.txt_fields[ICON_PATH_TXT]) ? ks.txt_fields[ICON_PATH_TXT] : "");
 
             if (!ks.txt_fields[ICON_PATH_TXT] || g_file_test (ks.txt_fields[ICON_PATH_TXT], G_FILE_TEST_EXISTS)) {
@@ -627,7 +641,7 @@ void set_entry_fields (void)
                 if (STREQ (ks.txt_fields[TYPE_TXT], "pipe menu")) {
                     gtk_widget_show (ks.entry_labels[EXECUTE_ENTRY]);
                     gtk_widget_show (ks.entry_fields[EXECUTE_ENTRY]);
-                    gtk_entry_set_text (GTK_ENTRY (ks.entry_fields[EXECUTE_ENTRY]),
+                    gtk_entry_set_text (GTK_ENTRY (ks.entry_fields[EXECUTE_ENTRY]), 
                                         (ks.txt_fields[EXECUTE_TXT]) ? ks.txt_fields[EXECUTE_TXT] : "");
                 }
             }
@@ -635,13 +649,13 @@ void set_entry_fields (void)
     }
     // Option other than "startupnotify" and "enabled".
     else {
-        gchar *label_txt = g_strdup_printf (" %s: ",
-                                            (STREQ (ks.txt_fields[MENU_ELEMENT_TXT], "wmclass")) ?
+        gchar *label_txt = g_strdup_printf (" %s: ", 
+                                            (STREQ (ks.txt_fields[MENU_ELEMENT_TXT], "wmclass")) ? 
                                             "WM_CLASS" : ks.txt_fields[MENU_ELEMENT_TXT]);
         label_txt[1] = g_ascii_toupper (label_txt[1]);
 
         gtk_label_set_text (GTK_LABEL (ks.entry_labels[MENU_ELEMENT_OR_VALUE_ENTRY]), label_txt);
-        gtk_entry_set_text (GTK_ENTRY (ks.entry_fields[MENU_ELEMENT_OR_VALUE_ENTRY]),
+        gtk_entry_set_text (GTK_ENTRY (ks.entry_fields[MENU_ELEMENT_OR_VALUE_ENTRY]), 
                                        (ks.txt_fields[VALUE_TXT]) ? ks.txt_fields[VALUE_TXT] : "");
 
         // Cleanup

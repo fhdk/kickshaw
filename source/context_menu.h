@@ -1,7 +1,7 @@
 /*
    Kickshaw - A Menu Editor for Openbox
 
-   Copyright (c) 2010-2018        Marcus Schaetzle
+   Copyright (c) 2010–2018        Marcus Schätzle
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -13,7 +13,7 @@
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
    GNU General Public License for more details.
 
-   You should have received a copy of the GNU General Public License along
+   You should have received a copy of the GNU General Public License along 
    with Kickshaw. If not, see http://www.gnu.org/licenses/.
 */
 
@@ -24,15 +24,15 @@ extern ks_data ks;
 
 extern void action_option_insert (gchar *origin);
 extern void add_new (gchar *new_menu_element);
-extern gboolean check_expansion_statuses_of_nodes (GtkTreeModel *foreach_or_filter_model,
-                                                   GtkTreePath *foreach_or_filter_path,
-                                                   GtkTreeIter *foreach_or_filter_iter,
+extern gboolean check_expansion_statuses_of_nodes (GtkTreeModel *foreach_or_filter_model, 
+                                                   GtkTreePath *foreach_or_filter_path, 
+                                                   GtkTreeIter *foreach_or_filter_iter, 
                                                    gboolean *expansion_statuses_of_nodes);
-extern void check_for_existing_options (GtkTreeIter *parent, guint8 number_of_opts,
+extern void check_for_existing_options (GtkTreeIter *parent, guint8 number_of_opts, 
 gchar **options_array, gboolean *opts_exist);
 extern gboolean check_if_invisible_descendant_exists (GtkTreeModel *filter_model,
                                                       G_GNUC_UNUSED GtkTreePath *filter_path,
-                                                      GtkTreeIter *filter_iter,
+                                                      GtkTreeIter *filter_iter, 
                                                       gboolean *at_least_one_descendant_is_invisible);
 extern void generate_items_for_action_option_combo_box (gchar *preset_choice);
 extern void icon_choosing_by_button_or_context_menu (void);

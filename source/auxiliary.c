@@ -1,7 +1,7 @@
 /*
    Kickshaw - A Menu Editor for Openbox
 
-   Copyright (c) 2010-2018        Marcus Schaetzle
+   Copyright (c) 2010–2018        Marcus Schätzle
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -13,7 +13,7 @@
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
    GNU General Public License for more details.
 
-   You should have received a copy of the GNU General Public License along
+   You should have received a copy of the GNU General Public License along 
    with Kickshaw. If not, see http://www.gnu.org/licenses/.
 */
 
@@ -32,22 +32,22 @@ void get_toplevel_iter_from_path (GtkTreeIter *local_iter, GtkTreePath *local_pa
 gboolean streq_any (const gchar *string, ...);
 
 GtkWidget *new_label_with_formattings (gchar *label_txt, gboolean wrap);
-GtkWidget *create_dialog (GtkWidget **dialog, gchar *dialog_title, gchar *icon_name, gchar *label_txt,
+GtkWidget *create_dialog (GtkWidget **dialog, gchar *dialog_title, gchar *icon_name, gchar *label_txt, 
                           gchar *button_txt_1, gchar *button_txt_2, gchar *button_txt_3, gboolean show_immediately);
 void create_file_dialog (GtkWidget **dialog, gboolean open);
 void create_invalid_icon_imgs (void);
-gboolean check_expansion_statuses_of_nodes (GtkTreeModel *foreach_or_filter_model,
-                                            GtkTreePath  *foreach_or_filter_path,
-                                            GtkTreeIter  *foreach_or_filter_iter,
+gboolean check_expansion_statuses_of_nodes (GtkTreeModel *foreach_or_filter_model, 
+                                            GtkTreePath  *foreach_or_filter_path, 
+                                            GtkTreeIter  *foreach_or_filter_iter, 
                                             gboolean     *expansion_statuses_of_nodes);
-void check_for_existing_options (GtkTreeIter *parent, guint8 number_of_opts,
+void check_for_existing_options (GtkTreeIter *parent, guint8 number_of_opts, 
                                  gchar **options_array, gboolean *opts_exist);
-gboolean check_if_invisible_descendant_exists (              GtkTreeModel *filter_model,
+gboolean check_if_invisible_descendant_exists (              GtkTreeModel *filter_model, 
                                                G_GNUC_UNUSED GtkTreePath *filter_path,
-                                                             GtkTreeIter *filter_iter,
+                                                             GtkTreeIter *filter_iter, 
                                                              gboolean    *at_least_one_descendant_is_invisible);
 guint8 check_if_invisible_ancestor_exists (GtkTreeModel *local_model, GtkTreePath *local_path);
-static gboolean add_icon_occurrence_to_list (G_GNUC_UNUSED GtkTreeModel *foreach_model,
+static gboolean add_icon_occurrence_to_list (G_GNUC_UNUSED GtkTreeModel *foreach_model, 
                                                            GtkTreePath  *foreach_path,
                                                            GtkTreeIter  *foreach_iter);
 void create_list_of_icon_occurrences (void);
@@ -63,7 +63,7 @@ void wrong_or_missing (GtkWidget *widget, GtkCssProvider *css_provider);
 */
 
 
-/*
+/* 
 
     Expands a row by retrieving the required path from a passed iterator.
 
@@ -79,7 +79,7 @@ void expand_row_from_iter (GtkTreeIter *local_iter)
     gtk_tree_path_free (path);
 }
 
-/*
+/* 
 
    Extracts a substring from a string by using a regular expression.
 
@@ -87,11 +87,11 @@ void expand_row_from_iter (GtkTreeIter *local_iter)
 
 */
 
-gchar *extract_substring_via_regex (gchar *string,
+gchar *extract_substring_via_regex (gchar *string, 
                                     gchar *regex_str)
 {
     // No compile and match options, no return location for a GError.
-    GRegex *regex = g_regex_new (regex_str, 0, 0, NULL);
+    GRegex *regex = g_regex_new (regex_str, 0, 0, NULL); 
     GMatchInfo *match_info; // match_info is created even if g_regex_match returns FALSE.
     gchar *match;
 
@@ -105,14 +105,14 @@ gchar *extract_substring_via_regex (gchar *string,
     return match;
 }
 
-/*
+/* 
 
     Frees dyn. alloc. memory of all strings of a static string array.
 
 */
 
-void free_elements_of_static_string_array (gchar    **string_array,
-                                           gint8      number_of_fields,
+void free_elements_of_static_string_array (gchar    **string_array, 
+                                           gint8      number_of_fields, 
                                            gboolean   set_to_NULL)
 {
     while (--number_of_fields + 1) { // x fields == 0 ... x-1
@@ -124,7 +124,7 @@ void free_elements_of_static_string_array (gchar    **string_array,
     }
 }
 
-/*
+/* 
 
     Retrieves the current font size so the size of the icon images can be adjusted to it.
 
@@ -146,7 +146,7 @@ guint get_font_size (void)
     return font_size;
 }
 
-/*
+/* 
 
     Returns the time of the last modification of an icon image file as an RFC 3339 encoded string.
 
@@ -170,7 +170,7 @@ gchar *get_modification_time_for_icon (gchar *icon_path)
     return g_time_val_to_iso8601 (&icon_modification_time);
 }
 
-/*
+/* 
 
     Sets an iterator for the toplevel of a given path.
 
@@ -186,7 +186,7 @@ void get_toplevel_iter_from_path (GtkTreeIter *local_iter, GtkTreePath *local_pa
     g_free (toplevel_str);
 }
 
-/*
+/* 
 
     Short replacement for the check if a string equals to one of several values
     (strcmp (x,y) == 0 || strcmp (x,z) == 0).
@@ -210,7 +210,7 @@ gboolean streq_any (const gchar *string, ...)
 }
 
 
-/*
+/* 
 
     --------------------------------------------------------------------
       KICKSHAW-SPECIFIC - Auxiliary functions for use in Kickshaw only
@@ -219,7 +219,7 @@ gboolean streq_any (const gchar *string, ...)
 */
 
 
-/*
+/* 
 
     Creates a new label with some formattings.
 
@@ -227,34 +227,35 @@ gboolean streq_any (const gchar *string, ...)
 
 GtkWidget *new_label_with_formattings (gchar *label_txt, gboolean wrap)
 {
-    return gtk_widget_new (GTK_TYPE_LABEL, "label", label_txt, "xalign", 0.0, "use-markup", TRUE, "wrap", wrap, "max-width-chars", 1, NULL);
+    return gtk_widget_new (GTK_TYPE_LABEL, "label", label_txt, "xalign", 0.0, "use-markup", TRUE, 
+                          "wrap", wrap, "wrap-mode", PANGO_WRAP_WORD_CHAR, "max-width-chars", 40, NULL);
 }
 
-/*
+/* 
 
     Convenience function for the creation of a dialog window.
 
-    The dialog can have up to three buttons. If less than three are needed,
+    The dialog can have up to three buttons. If less than three are needed, 
     the "button_txt_2" and/or "button_txt_3" argument should be set to NULL.
-    If something else than a label text shall be added to the content area,
-    the "show_immediately" argument should be set to FALSE.
+    If something else than a label text shall be added to the content area, 
+    the "show_immediately" argument should be set to FALSE. 
     gtk_widget_show_all () should be called then after all additional widgets have been added to the content area.
 
 */
 
-GtkWidget *create_dialog (GtkWidget **dialog,
-                          gchar      *dialog_title,
-                          gchar      *icon_name,
-                          gchar      *label_txt,
-                          gchar      *button_txt_1,
-                          gchar      *button_txt_2,
-                          gchar      *button_txt_3,
+GtkWidget *create_dialog (GtkWidget **dialog, 
+                          gchar      *dialog_title, 
+                          gchar      *icon_name, 
+                          gchar      *label_txt, 
+                          gchar      *button_txt_1, 
+                          gchar      *button_txt_2, 
+                          gchar      *button_txt_3, 
                           gboolean    show_immediately)
 {
     GtkWidget *content_area, *label;
     gchar *label_txt_with_addl_border = g_strdup_printf ("\n%s\n", label_txt);
 
-    *dialog = gtk_dialog_new_with_buttons (dialog_title, GTK_WINDOW (ks.window), GTK_DIALOG_MODAL,
+    *dialog = gtk_dialog_new_with_buttons (dialog_title, GTK_WINDOW (ks.window), GTK_DIALOG_MODAL, 
                                            button_txt_1, 1, button_txt_2, 2, button_txt_3, 3,
                                            NULL);
 
@@ -267,6 +268,7 @@ GtkWidget *create_dialog (GtkWidget **dialog,
     if (show_immediately) {
         gtk_widget_show_all (*dialog);
     }
+    gtk_window_set_position (GTK_WINDOW (*dialog), GTK_WIN_POS_CENTER_ALWAYS);
 
     // Cleanup
     g_free (label_txt_with_addl_border);
@@ -274,7 +276,7 @@ GtkWidget *create_dialog (GtkWidget **dialog,
     return content_area;
 }
 
-/*
+/* 
 
     Creates a file dialog for opening a new and saving an existing menu.
 
@@ -285,9 +287,9 @@ void create_file_dialog (GtkWidget **dialog, gboolean open)
     gchar *menu_folder;
     GtkFileFilter *file_filter;
 
-    *dialog = gtk_file_chooser_dialog_new ((open) ? "Open Openbox Menu File" : "Save Openbox Menu File As ...",
+    *dialog = gtk_file_chooser_dialog_new ((open) ? "Open Openbox Menu File" : "Save Openbox Menu File As ...", 
                                            GTK_WINDOW (ks.window),
-                                           (open) ? GTK_FILE_CHOOSER_ACTION_OPEN : GTK_FILE_CHOOSER_ACTION_SAVE,
+                                           (open) ? GTK_FILE_CHOOSER_ACTION_OPEN : GTK_FILE_CHOOSER_ACTION_SAVE, 
                                            "_Cancel", GTK_RESPONSE_CANCEL,
                                            (open) ? "_Open" : "_Save", GTK_RESPONSE_ACCEPT,
                                            NULL);
@@ -306,7 +308,7 @@ void create_file_dialog (GtkWidget **dialog, gboolean open)
     gtk_file_chooser_add_filter (GTK_FILE_CHOOSER (*dialog), file_filter);
 }
 
-/*
+/* 
 
     Creates icon images for the case of a broken path or an invalid image file.
 
@@ -324,10 +326,10 @@ void create_invalid_icon_imgs (void)
         }
 
         icon_name = (invalid_icon_img_cnt == INVALID_PATH_ICON) ? "dialog-question" : "image-missing";
-        invalid_icon_img_pixbuf_dialog_size = gtk_icon_theme_load_icon (gtk_icon_theme_get_default (), icon_name,
+        invalid_icon_img_pixbuf_dialog_size = gtk_icon_theme_load_icon (gtk_icon_theme_get_default (), icon_name, 
                                                                         48, GTK_ICON_LOOKUP_FORCE_SIZE, NULL);
-        ks.invalid_icon_imgs[invalid_icon_img_cnt] = gdk_pixbuf_scale_simple (invalid_icon_img_pixbuf_dialog_size,
-                                                                              ks.font_size + 10, ks.font_size + 10,
+        ks.invalid_icon_imgs[invalid_icon_img_cnt] = gdk_pixbuf_scale_simple (invalid_icon_img_pixbuf_dialog_size, 
+                                                                              ks.font_size + 10, ks.font_size + 10, 
                                                                               GDK_INTERP_BILINEAR);
 
         // Cleanup
@@ -335,34 +337,34 @@ void create_invalid_icon_imgs (void)
     }
 }
 
-/*
+/* 
 
-    Checks expansion statuses of nodes to determine
+    Checks expansion statuses of nodes to determine 
     - how to set the sensivity of the menu bar items and toolbar buttons for the expansion and collapse of all nodes.
 
     In this case this function has been called after a selection.
-    It is only necessary to check whether there is at least one expanded and collapsed node,
+    It is only necessary to check whether there is at least one expanded and collapsed node, 
     regardless of their position inside the treeview.
     AT_LEAST_ONE_IS_EXPANDED and AT_LEAST_ONE_IS_COLLAPSED are set to TRUE, if the respective conditions apply.
 
-    - which expansion and collapse options to add to the context menu
+    - which expansion and collapse options to add to the context menu 
     (expand recursively, expand only immediate children and collapse).
 
-    In this case this function has been called after one or more rows, all of them containing at least one child,
+    In this case this function has been called after one or more rows, all of them containing at least one child, 
     were rightlicked.
-    It has to be checked whether an immediate child of a row is expanded. If this applies to one of the selected rows
-    or at least one of the selected rows is currently not expanded, the option to expand only the immediate children is
+    It has to be checked whether an immediate child of a row is expanded. If this applies to one of the selected rows 
+    or at least one of the selected rows is currently not expanded, the option to expand only the immediate children is 
     added later to the context menu.
-    The second check is for whether there is at least one collapsed node, since if one is collapsed it should
-    be possible to recursively expand all nodes. To determine whether the collapse option should be added it is
+    The second check is for whether there is at least one collapsed node, since if one is collapsed it should 
+    be possible to recursively expand all nodes. To determine whether the collapse option should be added it is 
     sufficient to check if the root node is expanded, which is not done here.
     AT_LEAST_ONE_IMD_CH_IS_EXP and AT_LEAST_ONE_IS_COLLAPSED are set to TRUE, if the respective conditions apply.
 
 */
 
-gboolean check_expansion_statuses_of_nodes (GtkTreeModel *foreach_or_filter_model,
-                                            GtkTreePath  *foreach_or_filter_path,
-                                            GtkTreeIter  *foreach_or_filter_iter,
+gboolean check_expansion_statuses_of_nodes (GtkTreeModel *foreach_or_filter_model, 
+                                            GtkTreePath  *foreach_or_filter_path, 
+                                            GtkTreeIter  *foreach_or_filter_iter, 
                                             gboolean     *expansion_statuses_of_nodes)
 {
     GtkTreePath *model_path = NULL; // Default
@@ -370,7 +372,7 @@ gboolean check_expansion_statuses_of_nodes (GtkTreeModel *foreach_or_filter_mode
     if (gtk_tree_model_iter_has_child (foreach_or_filter_model, foreach_or_filter_iter)) {
         if (ks.model != foreach_or_filter_model) { // = filter, called from create_context_menu ()
             // The path of the model, not filter model, is needed to check whether the row is expanded.
-            model_path = gtk_tree_model_filter_convert_path_to_child_path ((GtkTreeModelFilter *) foreach_or_filter_model,
+            model_path = gtk_tree_model_filter_convert_path_to_child_path ((GtkTreeModelFilter *) foreach_or_filter_model, 
                                                                            foreach_or_filter_path);
         }
 
@@ -388,8 +390,8 @@ gboolean check_expansion_statuses_of_nodes (GtkTreeModel *foreach_or_filter_mode
     }
 
     // Iterate only as long as not for all queried statuses a positive match has been found.
-    gboolean stop_iterating = (((model_path) ? expansion_statuses_of_nodes[AT_LEAST_ONE_IMD_CH_IS_EXP] :
-                                               expansion_statuses_of_nodes[AT_LEAST_ONE_IS_EXPANDED]) &&
+    gboolean stop_iterating = (((model_path) ? expansion_statuses_of_nodes[AT_LEAST_ONE_IMD_CH_IS_EXP] : 
+                                               expansion_statuses_of_nodes[AT_LEAST_ONE_IS_EXPANDED]) && 
                                                expansion_statuses_of_nodes[AT_LEAST_ONE_IS_COLLAPSED]);
 
     // Cleanup
@@ -398,15 +400,15 @@ gboolean check_expansion_statuses_of_nodes (GtkTreeModel *foreach_or_filter_mode
     return stop_iterating;
 }
 
-/*
+/* 
 
     Checks for existing options of an Execute action or startupnotify option.
 
 */
 
-void check_for_existing_options (GtkTreeIter  *parent,
-                                 guint8        number_of_opts,
-                                 gchar       **options_array,
+void check_for_existing_options (GtkTreeIter  *parent, 
+                                 guint8        number_of_opts, 
+                                 gchar       **options_array, 
                                  gboolean     *opts_exist)
 {
     GtkTreeIter iter_loop;
@@ -428,22 +430,22 @@ void check_for_existing_options (GtkTreeIter  *parent,
     }
 }
 
-/*
+/* 
 
     Looks for invisible descendants of a row.
 
 */
 
-gboolean check_if_invisible_descendant_exists (              GtkTreeModel *filter_model,
+gboolean check_if_invisible_descendant_exists (              GtkTreeModel *filter_model, 
                                                G_GNUC_UNUSED GtkTreePath  *filter_path,
-                                                             GtkTreeIter  *filter_iter,
+                                                             GtkTreeIter  *filter_iter, 
                                                              gboolean     *at_least_one_descendant_is_invisible)
 {
     gchar *menu_element_txt_loop, *type_txt_loop;
 
-    gtk_tree_model_get (filter_model, filter_iter,
-                        TS_MENU_ELEMENT, &menu_element_txt_loop,
-                        TS_TYPE, &type_txt_loop,
+    gtk_tree_model_get (filter_model, filter_iter, 
+                        TS_MENU_ELEMENT, &menu_element_txt_loop, 
+                        TS_TYPE, &type_txt_loop, 
                         -1);
 
     *at_least_one_descendant_is_invisible = !menu_element_txt_loop && !STREQ (type_txt_loop, "separator");
@@ -456,7 +458,7 @@ gboolean check_if_invisible_descendant_exists (              GtkTreeModel *filte
     return *at_least_one_descendant_is_invisible;
 }
 
-/*
+/* 
 
     Looks for invisible ancestors of a given path and
     returns the status of the elements visibility column for the first found one.
@@ -480,9 +482,9 @@ guint8 check_if_invisible_ancestor_exists (GtkTreeModel *local_model, GtkTreePat
         gtk_tree_path_up (path_loop);
         gtk_tree_model_get_iter (local_model, &iter_loop, path_loop);
         gtk_tree_model_get (local_model, &iter_loop, TS_ELEMENT_VISIBILITY, &element_ancestor_visibility_txt_loop, -1);
-        if (G_UNLIKELY (element_ancestor_visibility_txt_loop &&
+        if (G_UNLIKELY (element_ancestor_visibility_txt_loop && 
                         g_str_has_prefix (element_ancestor_visibility_txt_loop, "invisible"))) {
-            visibility_of_ancestor = (g_str_has_suffix (element_ancestor_visibility_txt_loop, "orphaned menu")) ?
+            visibility_of_ancestor = (g_str_has_suffix (element_ancestor_visibility_txt_loop, "orphaned menu")) ? 
                                       INVISIBLE_ORPHANED_ANCESTOR : INVISIBLE_ANCESTOR;
 
             // Cleanup
@@ -502,13 +504,13 @@ guint8 check_if_invisible_ancestor_exists (GtkTreeModel *local_model, GtkTreePat
     return NONE_OR_VISIBLE_ANCESTOR;
 }
 
-/*
+/* 
 
     Adds a row that contains an icon to a list.
 
 */
 
-static gboolean add_icon_occurrence_to_list (G_GNUC_UNUSED GtkTreeModel *foreach_model,
+static gboolean add_icon_occurrence_to_list (G_GNUC_UNUSED GtkTreeModel *foreach_model, 
                                                            GtkTreePath  *foreach_path,
                                                            GtkTreeIter  *foreach_iter)
 {
@@ -525,7 +527,7 @@ static gboolean add_icon_occurrence_to_list (G_GNUC_UNUSED GtkTreeModel *foreach
     return FALSE;
 }
 
-/*
+/* 
 
     Creates a list that contains all rows with an icon.
 
@@ -539,7 +541,7 @@ void create_list_of_icon_occurrences (void)
     }
 }
 
-/*
+/* 
 
     Gives Widget a red border color to indicate that something is wrong or missing.
 
@@ -551,9 +553,9 @@ void wrong_or_missing (GtkWidget *widget, GtkCssProvider *css_provider)
 
     if (!gtk_style_context_has_class (context, "mandatory_missing")) {
         gtk_style_context_add_class (context, "mandatory_missing");
-        gtk_css_provider_load_from_data (css_provider, (GTK_IS_ENTRY (widget)) ?
-        ".entry.mandatory_missing { border:darkred solid 2px }" :
-        ".mandatory_missing { color:white; background:darkred }",
+        gtk_css_provider_load_from_data (css_provider, (GTK_IS_ENTRY (widget)) ? 
+        ".entry.mandatory_missing { border:darkred solid 2px }" : 
+        ".mandatory_missing { color:white; background:darkred }", 
         -1, NULL);
     }
 }

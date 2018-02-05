@@ -1,7 +1,7 @@
 /*
    Kickshaw - A Menu Editor for Openbox
 
-   Copyright (c) 2010-2018        Marcus Schaetzle
+   Copyright (c) 2010–2018        Marcus Schätzle
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -13,7 +13,7 @@
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
    GNU General Public License for more details.
 
-   You should have received a copy of the GNU General Public License along
+   You should have received a copy of the GNU General Public License along 
    with Kickshaw. If not, see http://www.gnu.org/licenses/.
 */
 
@@ -24,8 +24,8 @@ extern ks_data ks;
 
 extern void activate_change_done (void);
 extern guint8 check_if_invisible_ancestor_exists (GtkTreeModel *local_model, GtkTreePath *local_path);
-extern GtkWidget *create_dialog (GtkWidget **dialog, gchar *dialog_title, gchar *icon_name, gchar *label_txt,
-                                 gchar *button_txt_1, gchar *button_txt_2, gchar *button_txt_3,
+extern GtkWidget *create_dialog (GtkWidget **dialog, gchar *dialog_title, gchar *icon_name, gchar *label_txt, 
+                                 gchar *button_txt_1, gchar *button_txt_2, gchar *button_txt_3, 
                                  gboolean show_immediately);
 extern gchar *get_modification_time_for_icon (gchar *icon_path);
 extern void get_toplevel_iter_from_path (GtkTreeIter *local_iter, GtkTreePath *local_path);
