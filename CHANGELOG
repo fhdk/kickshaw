@@ -18,6 +18,32 @@
 
 ---
 
+0.5.23 2018-02-20
+  * If only one option (i.e. prompt, command, startupnotify, enabled, 
+    name, wmclass or icon) can be added, clicking on the action/option 
+    button will now always show the preset combo box together with the 
+    widgets for setting the option's values. This was done to differentiate
+    the button from the context menu. For both the button and the context 
+    menu it makes sense that an option's values can be changed at the 
+    place on the screen where the option was chosen, without having to move 
+    the mouse pointer for long distances.
+  * Minor changes.
+
+0.5.22 2018-02-11
+  * The "new action/option" combo box is now always recreated so that it 
+    doesn't take up superfluous space when it is filled with items that 
+    are shorter than the previous ones. This is actually a workaround for 
+    the missing shrinking of a repopulated GTK combo box.
+  * Minor changes.
+
+0.5.21 2018-02-07
+  * Bugfix - The default setting of the possibility to move with the arrow 
+    keys within the tree view and mark all tree view rows with CTRL+A has 
+    been reinstated (the latter did only work when no row had been 
+    selected).
+  * Internal restructurings.
+  * Minor/cosmetical changes.
+
 0.5.20 2018-02-05
   * Bugfix - If a startupnofity option block had been added, that option 
     block had been the only missing action in an "Execute" action and 

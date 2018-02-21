@@ -27,11 +27,13 @@
 
 ks_data ks = {
     .options_label_txts = { " Prompt: ", " Command: ", " Startupnotify " }, 
+
     .actions = { "Execute", "Exit", "Reconfigure", "Restart", "SessionLogout" }, 
-    .execute_options = { "prompt", "command", "startupnotify" }, 
-    .startupnotify_options = { "enabled", "name", "wmclass", "icon" }, 
-    
+
     .execute_displayed_txts = { "Prompt", "Command", "Startupnotify" }, 
+    .execute_options = { "prompt", "command", "startupnotify" },
+
+    .startupnotify_options = { "enabled", "name", "wmclass", "icon" }, 
     .startupnotify_displayed_txts = { "Enabled", "Name", "WM_CLASS", "Icon" },
 
     .column_header_txts = { "Menu Element", "Type", "Value", "Menu ID", "Execute", "Element Visibility" }, 
@@ -41,27 +43,18 @@ ks_data ks = {
 
 static void general_initialisiation (void);
 static void add_button_content (GtkWidget *button, gchar *label_text);
-gboolean selection_block_unblock (G_GNUC_UNUSED GtkTreeSelection *selection, 
-                                  G_GNUC_UNUSED GtkTreeModel     *model,
-                                  G_GNUC_UNUSED GtkTreePath      *path, 
-                                  G_GNUC_UNUSED gboolean          path_currently_selected, 
-                                  gpointer                        block_state);
-static gboolean mouse_pressed (GtkTreeView *treeview, GdkEventButton *event);
-static gboolean mouse_released (void);
 static void set_column_attributes (G_GNUC_UNUSED GtkTreeViewColumn *cell_column, 
                                                  GtkCellRenderer   *txt_renderer,
                                                  GtkTreeModel      *cell_model, 
                                                  GtkTreeIter       *cell_iter, 
                                                  gpointer           column_number_pointer);
 static void change_view_and_options (gpointer activated_menu_item_pointer);
-static void expand_or_collapse_all (gpointer expand_pointer);
 void set_status_of_expand_and_collapse_buttons_and_menu_items (void);
 static void about (void);
 gboolean continue_despite_unsaved_changes (void);
 void clear_global_data (void);
 static void new_menu (void);
 static void quit_program (void);
-void repopulate_txt_fields_array (void);
 void activate_change_done (void);
 static void write_settings (void);
 void set_filename_and_window_title (gchar *new_filename);
@@ -153,14 +146,14 @@ static void general_initialisiation (void)
                              "Move down", "Remove", "Find", "Expand all", "Collapse all", "Quit" };
     GtkToolItem *tb_separator;
 
-    gchar *suboptions_label_txt;
-
     // Label text of the last button is set dynamically dependent on the type of the selected row.
     gchar *bt_add_txts[] = { "_Menu", "_Pipe Menu", "_Item", "Sepa_rator", "" };
     gchar *add_txts[] = { "menu", "pipe menu", "item", "separator" };
 
     GtkCssProvider *change_values_label_css_provider;
-    GtkWidget *change_values_cancel, *change_values_reset, *change_values_done;
+    GtkWidget *change_values_buttons[3];
+    gchar *change_values_button_txts[3] = { "_Cancel", "_Reset", "_Done" };
+    enum { CHANGE_VALUES_CANCEL, CHANGE_VALUES_RESET, CHANGE_VALUES_DONE, NUMBER_OF_CHANGE_VALUES_BUTTONS };
 
 #if GTK_CHECK_VERSION(3,10,0)
     gchar *find_entry_buttons_imgs[] = { "window-close", "go-previous", "go-next" };
@@ -174,14 +167,12 @@ static void general_initialisiation (void)
     GtkWidget *scrolled_window;
     GtkTreeSelection *selection;
 
-    GtkCellRenderer *action_option_combo_box_renderer;
-
     gchar *settings_file_path;
 
     gchar *new_filename;
 
     guint8 buttons_cnt, columns_cnt, entry_fields_cnt, grids_cnt, mb_menu_items_cnt, 
-           options_cnt, snotify_opts_cnt, submenus_cnt, view_and_opts_cnt;
+           options_cnt, snotify_opts_cnt, submenus_cnt, view_and_opts_cnt, widgets_cnt;
 
 
     // --- Creating the GUI. ---
@@ -461,49 +452,70 @@ static void general_initialisiation (void)
 
     // ### Grid for entering the values of new rows. ###
 
+
     ks.action_option_grid = gtk_grid_new ();
     gtk_orientable_set_orientation (GTK_ORIENTABLE (ks.action_option_grid), GTK_ORIENTATION_VERTICAL);
     gtk_container_add (GTK_CONTAINER (ks.main_box), ks.action_option_grid);
 
-    ks.new_action_option_grid = gtk_grid_new ();
-    gtk_widget_set_margin_top (ks.new_action_option_grid, 5);
-    gtk_widget_set_margin_bottom (ks.new_action_option_grid, 5);
-    gtk_container_add (GTK_CONTAINER (ks.action_option_grid), ks.new_action_option_grid);
-
-    ks.inside_menu_label = gtk_label_new (" Inside menu ");
-    gtk_container_add (GTK_CONTAINER (ks.new_action_option_grid), ks.inside_menu_label);
-    ks.inside_menu_check_button = gtk_check_button_new ();
-    gtk_container_add (GTK_CONTAINER (ks.new_action_option_grid), ks.inside_menu_check_button);
-    ks.including_action_label = gtk_label_new (" Incl. action ");
-    gtk_container_add (GTK_CONTAINER (ks.new_action_option_grid), ks.including_action_label);
-    ks.including_action_check_button = gtk_check_button_new ();
-    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ks.including_action_check_button), TRUE);
-    gtk_container_add (GTK_CONTAINER (ks.new_action_option_grid), ks.including_action_check_button);
-
-    // Action/Option Combo Box
+    // List store and model for action/option combo box; the combo box isn't yet created here, only when needed.
     ks.action_option_combo_box_liststore = gtk_list_store_new (NUMBER_OF_ACTION_OPTION_COMBO_ELEMENTS, G_TYPE_STRING);
     ks.action_option_combo_box_model = GTK_TREE_MODEL (ks.action_option_combo_box_liststore);
 
-    ks.action_option = gtk_combo_box_new_with_model (ks.action_option_combo_box_model);
-    action_option_combo_box_renderer = gtk_cell_renderer_text_new ();
-    gtk_cell_layout_pack_start (GTK_CELL_LAYOUT (ks.action_option), action_option_combo_box_renderer, TRUE);
-    gtk_cell_layout_set_attributes (GTK_CELL_LAYOUT (ks.action_option), action_option_combo_box_renderer, "text", 0, NULL);
-    gtk_combo_box_set_id_column (GTK_COMBO_BOX (ks.action_option), 0);
+/*
+    The "new action/option" combo box is created and destroyed dynamically, since it does not shrink 
+    back down when being repopulated with new shorter items, resulting in a clunky look in that case. 
+    The code for adding and deleting the combo box is not part of this function or module, but part of 
+    adding_and_deleting.c.
+    Usually the combo box is added to a grid, but only since the introduction of gtk_grid_insert_column () 
+    in GTK 3.2 is it possible to create an empty cell that is filled with a widget at a later time. 
+    For GTK 3.0 a dummy widget would have to be used that is immediately destroyed after the addition of 
+    the cell that is supposed to accommodate the combo box at a later time. This is a rather intricate and 
+    inelegant solution. To avoid this dummy widget, for GTK versions up to 3.4 a GtkTable is used, 
+    since this allows for the creation of an empty table cell.
+*/
+ks.new_action_option_grid_or_table = 
+#if GTK_CHECK_VERSION(3,4,0)
+    gtk_grid_new ();
+#else
+    gtk_table_new (1, 7, FALSE);
+#endif
 
-    g_object_unref (ks.action_option_combo_box_liststore);
+    ks.new_action_option_widgets[INSIDE_MENU_LABEL] = gtk_label_new (" Inside menu ");
 
-    gtk_cell_layout_set_cell_data_func (GTK_CELL_LAYOUT (ks.action_option), action_option_combo_box_renderer, 
-                                        option_list_with_headlines, NULL, NULL); // No user data, no destroy notify for user data.*/
-    gtk_container_add (GTK_CONTAINER (ks.new_action_option_grid), ks.action_option);
+    ks.new_action_option_widgets[INSIDE_MENU_CHECK_BUTTON] = gtk_check_button_new ();
 
+    ks.new_action_option_widgets[INCLUDING_ACTION_LABEL] = gtk_label_new (" Incl. action ");
 
-    ks.action_option_done = gtk_button_new ();
-    add_button_content (ks.action_option_done, "_Done");
-    gtk_container_add (GTK_CONTAINER (ks.new_action_option_grid), ks.action_option_done);
+    ks.new_action_option_widgets[INCLUDING_ACTION_CHECK_BUTTON] = gtk_check_button_new ();
+    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ks.new_action_option_widgets[INCLUDING_ACTION_CHECK_BUTTON]), TRUE);
 
-    ks.action_option_cancel = gtk_button_new ();
-    add_button_content (ks.action_option_cancel, "_Cancel");
-    gtk_container_add (GTK_CONTAINER (ks.new_action_option_grid), ks.action_option_cancel);
+    ks.new_action_option_widgets[ACTION_OPTION_DONE] = gtk_button_new ();
+    add_button_content (ks.new_action_option_widgets[ACTION_OPTION_DONE], "_Done");
+
+    ks.new_action_option_widgets[ACTION_OPTION_CANCEL] = gtk_button_new ();
+    add_button_content (ks.new_action_option_widgets[ACTION_OPTION_CANCEL], "_Cancel");
+
+    gtk_container_add (GTK_CONTAINER (ks.action_option_grid), ks.new_action_option_grid_or_table);
+    gtk_widget_set_margin_top (ks.new_action_option_grid_or_table, 5);
+    gtk_widget_set_margin_bottom (ks.new_action_option_grid_or_table, 5);
+
+    for (widgets_cnt = 0; widgets_cnt < NUMBER_OF_NEW_ACTION_OPTION_WIDGETS; widgets_cnt++) {
+        if (widgets_cnt != NEW_ACTION_OPTION_COMBO_BOX) {
+#if GTK_CHECK_VERSION(3,4,0)
+            gtk_grid_attach (GTK_GRID (ks.new_action_option_grid_or_table), ks.new_action_option_widgets[widgets_cnt], 
+                             widgets_cnt, 0, 1, 1);
+#else
+            gtk_table_attach (GTK_TABLE (ks.new_action_option_grid_or_table), ks.new_action_option_widgets[widgets_cnt], 
+                              widgets_cnt, widgets_cnt + 1, 0, 1, GTK_FILL, GTK_FILL, 0, 0);
+#endif
+        }
+#if GTK_CHECK_VERSION(3,4,0)
+        else {
+            // Column 5 remains empty until the action/option combo box is attached to it when needed.
+            gtk_grid_insert_column (GTK_GRID (ks.new_action_option_grid_or_table), 4);
+        }
+#endif
+    }
 
     // Execute options
     ks.options_grid = gtk_grid_new ();
@@ -534,11 +546,7 @@ static void general_initialisiation (void)
     gtk_grid_attach (GTK_GRID (ks.options_grid), ks.suboptions_grid, 2, 2, 1, 1);
 
     for (snotify_opts_cnt = ENABLED; snotify_opts_cnt < NUMBER_OF_STARTUPNOTIFY_OPTS; snotify_opts_cnt++) {
-        suboptions_label_txt = g_strconcat (ks.startupnotify_displayed_txts[snotify_opts_cnt], ": ", NULL);
-        ks.suboptions_labels[snotify_opts_cnt] = gtk_label_new (suboptions_label_txt);
-
-        // Cleanup
-        g_free (suboptions_label_txt);
+        ks.suboptions_labels[snotify_opts_cnt] = gtk_label_new (NULL); // the actual label text is set later.
 
         gtk_widget_set_halign (ks.suboptions_labels[snotify_opts_cnt], GTK_ALIGN_START);
 
@@ -569,22 +577,14 @@ static void general_initialisiation (void)
     gtk_grid_set_column_spacing (GTK_GRID (ks.change_values_buttons_grid), 10);
     gtk_widget_set_margin_bottom (ks.change_values_buttons_grid, 10);
     gtk_container_add (GTK_CONTAINER (ks.main_box), ks.change_values_buttons_grid);
-    
-    change_values_cancel = gtk_button_new_with_mnemonic ("_Cancel");
-    change_values_reset = gtk_button_new_with_mnemonic ("_Reset");
-    change_values_done = gtk_button_new_with_mnemonic ("_Done");
 
-    gtk_widget_set_hexpand (change_values_cancel, TRUE);
-    gtk_widget_set_hexpand (change_values_reset, FALSE);
-    gtk_widget_set_hexpand (change_values_done, TRUE);
-
-    gtk_grid_attach (GTK_GRID (ks.change_values_buttons_grid), change_values_cancel, 0, 0, 1, 1);
-    gtk_grid_attach (GTK_GRID (ks.change_values_buttons_grid), change_values_reset, 1, 0, 1, 1);
-    gtk_grid_attach (GTK_GRID (ks.change_values_buttons_grid), change_values_done, 2, 0, 1, 1);
-
-    gtk_widget_set_halign (change_values_cancel, GTK_ALIGN_END);
-    gtk_widget_set_halign (change_values_reset, GTK_ALIGN_END);
-    gtk_widget_set_halign (change_values_done, GTK_ALIGN_START);
+    for (buttons_cnt = 0; buttons_cnt < NUMBER_OF_CHANGE_VALUES_BUTTONS; buttons_cnt++) {
+        change_values_buttons[buttons_cnt] = gtk_button_new_with_mnemonic (change_values_button_txts[buttons_cnt]);
+        gtk_widget_set_hexpand (change_values_buttons[buttons_cnt], (buttons_cnt != CHANGE_VALUES_RESET) ? TRUE : FALSE);
+        gtk_widget_set_halign (change_values_buttons[buttons_cnt], 
+                               (buttons_cnt != CHANGE_VALUES_DONE) ? GTK_ALIGN_END : GTK_ALIGN_START);
+        gtk_container_add (GTK_CONTAINER (ks.change_values_buttons_grid), change_values_buttons[buttons_cnt]);
+    }
 
     // ### Create find grid. ###
 
@@ -874,19 +874,21 @@ static void general_initialisiation (void)
     ks.handler_id_action_option_button_clicked = g_signal_connect_swapped (ks.bt_add[ACTION_OR_OPTION], "clicked", 
                                                                            G_CALLBACK (add_new), NULL);
 
-    ks.handler_id_including_action_check_button = g_signal_connect_swapped (ks.including_action_check_button, "clicked", 
+    ks.handler_id_including_action_check_button = g_signal_connect_swapped (ks.new_action_option_widgets[INCLUDING_ACTION_CHECK_BUTTON], 
+                                                                            "clicked", 
                                                                             G_CALLBACK (one_of_the_change_values_buttons_pressed), 
                                                                             "incl. action");
-    g_signal_connect_swapped (change_values_reset, "clicked", 
+    g_signal_connect_swapped (change_values_buttons[CHANGE_VALUES_RESET], "clicked", 
                               G_CALLBACK (one_of_the_change_values_buttons_pressed), "reset");
-    g_signal_connect_swapped (change_values_done, "clicked", 
+    g_signal_connect_swapped (change_values_buttons[CHANGE_VALUES_DONE], "clicked", 
                               G_CALLBACK (one_of_the_change_values_buttons_pressed), "done");
 
     // This "simulates" a click on another row.
-    g_signal_connect (change_values_cancel, "clicked", G_CALLBACK (row_selected), NULL);
-    ks.handler_id_action_option_combo_box = g_signal_connect (ks.action_option, "changed", G_CALLBACK (show_action_options), NULL);
-    g_signal_connect_swapped (ks.action_option_done, "clicked", G_CALLBACK (action_option_insert), "by combo box");
-    g_signal_connect_swapped (ks.action_option_cancel, "clicked", G_CALLBACK (hide_action_option_grid), "cancel button");
+    g_signal_connect (change_values_buttons[CHANGE_VALUES_CANCEL], "clicked", G_CALLBACK (row_selected), NULL);
+    g_signal_connect_swapped (ks.new_action_option_widgets[ACTION_OPTION_DONE], "clicked", 
+                              G_CALLBACK (action_option_insert), "by combo box");
+    g_signal_connect_swapped (ks.new_action_option_widgets[ACTION_OPTION_CANCEL], "clicked", 
+                              G_CALLBACK (hide_action_option_grid), "cancel button");
     ks.handler_id_show_or_hide_startupnotify_options = g_signal_connect (ks.options_fields[SN_OR_PROMPT], "toggled", 
                                                                          G_CALLBACK (show_or_hide_startupnotify_options), NULL);
 
@@ -937,7 +939,7 @@ static void general_initialisiation (void)
     */
     gtk_widget_set_size_request (ks.bt_bar_label, -1, gtk_widget_get_allocated_height (ks.bt_add[0]));
 
-    /* 
+    /*
         Usually the height of the window with all widgets shown will exceed 550 px, 
         so using gtk_window_set_default_size (GTK_WINDOW (ks.window), 650, 550) at the beginning 
         won't work as desired for a height value set to 550.
@@ -950,10 +952,10 @@ static void general_initialisiation (void)
         * ks.mandatory
         * ks.separator
         * ks.change_values_buttons_grid
-        * ks.inside_menu_label
-        * ks.inside_menu_check_button
-        * ks.including_action_label
-        * ks.including_action_check_button
+        * ks.new_action_option_widgets[INSIDE_MENU_LABEL]
+        * ks.new_action_option_widgets[INSIDE_MENU_CHECK_BUTTON]
+        * ks.new_action_option_widgets[INCLUDING_ACTION_LABEL]
+        * ks.new_action_option_widgets[INCLUDING_ACTION_CHECK_BUTTON]
     */
     row_selected ();
     /*
@@ -1061,85 +1063,6 @@ static void add_button_content (GtkWidget *button, gchar *label_text)
     gtk_container_set_border_width (GTK_CONTAINER (grid), 2);
     gtk_container_add (GTK_CONTAINER (grid), label);
     gtk_container_add (GTK_CONTAINER (button), grid);
-}
-
-
-/* 
-
-    Sets if the selection state of a node may be toggled.
-
-*/
-
-gboolean selection_block_unblock (G_GNUC_UNUSED GtkTreeSelection *selection, 
-                                  G_GNUC_UNUSED GtkTreeModel     *model,
-                                  G_GNUC_UNUSED GtkTreePath      *path, 
-                                  G_GNUC_UNUSED gboolean          path_currently_selected, 
-                                                gpointer          block_state)
-{
-    return GPOINTER_TO_INT (block_state);
-}
-
-/* 
-
-    A right click inside the treeview opens the context menu, a left click activates blocking of
-    selection changes if more than one row has been selected and one of these rows has been clicked again.
-
-*/
-
-static gboolean mouse_pressed (GtkTreeView *treeview, GdkEventButton *event)
-{
-    GtkTreeSelection *selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (treeview));
-
-    if (event->type == GDK_BUTTON_PRESS) {
-        if (event->button == 3) { // Right click
-            create_context_menu (event);
-            return TRUE; // Stop other handlers from being invoked for the event.
-        }
-        else if (event->button == 1 && gtk_tree_selection_count_selected_rows (selection) > 1) {
-            if (event->state & (GDK_SHIFT_MASK|GDK_CONTROL_MASK)) {
-                return FALSE;
-            }
-
-
-            GtkTreePath *path;
-
-            // The last three arguments (column, cell_x and cell_y) are not used.
-            if (!gtk_tree_view_get_path_at_pos (GTK_TREE_VIEW (treeview), event->x, event->y, &path, NULL, NULL, NULL)) {
-                return FALSE; // No row clicked, return without propagating the event further.
-            }
-
-            if (gtk_tree_selection_path_is_selected (selection, path)) {
-                // NULL == No destroy function for user data.
-                gtk_tree_selection_set_select_function (selection, (GtkTreeSelectionFunc) selection_block_unblock, 
-                                                        GINT_TO_POINTER (FALSE), NULL);
-            }
-
-            // Cleanup
-            gtk_tree_path_free (path);
-        }
-    }
-    return FALSE; // Propagate the event further.
-}
-
-/* 
-
-    Unblocks selection changes.
-
-*/
-
-static gboolean mouse_released (void)
-{
-    GtkTreeSelection *selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (ks.treeview));
-
-    if (gtk_tree_selection_count_selected_rows (selection) < 2) {
-        return FALSE;
-    }
-
-    // NULL == No destroy function for user data.
-    gtk_tree_selection_set_select_function (gtk_tree_view_get_selection (GTK_TREE_VIEW (ks.treeview)), 
-                                            (GtkTreeSelectionFunc) selection_block_unblock, GINT_TO_POINTER (TRUE), NULL);
-
-    return FALSE;
 }
 
 /* 
@@ -1447,31 +1370,6 @@ static void change_view_and_options (gpointer activated_menu_item_pointer)
     write_settings ();
 }
 
-/* 
-
-    Expands the tree view so the whole structure is visible or
-    collapses the tree view so just the toplevel elements are visible.
-
-*/
-
-static void expand_or_collapse_all (gpointer expand_pointer)
-{
-    gboolean expand = GPOINTER_TO_INT (expand_pointer);
-
-    if (expand) {
-        gtk_tree_view_expand_all (GTK_TREE_VIEW (ks.treeview));
-    }
-    else {
-        gtk_tree_view_collapse_all (GTK_TREE_VIEW (ks.treeview));
-        gtk_tree_view_columns_autosize (GTK_TREE_VIEW (ks.treeview));
-    }
-
-    gtk_widget_set_sensitive (ks.mb_expand_all_nodes, !expand);
-    gtk_widget_set_sensitive (ks.mb_collapse_all_nodes, expand);
-    gtk_widget_set_sensitive ((GtkWidget *) ks.tb[TB_EXPAND_ALL], !expand);
-    gtk_widget_set_sensitive ((GtkWidget *) ks.tb[TB_COLLAPSE_ALL], expand);
-}
-
 /*
 
     Sets the sensivity of the expand/collapse menu items and toolbar buttons
@@ -1607,27 +1505,6 @@ static void quit_program (void)
 #else
     exit (EXIT_SUCCESS);
 #endif
-}
-
-/* 
-
-    Refreshes the txt_fields array with the values of the currently selected row.
-
-*/
-
-void repopulate_txt_fields_array (void)
-{
-    // FALSE = Don't set array elements to NULL after freeing.
-    free_elements_of_static_string_array (ks.txt_fields, NUMBER_OF_TXT_FIELDS, FALSE);
-    gtk_tree_model_get (ks.model, &ks.iter, 
-                        TS_ICON_PATH, &ks.txt_fields[ICON_PATH_TXT],
-                        TS_MENU_ELEMENT, &ks.txt_fields[MENU_ELEMENT_TXT],
-                        TS_TYPE, &ks.txt_fields[TYPE_TXT],
-                        TS_VALUE, &ks.txt_fields[VALUE_TXT],
-                        TS_MENU_ID, &ks.txt_fields[MENU_ID_TXT],
-                        TS_EXECUTE, &ks.txt_fields[EXECUTE_TXT],
-                        TS_ELEMENT_VISIBILITY, &ks.txt_fields[ELEMENT_VISIBILITY_TXT],
-                        -1);
 }
 
 /* 

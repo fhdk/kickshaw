@@ -1,5 +1,5 @@
 SOURCES = adding_and_deleting.c auxiliary.c check_for_external_changes_timeout.c context_menu.c \
-		  drag_and_drop.c editing.c find.c kickshaw.c load_menu.c save_menu.c selecting.c
+		drag_and_drop.c editing.c find.c kickshaw.c load_menu.c misc.c save_menu.c selecting.c
 OBJS    = ${SOURCES:.c=.o}
 CFLAGS  = -O2 -pedantic -std=gnu99 -Wall -Wextra -Wmissing-prototypes `pkg-config gtk+-3.0 --cflags`
 LDADD   = `pkg-config gtk+-3.0 --libs`

@@ -116,13 +116,13 @@ void row_selected (void)
         ks.statusbar_msg_shown = FALSE;
     }
     gtk_tree_view_enable_model_drag_source (GTK_TREE_VIEW (ks.treeview), GDK_BUTTON1_MASK, ks.enable_list, 1, GDK_ACTION_MOVE);
-    /*
-        If a startupnotify option block is chosen as a new menu element and that option was the only missing option 
-        in an "Execute" action, the sensitivity of ks.action_option is set to FALSE, so after adding the new startupnotify  
-        option block the sensitivity is reset here to TRUE.
-        For simplicity, it is not checked if the sensitivity is currently set to FALSE.
-    */
-    gtk_widget_set_sensitive (ks.action_option, TRUE);
+
+    if (ks.new_action_option_widgets[NEW_ACTION_OPTION_COMBO_BOX]) {
+        g_signal_handler_disconnect (ks.new_action_option_widgets[NEW_ACTION_OPTION_COMBO_BOX], ks.handler_id_action_option_combo_box);
+        gtk_list_store_clear (ks.action_option_combo_box_liststore);
+        gtk_widget_destroy (ks.new_action_option_widgets[NEW_ACTION_OPTION_COMBO_BOX]);
+        ks.new_action_option_widgets[NEW_ACTION_OPTION_COMBO_BOX] = NULL;
+    }
 
     // Check if dragging has to be blocked.
     if (number_of_selected_rows > 1) {
@@ -250,13 +250,12 @@ void row_selected (void)
                 }
             }
             gtk_widget_hide (ks.change_values_label);
-            gtk_widget_hide (ks.inside_menu_label);
-            gtk_widget_hide (ks.inside_menu_check_button);
-            gtk_widget_hide (ks.including_action_label);
-            gtk_widget_hide (ks.including_action_check_button);
-            gtk_widget_show (ks.action_option);
-            gtk_widget_show (ks.action_option_cancel);
-            gtk_widget_show (ks.action_option_done);
+            gtk_widget_hide (ks.new_action_option_widgets[INSIDE_MENU_LABEL]);
+            gtk_widget_hide (ks.new_action_option_widgets[INSIDE_MENU_CHECK_BUTTON]);
+            gtk_widget_hide (ks.new_action_option_widgets[INCLUDING_ACTION_LABEL]);
+            gtk_widget_hide (ks.new_action_option_widgets[INCLUDING_ACTION_CHECK_BUTTON]);
+            gtk_widget_show (ks.new_action_option_widgets[ACTION_OPTION_DONE]);
+            gtk_widget_show (ks.new_action_option_widgets[ACTION_OPTION_CANCEL]);
             gtk_widget_show (ks.remove_icon);
             gtk_widget_hide (ks.mandatory);
             gtk_widget_set_margin_top (ks.mandatory, 0);
@@ -483,12 +482,11 @@ void row_selected (void)
                         g_signal_handler_disconnect (ks.bt_add[ACTION_OR_OPTION], ks.handler_id_action_option_button_clicked);
                         ks.handler_id_action_option_button_clicked = 
                             g_signal_connect_swapped (ks.bt_add[ACTION_OR_OPTION], "clicked", 
-                                                      G_CALLBACK ((execute_opts_cnt != STARTUPNOTIFY) ? 
-                                                                  add_new : generate_items_for_action_option_combo_box), 
-                                                      (execute_opts_cnt != STARTUPNOTIFY) ? 
-                                                      ks.execute_options[execute_opts_cnt] : "Startupnotify");
+                                                      G_CALLBACK (generate_items_for_action_option_combo_box), 
+                                                      ks.execute_displayed_txts[execute_opts_cnt]);
                         gtk_label_set_text_with_mnemonic (GTK_LABEL (ks.bt_add_action_option_label), 
                                                           execute_opts_with_mnemonic[execute_opts_cnt]);
+                        break;
                     }
                 }
             }
@@ -526,7 +524,8 @@ void row_selected (void)
                         g_signal_handler_disconnect (ks.bt_add[ACTION_OR_OPTION], ks.handler_id_action_option_button_clicked);
                         ks.handler_id_action_option_button_clicked = 
                             g_signal_connect_swapped (ks.bt_add[ACTION_OR_OPTION], "clicked", 
-                                                      G_CALLBACK (add_new), ks.startupnotify_options[snotify_opts_cnt]);
+                                                      G_CALLBACK (generate_items_for_action_option_combo_box), 
+                                                      ks.startupnotify_displayed_txts[snotify_opts_cnt]);
                         gtk_label_set_text_with_mnemonic (GTK_LABEL (ks.bt_add_action_option_label), 
                                                           startupnotify_opts_with_mnemonic[snotify_opts_cnt]);
                         break;

@@ -22,6 +22,9 @@
 
 // action option combo
 enum { ACTION_OPTION_COMBO_ITEM, NUMBER_OF_ACTION_OPTION_COMBO_ELEMENTS };
+// new action option grid/table widgets
+enum { INSIDE_MENU_LABEL, INSIDE_MENU_CHECK_BUTTON, INCLUDING_ACTION_LABEL, INCLUDING_ACTION_CHECK_BUTTON, 
+       NEW_ACTION_OPTION_COMBO_BOX, ACTION_OPTION_DONE, ACTION_OPTION_CANCEL, NUMBER_OF_NEW_ACTION_OPTION_WIDGETS };
 // actions
 enum { EXECUTE, EXIT, RECONFIGURE, RESTART, SESSIONLOGOUT, NUMBER_OF_ACTIONS };
 // add buttons
@@ -67,7 +70,7 @@ enum { ICON_PATH_TXT, MENU_ELEMENT_TXT, TYPE_TXT, VALUE_TXT, MENU_ID_TXT,
 // renderer for treeview
 enum { TXT_RENDERER, EXCL_TXT_RENDERER, PIXBUF_RENDERER, BOOL_RENDERER, NUMBER_OF_RENDERERS };
 
-#define KICKSHAW_VERSION "0.5.20"
+#define KICKSHAW_VERSION "0.5.23"
 #define TREEVIEW_COLUMN_OFFSET NUMBER_OF_TS_ELEMENTS - NUMBER_OF_COLUMNS
 #define FREE_AND_REASSIGN(string, new_value) { g_free (string); string = new_value; }
 #define NOT_NULL_AND_NOT_EMPTY(string) (string && *string)
@@ -98,12 +101,11 @@ typedef struct {
 
     GtkWidget *change_values_label;
 
-    GtkWidget *action_option_grid, *new_action_option_grid;
-    GtkWidget *inside_menu_label, *inside_menu_check_button, *including_action_label, *including_action_check_button;
+    GtkWidget *action_option_grid, *new_action_option_grid_or_table;
+    GtkWidget *new_action_option_widgets[NUMBER_OF_NEW_ACTION_OPTION_WIDGETS];
     GtkListStore *action_option_combo_box_liststore;
     GtkTreeModel *action_option_combo_box_model;
     GtkWidget *mandatory;
-    GtkWidget *action_option, *action_option_cancel, *action_option_done;
     GtkWidget *options_grid, *suboptions_grid;
     gchar *options_label_txts[NUMBER_OF_EXECUTE_OPTS];
     GtkWidget *options_labels[NUMBER_OF_EXECUTE_OPTS], *options_fields[NUMBER_OF_EXECUTE_OPTS];

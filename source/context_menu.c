@@ -467,7 +467,7 @@ void create_context_menu (GdkEventButton *event)
                                               GUINT_TO_POINTER ((guint) visualisation_cnt)); // recursively == 1 == TRUE.
                     gtk_menu_shell_append (GTK_MENU_SHELL (context_menu), menu_item);
                 }
-             }
+            }
 
             gtk_menu_shell_append (GTK_MENU_SHELL (context_menu), gtk_separator_menu_item_new ());
         }

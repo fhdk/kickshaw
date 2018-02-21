@@ -27,6 +27,7 @@ static void hide_or_deactivate_widgets (void);
 void one_of_the_change_values_buttons_pressed (gchar *origin);
 static GtkTreeIter add_new_execution (gchar *new_menu_element, gboolean same_level);
 void add_new (gchar *new_menu_element_plus_opt_suppl);
+static void create_combo_box (void);
 void option_list_with_headlines (G_GNUC_UNUSED GtkCellLayout   *cell_layout, 
                                                GtkCellRenderer *action_option_combo_box_renderer, 
                                                GtkTreeModel    *action_option_combo_box_model, 
@@ -81,7 +82,7 @@ void one_of_the_change_values_buttons_pressed (gchar *origin)
     gchar **parameter;
 
     gboolean including_action_check_button_active = 
-        gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (ks.including_action_check_button));
+        gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (ks.new_action_option_widgets[INCLUDING_ACTION_CHECK_BUTTON]));
     gchar *new_menu_element = NULL; // Predefinition avoids compiler warning.
     gboolean same_level = TRUE; // default
 
@@ -113,20 +114,23 @@ void one_of_the_change_values_buttons_pressed (gchar *origin)
                 gtk_entry_set_text (GTK_ENTRY (ks.entry_fields[MENU_ID_ENTRY]), parameter[AD_VALUE]);
             }
             else if (STREQ (parameter[AD_FIELD], "inside menu")) {
-                gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ks.inside_menu_check_button), STREQ (parameter[AD_VALUE], "true"));
+                gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ks.new_action_option_widgets[INSIDE_MENU_CHECK_BUTTON]), 
+                                              STREQ (parameter[AD_VALUE], "true"));
             }
             else if (STREQ (parameter[AD_FIELD], "incl. action")) {
                 including_action_check_button_active = (STREQ (parameter[AD_VALUE], "true"));
                 // Prevent recursion
-                g_signal_handler_block (ks.including_action_check_button, ks.handler_id_including_action_check_button);
-                gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ks.including_action_check_button), 
+                g_signal_handler_block (ks.new_action_option_widgets[INCLUDING_ACTION_CHECK_BUTTON], 
+                                        ks.handler_id_including_action_check_button);
+                gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ks.new_action_option_widgets[INCLUDING_ACTION_CHECK_BUTTON]), 
                                               including_action_check_button_active);
-                g_signal_handler_unblock (ks.including_action_check_button, ks.handler_id_including_action_check_button);
-                gtk_widget_set_visible (ks.action_option, including_action_check_button_active);
+                g_signal_handler_unblock (ks.new_action_option_widgets[INCLUDING_ACTION_CHECK_BUTTON], 
+                                          ks.handler_id_including_action_check_button);
+                gtk_widget_set_visible (ks.new_action_option_widgets[NEW_ACTION_OPTION_COMBO_BOX], including_action_check_button_active);
                 gtk_widget_set_visible (ks.options_grid, including_action_check_button_active);
             }
             else { // action
-                gtk_combo_box_set_active_id (GTK_COMBO_BOX (ks.action_option), parameter[AD_VALUE]);
+                gtk_combo_box_set_active_id (GTK_COMBO_BOX (ks.new_action_option_widgets[NEW_ACTION_OPTION_COMBO_BOX]), parameter[AD_VALUE]);
                 if (streq_any (parameter[AD_VALUE], "Execute", "Restart", NULL)) {
                     clear_entries ();
                 }
@@ -136,14 +140,14 @@ void one_of_the_change_values_buttons_pressed (gchar *origin)
             }
         }
         else if (STREQ (origin, "incl. action") && STREQ (parameter[AD_FIELD], "action")) {
-            gtk_combo_box_set_active_id (GTK_COMBO_BOX (ks.action_option), parameter[AD_VALUE]);
+            gtk_combo_box_set_active_id (GTK_COMBO_BOX (ks.new_action_option_widgets[NEW_ACTION_OPTION_COMBO_BOX]), parameter[AD_VALUE]);
             if (!including_action_check_button_active) {
                 clear_entries ();
             }
             else if (streq_any (parameter[AD_VALUE], "Exit", "SessionLogout", NULL)) {
                 gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ks.options_fields[SN_OR_PROMPT]), TRUE);
             }
-            gtk_widget_set_visible (ks.action_option, including_action_check_button_active);
+            gtk_widget_set_visible (ks.new_action_option_widgets[NEW_ACTION_OPTION_COMBO_BOX], including_action_check_button_active);
             gtk_widget_set_visible (ks.options_grid, including_action_check_button_active);
         }
 
@@ -152,7 +156,8 @@ void one_of_the_change_values_buttons_pressed (gchar *origin)
     }
 
     if (STREQ (origin, "done")) {
-        gboolean add_action = gtk_widget_get_visible (ks.action_option);
+        gboolean add_action = (ks.new_action_option_widgets[NEW_ACTION_OPTION_COMBO_BOX] && 
+                               gtk_widget_get_visible (ks.new_action_option_widgets[NEW_ACTION_OPTION_COMBO_BOX]));
         gchar *menu_id = NULL; // Predefinition avoids compiler warning.
         gboolean missing_entry_or_error = FALSE; // default
 
@@ -179,7 +184,8 @@ void one_of_the_change_values_buttons_pressed (gchar *origin)
 
         // Prevent empty command field for "Execute".
         if (add_action &&
-            STREQ ((gchar *) gtk_combo_box_get_active_id (GTK_COMBO_BOX (ks.action_option)), "Execute") && 
+            STREQ ((gchar *) gtk_combo_box_get_active_id (GTK_COMBO_BOX (ks.new_action_option_widgets[NEW_ACTION_OPTION_COMBO_BOX])), 
+                   "Execute") && 
             !(*((gchar *) gtk_entry_get_text (GTK_ENTRY (ks.options_fields[COMMAND]))))) {
             wrong_or_missing (ks.options_fields[COMMAND], ks.execute_options_css_providers[COMMAND]);
             missing_entry_or_error = TRUE;
@@ -214,8 +220,8 @@ void one_of_the_change_values_buttons_pressed (gchar *origin)
             ks.menu_ids = g_slist_prepend (ks.menu_ids, g_strdup (menu_id));
         }
 
-        if (gtk_widget_get_visible (ks.inside_menu_check_button)) {
-            same_level = !gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (ks.inside_menu_check_button));
+        if (gtk_widget_get_visible (ks.new_action_option_widgets[INSIDE_MENU_CHECK_BUTTON])) {
+            same_level = !gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (ks.new_action_option_widgets[INSIDE_MENU_CHECK_BUTTON]));
         }
 
         GtkTreeIter new_menu_element_iter;
@@ -454,9 +460,9 @@ void add_new (gchar *new_menu_element_plus_opt_suppl)
         if (STREQ (ks.txt_fields[TYPE_TXT], "menu")) {
             gtk_widget_show (ks.action_option_grid);
             gtk_widget_hide (ks.options_grid);
-            gtk_widget_show (ks.inside_menu_label);
-            gtk_widget_show (ks.inside_menu_check_button);
-            gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ks.inside_menu_check_button), !same_level);
+            gtk_widget_show (ks.new_action_option_widgets[INSIDE_MENU_LABEL]);
+            gtk_widget_show (ks.new_action_option_widgets[INSIDE_MENU_CHECK_BUTTON]);
+            gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ks.new_action_option_widgets[INSIDE_MENU_CHECK_BUTTON]), !same_level);
             field_value_pair = g_strdup_printf ("inside menu:%s", (same_level) ? "false" : "true");
             ks.change_values_user_settings = g_slist_prepend (ks.change_values_user_settings, field_value_pair);
         }
@@ -468,18 +474,20 @@ void add_new (gchar *new_menu_element_plus_opt_suppl)
             guint8 action_cnt;
 
 
-            gtk_widget_show (ks.including_action_label);
-            gtk_widget_show (ks.including_action_check_button);
+            gtk_widget_show (ks.new_action_option_widgets[INCLUDING_ACTION_LABEL]);
+            gtk_widget_show (ks.new_action_option_widgets[INCLUDING_ACTION_CHECK_BUTTON]);
             gtk_widget_show (ks.action_option_grid);
             incl_action = !STREQ (new_menu_element_plus_opt_suppl, "item w/o action");
             // Prevent callback
-            g_signal_handler_block (ks.including_action_check_button, ks.handler_id_including_action_check_button);
-            gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ks.including_action_check_button), incl_action);
-            g_signal_handler_unblock (ks.including_action_check_button, ks.handler_id_including_action_check_button);
+            g_signal_handler_block (ks.new_action_option_widgets[INCLUDING_ACTION_CHECK_BUTTON], 
+                                    ks.handler_id_including_action_check_button);
+            gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ks.new_action_option_widgets [INCLUDING_ACTION_CHECK_BUTTON]), incl_action);
+            g_signal_handler_unblock (ks.new_action_option_widgets[INCLUDING_ACTION_CHECK_BUTTON], 
+                                      ks.handler_id_including_action_check_button);
             field_value_pair = g_strdup_printf ("incl. action:%s", (incl_action) ? "true" : "false");
             ks.change_values_user_settings = g_slist_prepend (ks.change_values_user_settings, field_value_pair);
 
-            gtk_list_store_clear (ks.action_option_combo_box_liststore);
+            create_combo_box ();
             for (action_cnt = 0; action_cnt < NUMBER_OF_ACTIONS; action_cnt++) {
                 gtk_list_store_insert_with_values (ks.action_option_combo_box_liststore, &action_option_combo_box_iter, -1, 
                                                    ACTION_OPTION_COMBO_ITEM, ks.actions[action_cnt], -1);
@@ -487,7 +495,7 @@ void add_new (gchar *new_menu_element_plus_opt_suppl)
 
             if (g_regex_match_simple ("item\\+.*", new_menu_element_plus_opt_suppl, 0, 0)) {
                 gchar *action = extract_substring_via_regex (new_menu_element_plus_opt_suppl, "(?<=\\+).*");
-                gtk_combo_box_set_active_id (GTK_COMBO_BOX (ks.action_option), action);
+                gtk_combo_box_set_active_id (GTK_COMBO_BOX (ks.new_action_option_widgets[NEW_ACTION_OPTION_COMBO_BOX]), action);
                 field_value_pair = g_strdup_printf ("action:%s", action);
                 // Cleanup
                 g_free (action);
@@ -495,16 +503,15 @@ void add_new (gchar *new_menu_element_plus_opt_suppl)
             }
             else { // "item" or "item w/o action". The action_option combo box is set just in case the user changes his/her mind.
                 ks.change_values_user_settings = g_slist_prepend (ks.change_values_user_settings, g_strdup ("action:Execute"));
-                gtk_combo_box_set_active_id (GTK_COMBO_BOX (ks.action_option), "Execute");
+                gtk_combo_box_set_active_id (GTK_COMBO_BOX (ks.new_action_option_widgets[NEW_ACTION_OPTION_COMBO_BOX]), "Execute");
                 if (!STREQ (new_menu_element_plus_opt_suppl, "item")) {
-                    gtk_widget_hide (ks.action_option);
+                    gtk_widget_hide (ks.new_action_option_widgets[NEW_ACTION_OPTION_COMBO_BOX]);
                 }
             }
             // Has to be after a possible setting of the action_option combo box, because this triggers showing the grid.
             gtk_widget_set_visible (ks.options_grid, incl_action);
         }
         else { // menu or pipe menu
-            gtk_widget_hide (ks.action_option);
             gtk_widget_hide (ks.options_grid);
         }
 
@@ -521,8 +528,8 @@ void add_new (gchar *new_menu_element_plus_opt_suppl)
         }
 
         gtk_widget_show (ks.change_values_label);
-        gtk_widget_hide (ks.action_option_cancel);
-        gtk_widget_hide (ks.action_option_done);
+        gtk_widget_hide (ks.new_action_option_widgets[ACTION_OPTION_DONE]);
+        gtk_widget_hide (ks.new_action_option_widgets[ACTION_OPTION_CANCEL]);
         gtk_widget_show (ks.mandatory);
         if (!STREQ (new_menu_element, "item") && !STREQ (ks.txt_fields[TYPE_TXT], "menu")) {
             gtk_widget_set_margin_top (ks.mandatory, 5);
@@ -582,6 +589,42 @@ void add_new (gchar *new_menu_element_plus_opt_suppl)
 
         gtk_widget_show (ks.entry_grid);
     }
+}
+
+/*
+
+    Creates the action/option combo box. This is done every time from scratch, since a combo box that contains new shorter items 
+    doesn't shrink down in size, resulting in a bulky look of the combo box if the size change of the items is considerable.
+
+*/
+
+static void create_combo_box (void)
+{
+    GtkCellRenderer *action_option_combo_box_renderer;
+
+    ks.new_action_option_widgets[NEW_ACTION_OPTION_COMBO_BOX] = gtk_combo_box_new_with_model (ks.action_option_combo_box_model);
+    action_option_combo_box_renderer = gtk_cell_renderer_text_new ();
+    gtk_cell_layout_pack_start (GTK_CELL_LAYOUT (ks.new_action_option_widgets[NEW_ACTION_OPTION_COMBO_BOX]), 
+                                action_option_combo_box_renderer, TRUE);
+    gtk_cell_layout_set_attributes (GTK_CELL_LAYOUT (ks.new_action_option_widgets[NEW_ACTION_OPTION_COMBO_BOX]), 
+                                    action_option_combo_box_renderer, "text", 0, NULL);
+    gtk_combo_box_set_id_column (GTK_COMBO_BOX (ks.new_action_option_widgets[NEW_ACTION_OPTION_COMBO_BOX]), 0);
+
+    gtk_cell_layout_set_cell_data_func (GTK_CELL_LAYOUT (ks.new_action_option_widgets[NEW_ACTION_OPTION_COMBO_BOX]), 
+                                        action_option_combo_box_renderer, option_list_with_headlines, 
+                                        NULL, NULL); // No user data, no destroy notify for user data.*/
+
+#if GTK_CHECK_VERSION(3,4,0)
+    gtk_grid_attach (GTK_GRID (ks.new_action_option_grid_or_table), ks.new_action_option_widgets[NEW_ACTION_OPTION_COMBO_BOX], 
+                     4, 0, 1, 1);
+#else
+    gtk_table_attach (GTK_TABLE (ks.new_action_option_grid_or_table), ks.new_action_option_widgets[NEW_ACTION_OPTION_COMBO_BOX], 
+                      4, 5, 0, 1, GTK_FILL, GTK_FILL, 0, 0);
+#endif
+    gtk_widget_show (ks.new_action_option_widgets[NEW_ACTION_OPTION_COMBO_BOX]);
+
+    ks.handler_id_action_option_combo_box = g_signal_connect (ks.new_action_option_widgets[NEW_ACTION_OPTION_COMBO_BOX], "changed", 
+                                                              G_CALLBACK (show_action_options), NULL);
 }
 
 /* 
@@ -677,16 +720,11 @@ void generate_items_for_action_option_combo_box (gchar *preset_choice)
 
     guint8 number_of_added_actions = 0, number_of_added_action_opts = 0, number_of_added_snotify_opts = 0; // Defaults
 
-    gtk_widget_set_sensitive (ks.action_option, TRUE);
-
 
     // --- Build combo list. ---
 
 
-    // Prevents that the signal connected to the combo box gets in the way.
-    g_signal_handler_block (ks.action_option, ks.handler_id_action_option_combo_box);
-
-    gtk_list_store_clear (ks.action_option_combo_box_liststore);
+    create_combo_box ();
 
     // Generate "Choose..." headline according to the text of bt_add_action_option_label.
     bt_add_action_option_label_txt = gtk_label_get_text (GTK_LABEL (ks.bt_add_action_option_label));
@@ -746,7 +784,7 @@ void generate_items_for_action_option_combo_box (gchar *preset_choice)
                                            ACTION_OPTION_COMBO_ITEM, add_inside_txt, 
                                            -1);
 
-         /*
+        /*
             Position of "Add additional action" headline:
             "Add inside currently selected xxx action" + number of added action options + "Add additional action" == 
             1 + number_of_added_action_opts + 1 -> number_of_added_action_opts + 2 
@@ -771,30 +809,29 @@ void generate_items_for_action_option_combo_box (gchar *preset_choice)
     hide_or_deactivate_widgets ();
 
     gtk_widget_show (ks.action_option_grid);
-
-    gtk_combo_box_set_active (GTK_COMBO_BOX (ks.action_option), 0);
-    gtk_widget_hide (ks.action_option_done);
     gtk_widget_hide (ks.options_grid);
-
-    g_signal_handler_unblock (ks.action_option, ks.handler_id_action_option_combo_box);
-
-    gtk_widget_queue_draw (GTK_WIDGET (ks.treeview)); // Force redrawing of treeview (if a search was active).
 
     /*
         If this function was called by the context menu or a "Startupnotify" button, 
         preselect the appropriate combo box item.
     */
     if (preset_choice) {
-        gtk_combo_box_set_active_id (GTK_COMBO_BOX (ks.action_option), preset_choice);
+        gtk_combo_box_set_active_id (GTK_COMBO_BOX (ks.new_action_option_widgets[NEW_ACTION_OPTION_COMBO_BOX]), preset_choice);
         // If there is only one choice, there is nothing to choose from the combo box.
         if (gtk_tree_model_iter_n_children (ks.action_option_combo_box_model, NULL) == 2) {
-            gtk_widget_set_sensitive (ks.action_option, FALSE);
+            gtk_widget_set_sensitive (ks.new_action_option_widgets[NEW_ACTION_OPTION_COMBO_BOX], FALSE);
         }
+    }
+    else {
+        gtk_combo_box_set_active (GTK_COMBO_BOX (ks.new_action_option_widgets[NEW_ACTION_OPTION_COMBO_BOX]), 0);
+        gtk_widget_hide (ks.new_action_option_widgets[ACTION_OPTION_DONE]);
     }
 
     if (!gtk_widget_get_visible (ks.change_values_label)) {
-        gtk_widget_set_margin_top (ks.new_action_option_grid, 0);
+        gtk_widget_set_margin_top (ks.new_action_option_grid_or_table, 0);
     }
+
+    gtk_widget_queue_draw (GTK_WIDGET (ks.treeview)); // Force redrawing of treeview (if a search was active).
 }
 
 /* 
@@ -805,8 +842,8 @@ void generate_items_for_action_option_combo_box (gchar *preset_choice)
 
 void show_action_options (void)
 {
-    const gchar *combo_choice = gtk_combo_box_get_active_id (GTK_COMBO_BOX (ks.action_option));
-    gboolean with_new_item = gtk_widget_get_visible (ks.including_action_check_button);
+    const gchar *combo_choice = gtk_combo_box_get_active_id (GTK_COMBO_BOX (ks.new_action_option_widgets[NEW_ACTION_OPTION_COMBO_BOX]));
+    gboolean with_new_item = gtk_widget_get_visible (ks.new_action_option_widgets[INCLUDING_ACTION_CHECK_BUTTON]);
 
     guint8 options_cnt, snotify_opts_cnt;
 
@@ -825,11 +862,27 @@ void show_action_options (void)
         gtk_widget_show (ks.suboptions_fields[snotify_opts_cnt]);
     }
     gtk_label_set_text (GTK_LABEL (ks.options_labels[PROMPT]), " Prompt: ");
-    if (!gtk_widget_get_visible (ks.including_action_label)) {
+    if (!with_new_item) {
+        gtk_widget_show (ks.new_action_option_widgets[ACTION_OPTION_DONE]);
         gtk_widget_hide (ks.mandatory);
     }
-    gtk_widget_set_margin_bottom (ks.mandatory, 0);
-    gtk_widget_grab_focus (ks.options_fields[PROMPT]);
+    gtk_widget_set_margin_bottom (ks.mandatory, (with_new_item) ? 0 : 5);
+    gtk_widget_grab_focus ((with_new_item) ? ks.entry_fields[MENU_ELEMENT_OR_VALUE_ENTRY] : ks.options_fields[PROMPT]);
+
+    if (streq_any (combo_choice, "Execute", "Startupnotify", "Enabled", "Name", "WM_CLASS", "Icon", NULL)) {
+        gchar *suboptions_label_txt;
+
+        for (snotify_opts_cnt = 0; snotify_opts_cnt < NUMBER_OF_STARTUPNOTIFY_OPTS; snotify_opts_cnt++) {
+            suboptions_label_txt = g_strconcat (ks.startupnotify_displayed_txts[snotify_opts_cnt], 
+                                                streq_any (combo_choice, "Execute", "Startupnotify", "Enabled", NULL) ? ": " : 
+                                                " (<span foreground='darkred'>*</span>): ", 
+                                                NULL);
+            gtk_label_set_markup (GTK_LABEL (ks.suboptions_labels[snotify_opts_cnt]), suboptions_label_txt);
+
+            // Cleanup
+            g_free (suboptions_label_txt);
+        }
+    }
 
     // "Execute" action
     if (STREQ (combo_choice, "Execute")) {
@@ -841,9 +894,6 @@ void show_action_options (void)
             gtk_widget_show (ks.options_fields[options_cnt]);
         }
         gtk_widget_show (ks.mandatory);
-        if (!gtk_widget_get_visible (ks.including_action_label)) {
-            gtk_widget_set_margin_bottom (ks.mandatory, 5);
-        }
         if (!g_signal_handler_is_connected (ks.options_fields[SN_OR_PROMPT], ks.handler_id_show_or_hide_startupnotify_options)) {
             ks.handler_id_show_or_hide_startupnotify_options = g_signal_connect (ks.options_fields[SN_OR_PROMPT], "toggled", 
                                                                                  G_CALLBACK (show_or_hide_startupnotify_options), NULL);
@@ -859,7 +909,6 @@ void show_action_options (void)
         gtk_widget_show (ks.options_fields[COMMAND]);
         if (STREQ (combo_choice, "Command")) { 
             gtk_widget_show (ks.mandatory);
-            gtk_widget_set_margin_bottom (ks.mandatory, 5);
         }
         gtk_widget_grab_focus (ks.options_fields[COMMAND]);
     }
@@ -882,7 +931,7 @@ void show_action_options (void)
             gtk_label_set_markup (GTK_LABEL (ks.options_labels[PROMPT]), " Prompt (<span foreground='darkred'>*</span>): ");
             gtk_widget_show (ks.options_fields[PROMPT]);
             gtk_widget_show (ks.mandatory);
-            gtk_widget_set_margin_bottom (ks.mandatory, 5);
+
         }
     }
 
@@ -908,11 +957,10 @@ void show_action_options (void)
                     gtk_widget_grab_focus (ks.suboptions_fields[snotify_opts_cnt]);
                 }
             }
+            if (!STREQ (combo_choice, "Enabled")) {
+                gtk_widget_show (ks.mandatory);
+            }
         }
-    }
-
-    if (!with_new_item) {
-        gtk_widget_show (ks.action_option_done);
     }
 }
 
@@ -951,8 +999,9 @@ void single_field_entry (void)
 
         If action fields are shown in conjunctin if item fields, single field entry is not executed.
     */
-    if (!gtk_widget_get_visible (ks.including_action_check_button) && 
-        !streq_any (gtk_combo_box_get_active_id (GTK_COMBO_BOX (ks.action_option)), "Execute", "Startupnotify", NULL)) {
+    if (!gtk_widget_get_visible (ks.new_action_option_widgets[INCLUDING_ACTION_CHECK_BUTTON]) && 
+        !streq_any (gtk_combo_box_get_active_id (GTK_COMBO_BOX (ks.new_action_option_widgets[NEW_ACTION_OPTION_COMBO_BOX])), 
+                    "Execute", "Startupnotify", NULL)) {
         action_option_insert ("by combo box");
     }
 }
@@ -969,7 +1018,7 @@ void hide_action_option_grid (gchar *origin)
     gtk_widget_set_sensitive (ks.mb_options, TRUE);
     gtk_widget_hide (ks.action_option_grid);
     gtk_widget_set_margin_bottom (ks.action_option_grid, 0);
-    gtk_widget_set_margin_top (ks.new_action_option_grid, 5);
+    gtk_widget_set_margin_top (ks.new_action_option_grid_or_table, 5);
     gtk_widget_show (ks.button_grid);
     if (*ks.search_term->str) {
         gtk_widget_show (ks.find_grid);
@@ -1014,7 +1063,8 @@ static void clear_entries (void)
 void action_option_insert (gchar *origin)
 {
     const gchar *choice = (STREQ (origin, "by combo box")) ? 
-                           gtk_combo_box_get_active_id (GTK_COMBO_BOX (ks.action_option)) : "Reconfigure";
+                           gtk_combo_box_get_active_id (GTK_COMBO_BOX (ks.new_action_option_widgets[NEW_ACTION_OPTION_COMBO_BOX])) : 
+                           "Reconfigure";
     gboolean options_check_button_state = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (ks.options_fields[SN_OR_PROMPT]));
     gboolean enabled_check_button_state = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (ks.suboptions_fields[ENABLED]));
     const gchar *options_entries[] = { gtk_entry_get_text (GTK_ENTRY (ks.options_fields[PROMPT])), 

@@ -31,6 +31,7 @@ gchar *get_modification_time_for_icon (gchar *icon_path);
 void get_toplevel_iter_from_path (GtkTreeIter *local_iter, GtkTreePath *local_path);
 gboolean streq_any (const gchar *string, ...);
 
+void repopulate_txt_fields_array (void);
 GtkWidget *new_label_with_formattings (gchar *label_txt, gboolean wrap);
 GtkWidget *create_dialog (GtkWidget **dialog, gchar *dialog_title, gchar *icon_name, gchar *label_txt, 
                           gchar *button_txt_1, gchar *button_txt_2, gchar *button_txt_3, gboolean show_immediately);
@@ -218,6 +219,27 @@ gboolean streq_any (const gchar *string, ...)
 
 */
 
+
+/* 
+
+    Refreshes the txt_fields array with the values of the currently selected row.
+
+*/
+
+void repopulate_txt_fields_array (void)
+{
+    // FALSE = Don't set array elements to NULL after freeing.
+    free_elements_of_static_string_array (ks.txt_fields, NUMBER_OF_TXT_FIELDS, FALSE);
+    gtk_tree_model_get (ks.model, &ks.iter, 
+                        TS_ICON_PATH, &ks.txt_fields[ICON_PATH_TXT],
+                        TS_MENU_ELEMENT, &ks.txt_fields[MENU_ELEMENT_TXT],
+                        TS_TYPE, &ks.txt_fields[TYPE_TXT],
+                        TS_VALUE, &ks.txt_fields[VALUE_TXT],
+                        TS_MENU_ID, &ks.txt_fields[MENU_ID_TXT],
+                        TS_EXECUTE, &ks.txt_fields[EXECUTE_TXT],
+                        TS_ELEMENT_VISIBILITY, &ks.txt_fields[ELEMENT_VISIBILITY_TXT],
+                        -1);
+}
 
 /* 
 

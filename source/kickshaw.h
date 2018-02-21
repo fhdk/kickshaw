@@ -34,7 +34,6 @@ extern gboolean check_expansion_statuses_of_nodes (GtkTreeModel *foreach_or_filt
                                                    gboolean     *expansion_statuses_of_nodes);
 extern gboolean check_for_match (GtkTreeIter *local_iter, guint8 column_number);
 extern guint8 check_if_invisible_ancestor_exists (GtkTreeModel *local_model, GtkTreePath *local_path);
-extern void create_context_menu (GdkEventButton *event);
 extern GtkWidget *create_dialog (GtkWidget **dialog, gchar *dialog_title, gchar *icon_name, gchar *label_txt, 
                                  gchar *button_txt_1, gchar *button_txt_2, gchar *button_txt_3, 
                                  gboolean show_immediately);
@@ -50,6 +49,7 @@ extern gboolean drag_motion_handler (G_GNUC_UNUSED GtkWidget      *widget,
                                                    gint            x, 
                                                    gint            y, 
                                                    guint           time);
+extern void expand_or_collapse_all (gpointer expand_pointer);
 extern void find_buttons_management (gchar *column_check_button_clicked);
 extern void free_elements_of_static_string_array (gchar **string_array, gint8 number_of_fields, gboolean set_to_NULL);
 extern guint get_font_size (void);
@@ -57,8 +57,9 @@ extern void get_menu_elements_from_file (gchar *new_filename);
 extern void hide_action_option_grid (void);
 extern void icon_choosing_by_button_or_context_menu (void);
 extern void jump_to_previous_or_next_occurrence (gpointer direction_pointer);
-extern void key_pressed (G_GNUC_UNUSED GtkWidget   *widget, 
-                                       GdkEventKey *event);
+extern gboolean key_pressed (GtkWidget *treeview, GdkEventKey *event);
+extern gboolean mouse_pressed (GtkTreeView *treeview, GdkEventButton *event);
+extern gboolean mouse_released (GtkTreeView *treeview);
 extern void move_selection (gpointer direction_pointer);
 extern void one_of_the_change_values_buttons_pressed (gchar *origin);
 extern void open_menu (void);

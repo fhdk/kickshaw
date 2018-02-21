@@ -31,7 +31,6 @@ void sort_execute_or_startupnotify_options_after_insertion (GtkTreeSelection *se
 static void sort_execute_or_startupnotify_options (GtkTreeIter *parent, gchar *execute_or_startupnotify);
 gboolean sort_loop_after_sorting_activation (GtkTreeModel *foreach_model, GtkTreePath *foreach_path,
                                              GtkTreeIter *foreach_iter);
-void key_pressed (G_GNUC_UNUSED GtkWidget *widget, GdkEventKey *event);
 void move_selection (gpointer direction_pointer);
 static gboolean check_and_adjust_dependent_element_visibilities (GtkTreeModel *filter_model, GtkTreePath *filter_path, 
                                                                  GtkTreeIter *filter_iter, 
@@ -166,24 +165,6 @@ gboolean sort_loop_after_sorting_activation (GtkTreeModel *foreach_model,
     g_free (type_txt_loop);
 
     return FALSE;
-}
-
-/* 
-
-    Function that deals with key press events, currently only used for "Delete" key.
-
-    Because the callback function for the "key-press-event" event receives three arguments 
-    (widget, event and user data), the function can't be called via g_signal_connect_swapped, 
-    so the widget argument has to remain (it is marked as unused). The "user data" argument is omitted.
-
-*/
-
-void key_pressed (G_GNUC_UNUSED GtkWidget *widget, GdkEventKey *event)
-{
-    GtkTreeSelection *selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (ks.treeview));
-    if (gtk_tree_selection_count_selected_rows (selection) > 0 && event->keyval == GDK_KEY_Delete) {
-        remove_rows ("delete key");
-    }
 }
 
 /* 
