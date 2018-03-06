@@ -5,11 +5,10 @@ This is my git mirror of [Kickshaw](https://savannah.nongnu.org/projects/obladi)
 
 ## INSTALLATION
 
-If you're on Arch, a package is available in the AUR
+If you're on Arch, it is available in the AUR
 
 ```
 yaourt -S kickshaw
-
 ```
 
 Otherwise running the following is all that's required for installation
