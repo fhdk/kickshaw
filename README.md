@@ -2,29 +2,30 @@
 
 This is my git mirror of [Kickshaw](https://savannah.nongnu.org/projects/obladi) used for primarily for Arch packaging
 
-![alt text](https://cdn.scrot.moe/images/2017/08/04/kickshaw.png)
 
 ## INSTALLATION
 
-If on Arch you can get the package in the AUR with
+If you're on Arch, a package is available in the AUR
 
-    yaourt -S kickshaw
+```
+yaourt -S kickshaw
 
+```
 
-A simple script is provided to build and install from source if you prefer
+Otherwise running the following is all that's required for installation
 
-    git clone https://github.com/natemaia/kickshaw
+```
+cd kickshaw/source
 
-    cd kickshaw/
+make
 
-    ./install && exit
-
-
-Running `make` then `sudo make install`
-
-inside `../kickshaw/source/` is all that's required for installation
+sudo make install
+```
 
 ---
+
+![alt text](https://cdn.scrot.moe/images/2017/08/04/kickshaw.png)
+
 
 ## REQUIREMENTS
 
