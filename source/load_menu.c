@@ -133,11 +133,11 @@ static void start_tags_their_attr_and_val__empty_element_tags (GMarkupParseConte
     // --- Error checking ---
 
 
-    // Check if current element is a valid child of another element.
+    // Check if current tag is a valid child of another tag.
 
     if (current_path_depth > 1) {
-        const GSList *element_stack = g_markup_parse_context_get_element_stack (parse_context);
-        const gchar *parent_element_name = (g_slist_next (element_stack))->data;
+        const GSList *tag_stack = g_markup_parse_context_get_element_stack (parse_context);
+        const gchar *parent_element_name = (g_slist_next (tag_stack))->data;
         gchar *error_txt = NULL;
 
         if (G_UNLIKELY (STREQ (element_name, "menu") && !STREQ (parent_element_name, "menu"))) {
@@ -172,7 +172,7 @@ static void start_tags_their_attr_and_val__empty_element_tags (GMarkupParseConte
         }
         else if (G_UNLIKELY (STREQ (menu_building->previous_type, "pipe menu") && 
                              menu_building->previous_path_depth < current_path_depth)) {
-            error_txt = "A pipe menu is a self-closing element; it can't be used";
+            error_txt = "A pipe menu is a self-closing tag; it can't be used";
         }  
 
         if (G_UNLIKELY (error_txt)) {
@@ -186,7 +186,7 @@ static void start_tags_their_attr_and_val__empty_element_tags (GMarkupParseConte
     if (G_UNLIKELY ((STREQ (element_name, "menu") && number_of_attributes > 4) || 
                     (STREQ (element_name, "item") && number_of_attributes > 2) || 
                     (streq_any (element_name, "separator", "action", NULL) && number_of_attributes > 1))) {
-        g_set_error (error, 1, line_number, "Too many attributes for element '%s'", element_name);
+        g_set_error (error, 1, line_number, "Too many attributes for tag '%s'", element_name);
         return;
     }
 
@@ -201,7 +201,7 @@ static void start_tags_their_attr_and_val__empty_element_tags (GMarkupParseConte
                 continue;
             }
             if (G_UNLIKELY (STREQ (current_attribute_name, attribute_names[attribute_cnt2]))) {
-                g_set_error (error, 1, line_number, "Element '%s' has more than one '%s' attribute", 
+                g_set_error (error, 1, line_number, "Tag '%s' has more than one '%s' attribute", 
                              element_name, current_attribute_name);
                 return;
             }
@@ -214,7 +214,6 @@ static void start_tags_their_attr_and_val__empty_element_tags (GMarkupParseConte
                         (STREQ (element_name, "item") && !streq_any (current_attribute_name, "label", "icon", NULL)) || 
                         (STREQ (element_name, "separator") && !STREQ (current_attribute_name, "label")) || 
                         (STREQ (element_name, "action") && !STREQ (current_attribute_name, "name")))) {
-
             if (STREQ (element_name, "menu")) {
                 valid = "are 'id', 'label', 'icon' and 'execute'";
             }
@@ -227,7 +226,7 @@ static void start_tags_their_attr_and_val__empty_element_tags (GMarkupParseConte
             else { // action
                 valid = "is 'name'";
             }
-            g_set_error (error, 1, line_number, "Element '%s' has an invalid attribute '%s'; valid %s", 
+            g_set_error (error, 1, line_number, "Tag '%s' has an invalid attribute '%s'; valid %s", 
                          element_name, current_attribute_name, valid);
             return;
         }
@@ -927,6 +926,7 @@ static void create_dialogs_for_invisible_menus_and_items (guint8             dia
                                             (invisible_elements_lists_loop[index]->next || 
                                             (!invisible_elements_lists_loop[index]->next && dialog_type == LM_MISSING_LABELS && 
                                             lists_cnt == LM_MENUS_LIST && invisible_elements_lists[LM_ITEMS_LIST])) ? "" : "\n");
+
                 gtk_grid_attach (GTK_GRID (menu_grid), new_label_with_formattings (cell_txt, FALSE), 
                                  grid_column_cnt, grid_row_cnt, 1, 1);
 

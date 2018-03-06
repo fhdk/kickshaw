@@ -488,6 +488,7 @@ void add_new (gchar *new_menu_element_plus_opt_suppl)
             ks.change_values_user_settings = g_slist_prepend (ks.change_values_user_settings, field_value_pair);
 
             create_combo_box ();
+
             for (action_cnt = 0; action_cnt < NUMBER_OF_ACTIONS; action_cnt++) {
                 gtk_list_store_insert_with_values (ks.action_option_combo_box_liststore, &action_option_combo_box_iter, -1, 
                                                    ACTION_OPTION_COMBO_ITEM, ks.actions[action_cnt], -1);
@@ -517,11 +518,13 @@ void add_new (gchar *new_menu_element_plus_opt_suppl)
 
         hide_or_deactivate_widgets ();
 
-        change_values_markup = g_strdup_printf ("<span font='%i'>Change values for new %s?</span>", 
+        change_values_markup = g_strdup_printf ("<span font_desc='%i'>Change values for new %s?</span>", 
                                                 ks.font_size + 2, new_menu_element);
         gtk_label_set_markup (GTK_LABEL (ks.change_values_label), change_values_markup);
+
         // Cleanup
         g_free (change_values_markup);
+
         // Check for change of font size, so that the label's font size can be adjusted in that case.
         if (!ks.rows_with_icons) {
             g_timeout_add (1000, (GSourceFunc) check_for_external_file_and_settings_changes, "timeout");
@@ -545,8 +548,8 @@ void add_new (gchar *new_menu_element_plus_opt_suppl)
                                          " Execute (<span foreground='darkred'>*</span>): ");
         gtk_widget_show (ks.icon_chooser);
         gtk_widget_hide (ks.remove_icon);
-        gtk_widget_set_visible (ks.entry_labels[ICON_PATH_ENTRY], TRUE);
-        gtk_widget_set_visible (ks.entry_fields[ICON_PATH_ENTRY], TRUE);
+        gtk_widget_show (ks.entry_labels[ICON_PATH_ENTRY]);
+        gtk_widget_show (ks.entry_fields[ICON_PATH_ENTRY]);
         // In case that currently a (pipe) menu or item with an incorrect iconpath is selected.
         gtk_style_context_remove_class (gtk_widget_get_style_context (ks.entry_fields[ICON_PATH_ENTRY]), "mandatory_missing");
         gtk_widget_set_visible (ks.entry_labels[MENU_ID_ENTRY], menu_or_pipe_menu);
@@ -608,11 +611,12 @@ static void create_combo_box (void)
                                 action_option_combo_box_renderer, TRUE);
     gtk_cell_layout_set_attributes (GTK_CELL_LAYOUT (ks.new_action_option_widgets[NEW_ACTION_OPTION_COMBO_BOX]), 
                                     action_option_combo_box_renderer, "text", 0, NULL);
-    gtk_combo_box_set_id_column (GTK_COMBO_BOX (ks.new_action_option_widgets[NEW_ACTION_OPTION_COMBO_BOX]), 0);
 
     gtk_cell_layout_set_cell_data_func (GTK_CELL_LAYOUT (ks.new_action_option_widgets[NEW_ACTION_OPTION_COMBO_BOX]), 
                                         action_option_combo_box_renderer, option_list_with_headlines, 
                                         NULL, NULL); // No user data, no destroy notify for user data.*/
+
+    gtk_combo_box_set_id_column (GTK_COMBO_BOX (ks.new_action_option_widgets[NEW_ACTION_OPTION_COMBO_BOX]), 0);
 
 #if GTK_CHECK_VERSION(3,4,0)
     gtk_grid_attach (GTK_GRID (ks.new_action_option_grid_or_table), ks.new_action_option_widgets[NEW_ACTION_OPTION_COMBO_BOX], 
@@ -721,7 +725,7 @@ void generate_items_for_action_option_combo_box (gchar *preset_choice)
     guint8 number_of_added_actions = 0, number_of_added_action_opts = 0, number_of_added_snotify_opts = 0; // Defaults
 
 
-    // --- Build combo list. ---
+    // --- Creating combo box and building combo list. ---
 
 
     create_combo_box ();
@@ -938,11 +942,7 @@ void show_action_options (void)
     // "startupnotify" option and its suboptions
     if (streq_any (combo_choice, "Startupnotify", "Enabled", "Name", "WM_CLASS", "Icon", NULL)) {
         gtk_widget_show (ks.suboptions_grid);
-#if GTK_CHECK_VERSION(3,12,0)
-        gtk_widget_set_margin_start (ks.suboptions_grid, 5);
-#else
-        gtk_widget_set_margin_left (ks.suboptions_grid, 5);
-#endif
+
         if (STREQ (combo_choice, "Startupnotify")) {
             gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ks.suboptions_fields[ENABLED]), TRUE);
             gtk_widget_grab_focus (ks.suboptions_fields[ENABLED]);
@@ -1019,6 +1019,7 @@ void hide_action_option_grid (gchar *origin)
     gtk_widget_hide (ks.action_option_grid);
     gtk_widget_set_margin_bottom (ks.action_option_grid, 0);
     gtk_widget_set_margin_top (ks.new_action_option_grid_or_table, 5);
+
     gtk_widget_show (ks.button_grid);
     if (*ks.search_term->str) {
         gtk_widget_show (ks.find_grid);
@@ -1062,9 +1063,9 @@ static void clear_entries (void)
 
 void action_option_insert (gchar *origin)
 {
-    const gchar *choice = (STREQ (origin, "by combo box")) ? 
-                           gtk_combo_box_get_active_id (GTK_COMBO_BOX (ks.new_action_option_widgets[NEW_ACTION_OPTION_COMBO_BOX])) : 
-                           "Reconfigure";
+    const gchar *combo_choice = (STREQ (origin, "by combo box")) ? 
+                                gtk_combo_box_get_active_id (GTK_COMBO_BOX (ks.new_action_option_widgets[NEW_ACTION_OPTION_COMBO_BOX])) : 
+                                "Reconfigure";
     gboolean options_check_button_state = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (ks.options_fields[SN_OR_PROMPT]));
     gboolean enabled_check_button_state = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (ks.suboptions_fields[ENABLED]));
     const gchar *options_entries[] = { gtk_entry_get_text (GTK_ENTRY (ks.options_fields[PROMPT])), 
@@ -1091,18 +1092,18 @@ void action_option_insert (gchar *origin)
 
     // If only one entry or a mandatory field was displayed, check if it has been filled out.
     if (gtk_widget_get_visible (ks.action_option_grid)) {
-        if (streq_any (choice, "Execute", "Command", NULL) && !(*options_entries[COMMAND])) {
+        if (streq_any (combo_choice, "Execute", "Command", NULL) && !(*options_entries[COMMAND])) {
             wrong_or_missing (ks.options_fields[COMMAND], ks.execute_options_css_providers[COMMAND]);
             return;
         }
-        else if (STREQ (choice, "Prompt") && // "Execute" action or option of it currently selected.
+        else if (STREQ (combo_choice, "Prompt") && // "Execute" action or option of it currently selected.
                  gtk_widget_get_visible (ks.options_fields[PROMPT]) && !(*options_entries[PROMPT])) {
             wrong_or_missing (ks.options_fields[PROMPT], ks.execute_options_css_providers[PROMPT]);
             return;
         }
         else {
              for (snotify_opts_cnt = NAME; snotify_opts_cnt < NUMBER_OF_STARTUPNOTIFY_OPTS; snotify_opts_cnt++) {
-                if (STREQ (choice, ks.startupnotify_displayed_txts[snotify_opts_cnt]) && 
+                if (STREQ (combo_choice, ks.startupnotify_displayed_txts[snotify_opts_cnt]) && 
                     !(*gtk_entry_get_text (GTK_ENTRY (ks.suboptions_fields[snotify_opts_cnt])))) {
                     // "Enabled" is not part of the css_providers, thus - 1.
                     wrong_or_missing (ks.suboptions_fields[snotify_opts_cnt], ks.suboptions_fields_css_providers[snotify_opts_cnt - 1]);
@@ -1121,9 +1122,9 @@ void action_option_insert (gchar *origin)
     */
     if (!(STREQ (ks.txt_fields[TYPE_TXT], "item") || 
           (STREQ (ks.txt_fields[TYPE_TXT], "action") && 
-           streq_any (choice, "Prompt", "Command", "Startupnotify", NULL)) || 
+           streq_any (combo_choice, "Prompt", "Command", "Startupnotify", NULL)) || 
           (STREQ (ks.txt_fields[TYPE_TXT], "option block") && 
-           !streq_any (choice, "Prompt", "Command", NULL)))) {
+           !streq_any (combo_choice, "Prompt", "Command", NULL)))) {
         GtkTreePath *path = gtk_tree_model_get_path (ks.model, &ks.iter);
         gint last_path_index = gtk_tree_path_get_indices (path)[gtk_tree_path_get_depth (path) - 1];
 
@@ -1146,7 +1147,7 @@ void action_option_insert (gchar *origin)
     gtk_tree_selection_unselect_all (selection); // The old selection will be replaced by the one of the new row.
 
     // Execute
-    if (STREQ (choice, "Execute")) {
+    if (STREQ (combo_choice, "Execute")) {
         if (STREQ (ks.txt_fields[TYPE_TXT], "action")) {
             gtk_tree_model_iter_parent (ks.model, &parent, &ks.iter);
             ks.iter = parent; // Move up one level and start from there.
@@ -1167,18 +1168,18 @@ void action_option_insert (gchar *origin)
     }
 
     // Prompt - only if it is an Execute option and not empty.
-    if ((execute_done || STREQ (choice, "Prompt")) && *options_entries[PROMPT]) {
+    if ((execute_done || STREQ (combo_choice, "Prompt")) && *options_entries[PROMPT]) {
         used_Execute_opts[PROMPT] = TRUE;
     }
 
     // Command - only if it is an Execute option.
     if ((execute_done || 
-        (STREQ (choice, "Command") && !STREQ (ks.txt_fields[MENU_ELEMENT_TXT], "Restart")))) {
+        (STREQ (combo_choice, "Command") && !STREQ (ks.txt_fields[MENU_ELEMENT_TXT], "Restart")))) {
         used_Execute_opts[COMMAND] = TRUE;
     }
 
     // Startupnotify
-    if ((execute_done && options_check_button_state) || STREQ (choice, "Startupnotify")) {
+    if ((execute_done && options_check_button_state) || STREQ (combo_choice, "Startupnotify")) {
         used_Execute_opts[STARTUPNOTIFY] = TRUE;
     }
 
@@ -1219,7 +1220,7 @@ void action_option_insert (gchar *origin)
     }
 
     // Enabled
-    if ((execute_done && options_check_button_state) || streq_any (choice, "Startupnotify", "Enabled", NULL)) {
+    if ((execute_done && options_check_button_state) || streq_any (combo_choice, "Startupnotify", "Enabled", NULL)) {
         snotify_start = ENABLED;
     }
 
@@ -1244,22 +1245,22 @@ void action_option_insert (gchar *origin)
     }
 
     // Action other than Execute
-    if (streq_any (choice, "Exit", "Reconfigure", "Restart", "SessionLogout", NULL)) {
+    if (streq_any (combo_choice, "Exit", "Reconfigure", "Restart", "SessionLogout", NULL)) {
         if (STREQ (ks.txt_fields[TYPE_TXT], "action")) {
             gtk_tree_model_iter_parent (ks.model, &parent, &ks.iter);
             ks.iter = parent; // Move up one level and start from there.
         }
 
         gtk_tree_store_insert_with_values (ks.treestore, &new_iter, &ks.iter, insertion_position,
-                                           TS_MENU_ELEMENT, choice,
+                                           TS_MENU_ELEMENT, combo_choice,
                                            TS_TYPE, "action",
                                            -1);
 
-        if (!STREQ (choice, "Reconfigure") && !(STREQ (choice, "Restart") && !(*options_entries[COMMAND]))) {
+        if (!STREQ (combo_choice, "Reconfigure") && !(STREQ (combo_choice, "Restart") && !(*options_entries[COMMAND]))) {
             gtk_tree_store_insert_with_values (ks.treestore, &new_iter2, &new_iter, -1, 
-                                               TS_MENU_ELEMENT, (STREQ (choice, "Restart")) ? "command" : "prompt", 
+                                               TS_MENU_ELEMENT, (STREQ (combo_choice, "Restart")) ? "command" : "prompt", 
                                                TS_TYPE, "option",
-                                               TS_VALUE, (STREQ (choice, "Restart")) ? options_entries[COMMAND] : 
+                                               TS_VALUE, (STREQ (combo_choice, "Restart")) ? options_entries[COMMAND] : 
                                                           ((options_check_button_state) ? "yes" : "no"),
                                                -1);
         }
@@ -1268,12 +1269,12 @@ void action_option_insert (gchar *origin)
     }
 
     // Exit & SessionLogout option (prompt) or Restart option (command)
-    if ((STREQ (choice, "Prompt") && gtk_widget_get_visible (ks.options_fields[SN_OR_PROMPT])) || 
-        (STREQ (choice, "Command") && STREQ (ks.txt_fields [MENU_ELEMENT_TXT], "Restart"))) {
+    if ((STREQ (combo_choice, "Prompt") && gtk_widget_get_visible (ks.options_fields[SN_OR_PROMPT])) || 
+        (STREQ (combo_choice, "Command") && STREQ (ks.txt_fields [MENU_ELEMENT_TXT], "Restart"))) {
         gtk_tree_store_insert_with_values (ks.treestore, &new_iter, &ks.iter, -1, 
-                                           TS_MENU_ELEMENT, (STREQ (choice, "Prompt")) ? "prompt" : "command", 
+                                           TS_MENU_ELEMENT, (STREQ (combo_choice, "Prompt")) ? "prompt" : "command", 
                                            TS_TYPE, "option",
-                                           TS_VALUE, (STREQ (choice, "Command")) ? options_entries[COMMAND] : 
+                                           TS_VALUE, (STREQ (combo_choice, "Command")) ? options_entries[COMMAND] : 
                                                       ((options_check_button_state) ? "yes" : "no"),
                                            -1);
 
@@ -1297,6 +1298,7 @@ void action_option_insert (gchar *origin)
         }
         // TRUE == expand recursively, this is for a new Execute action with startupnotify options, so the latter are shown.
         gtk_tree_view_expand_row (GTK_TREE_VIEW (ks.treeview), path, TRUE);
+
         if (!gtk_widget_get_visible (ks.change_values_label)) {
             gtk_tree_selection_select_path (selection, path);
         }

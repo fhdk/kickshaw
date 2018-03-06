@@ -23,6 +23,7 @@
 extern ks_data ks;
 
 extern void create_invalid_icon_imgs (void);
+extern gchar *get_font_name (void);
 extern guint get_font_size (void);
 extern gboolean set_icon (GtkTreeIter *icon_iter, gchar *icon_path, gboolean display_err_msg);
 extern gchar *get_modification_time_for_icon (gchar *icon_path);

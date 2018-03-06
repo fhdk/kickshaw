@@ -364,6 +364,7 @@ void row_selected (void)
     gint path_depth = gtk_tree_path_get_depth (path);
     GtkTreeIter parent;
     gchar *menu_element_txt_parent = NULL, *type_txt_parent = NULL; // Defaults
+    gchar *preset_choice = NULL; // Default
 
     gtk_tree_model_get_iter (ks.model, &ks.iter, path);
 
@@ -406,10 +407,6 @@ void row_selected (void)
     if (STREQ (ks.txt_fields[TYPE_TXT], "item")) {
         gtk_widget_show (ks.bt_add[ACTION_OR_OPTION]);
         gtk_label_set_text_with_mnemonic (GTK_LABEL (ks.bt_add_action_option_label), "_Action");
-        g_signal_handler_disconnect (ks.bt_add[ACTION_OR_OPTION], ks.handler_id_action_option_button_clicked);
-        ks.handler_id_action_option_button_clicked = g_signal_connect_swapped (ks.bt_add[ACTION_OR_OPTION], "clicked", 
-                                                                               G_CALLBACK (generate_items_for_action_option_combo_box), 
-                                                                               NULL);
     }
 
     // Action or option of it selected?
@@ -427,12 +424,6 @@ void row_selected (void)
             gtk_widget_hide (ks.bt_add[buttons_cnt]);
         }
         gtk_widget_show (ks.bt_add[ACTION_OR_OPTION]);
-
-        // Default callback function
-        g_signal_handler_disconnect (ks.bt_add[ACTION_OR_OPTION], ks.handler_id_action_option_button_clicked);
-        ks.handler_id_action_option_button_clicked = g_signal_connect_swapped (ks.bt_add[ACTION_OR_OPTION], "clicked", 
-                                                                               G_CALLBACK (generate_items_for_action_option_combo_box), 
-                                                                               NULL);
 
         // Action selected
         if (STREQ (ks.txt_fields[TYPE_TXT], "action")) {
@@ -479,11 +470,7 @@ void row_selected (void)
 
                 for (execute_opts_cnt = 0; execute_opts_cnt < NUMBER_OF_EXECUTE_OPTS; execute_opts_cnt++) {
                     if (!execute_options_status[execute_opts_cnt]) {
-                        g_signal_handler_disconnect (ks.bt_add[ACTION_OR_OPTION], ks.handler_id_action_option_button_clicked);
-                        ks.handler_id_action_option_button_clicked = 
-                            g_signal_connect_swapped (ks.bt_add[ACTION_OR_OPTION], "clicked", 
-                                                      G_CALLBACK (generate_items_for_action_option_combo_box), 
-                                                      ks.execute_displayed_txts[execute_opts_cnt]);
+                        preset_choice = ks.execute_displayed_txts[execute_opts_cnt];
                         gtk_label_set_text_with_mnemonic (GTK_LABEL (ks.bt_add_action_option_label), 
                                                           execute_opts_with_mnemonic[execute_opts_cnt]);
                         break;
@@ -521,11 +508,7 @@ void row_selected (void)
 
                 for (snotify_opts_cnt = 0; snotify_opts_cnt < NUMBER_OF_STARTUPNOTIFY_OPTS; snotify_opts_cnt++) {
                     if (!startupnotify_options_status[snotify_opts_cnt]) {
-                        g_signal_handler_disconnect (ks.bt_add[ACTION_OR_OPTION], ks.handler_id_action_option_button_clicked);
-                        ks.handler_id_action_option_button_clicked = 
-                            g_signal_connect_swapped (ks.bt_add[ACTION_OR_OPTION], "clicked", 
-                                                      G_CALLBACK (generate_items_for_action_option_combo_box), 
-                                                      ks.startupnotify_displayed_txts[snotify_opts_cnt]);
+                        preset_choice = ks.startupnotify_displayed_txts[snotify_opts_cnt];
                         gtk_label_set_text_with_mnemonic (GTK_LABEL (ks.bt_add_action_option_label), 
                                                           startupnotify_opts_with_mnemonic[snotify_opts_cnt]);
                         break;
@@ -549,6 +532,16 @@ void row_selected (void)
             // Cleanup
             g_free (msg_label_txt);
         }
+    }
+
+    // Set signal for action/option button.
+    if (gtk_widget_get_visible (ks.bt_add[ACTION_OR_OPTION])) {
+        if (ks.handler_id_action_option_button_clicked) { // Uninitialised at the beginning == 0.
+            g_signal_handler_disconnect (ks.bt_add[ACTION_OR_OPTION], ks.handler_id_action_option_button_clicked);
+        }
+        ks.handler_id_action_option_button_clicked = g_signal_connect_swapped (ks.bt_add[ACTION_OR_OPTION], "clicked", 
+                                                                               G_CALLBACK (generate_items_for_action_option_combo_box), 
+                                                                               preset_choice);
     }
 
     // Set entry fields if not one of the conditions below applies.

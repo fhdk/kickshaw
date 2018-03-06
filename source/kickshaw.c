@@ -151,9 +151,9 @@ static void general_initialisiation (void)
     gchar *add_txts[] = { "menu", "pipe menu", "item", "separator" };
 
     GtkCssProvider *change_values_label_css_provider;
-    GtkWidget *change_values_buttons[3];
-    gchar *change_values_button_txts[3] = { "_Cancel", "_Reset", "_Done" };
     enum { CHANGE_VALUES_CANCEL, CHANGE_VALUES_RESET, CHANGE_VALUES_DONE, NUMBER_OF_CHANGE_VALUES_BUTTONS };
+    GtkWidget *change_values_buttons[NUMBER_OF_CHANGE_VALUES_BUTTONS];
+    gchar *change_values_button_txts[NUMBER_OF_CHANGE_VALUES_BUTTONS] = { "_Cancel", "_Reset", "_Done" };
 
 #if GTK_CHECK_VERSION(3,10,0)
     gchar *find_entry_buttons_imgs[] = { "window-close", "go-previous", "go-next" };
@@ -473,7 +473,7 @@ static void general_initialisiation (void)
     inelegant solution. To avoid this dummy widget, for GTK versions up to 3.4 a GtkTable is used, 
     since this allows for the creation of an empty table cell.
 */
-ks.new_action_option_grid_or_table = 
+    ks.new_action_option_grid_or_table = 
 #if GTK_CHECK_VERSION(3,4,0)
     gtk_grid_new ();
 #else
@@ -544,6 +544,11 @@ ks.new_action_option_grid_or_table =
 
     ks.suboptions_grid = gtk_grid_new ();
     gtk_grid_attach (GTK_GRID (ks.options_grid), ks.suboptions_grid, 2, 2, 1, 1);
+#if GTK_CHECK_VERSION(3,12,0)
+    gtk_widget_set_margin_start (ks.suboptions_grid, 2);
+#else
+    gtk_widget_set_margin_left (ks.suboptions_grid, 2);
+#endif
 
     for (snotify_opts_cnt = ENABLED; snotify_opts_cnt < NUMBER_OF_STARTUPNOTIFY_OPTS; snotify_opts_cnt++) {
         ks.suboptions_labels[snotify_opts_cnt] = gtk_label_new (NULL); // the actual label text is set later.
@@ -579,12 +584,10 @@ ks.new_action_option_grid_or_table =
     gtk_container_add (GTK_CONTAINER (ks.main_box), ks.change_values_buttons_grid);
 
     for (buttons_cnt = 0; buttons_cnt < NUMBER_OF_CHANGE_VALUES_BUTTONS; buttons_cnt++) {
-        change_values_buttons[buttons_cnt] = gtk_button_new_with_mnemonic (change_values_button_txts[buttons_cnt]);
-        gtk_widget_set_hexpand (change_values_buttons[buttons_cnt], (buttons_cnt != CHANGE_VALUES_RESET) ? TRUE : FALSE);
-        gtk_widget_set_halign (change_values_buttons[buttons_cnt], 
-                               (buttons_cnt != CHANGE_VALUES_DONE) ? GTK_ALIGN_END : GTK_ALIGN_START);
-        gtk_container_add (GTK_CONTAINER (ks.change_values_buttons_grid), change_values_buttons[buttons_cnt]);
+        change_values_buttons[buttons_cnt] = gtk_button_new_with_mnemonic (change_values_button_txts[buttons_cnt]);  
+        gtk_container_add (GTK_CONTAINER (ks.change_values_buttons_grid), change_values_buttons[buttons_cnt]);  
     }
+    gtk_widget_set_halign (ks.change_values_buttons_grid, GTK_ALIGN_CENTER);
 
     // ### Create find grid. ###
 
@@ -722,7 +725,7 @@ ks.new_action_option_grid_or_table =
     gtk_container_add (GTK_CONTAINER (ks.main_box), ks.entry_grid);
 
     // Label text is set dynamically dependent on the type of the selected row.
-    ks.entry_labels[MENU_ELEMENT_OR_VALUE_ENTRY] = gtk_label_new ("");
+    ks.entry_labels[MENU_ELEMENT_OR_VALUE_ENTRY] = gtk_label_new (NULL);
     gtk_widget_set_halign (ks.entry_labels[MENU_ELEMENT_OR_VALUE_ENTRY], GTK_ALIGN_START);
 
     gtk_grid_attach (GTK_GRID (ks.entry_grid), ks.entry_labels[MENU_ELEMENT_OR_VALUE_ENTRY], 0, 0, 1, 1);
@@ -764,16 +767,10 @@ ks.new_action_option_grid_or_table =
     gtk_grid_attach (GTK_GRID (ks.entry_grid), ks.entry_fields[ICON_PATH_ENTRY], 5, 0, 1, 1);
 
     for (entry_fields_cnt = MENU_ID_ENTRY; entry_fields_cnt < NUMBER_OF_ENTRY_FIELDS; entry_fields_cnt++) {
-        if (entry_fields_cnt == MENU_ID_ENTRY) {
-            ks.entry_labels[entry_fields_cnt] = gtk_label_new (" Menu ID: ");
-        }
-        else {
-            ks.entry_labels[entry_fields_cnt] = gtk_label_new (NULL);
-        }
+        ks.entry_labels[entry_fields_cnt] = gtk_label_new ((entry_fields_cnt == MENU_ID_ENTRY) ? " Menu ID: " : NULL);
+        gtk_widget_set_halign (ks.entry_labels[entry_fields_cnt], GTK_ALIGN_START);
 
         gtk_grid_attach (GTK_GRID (ks.entry_grid), ks.entry_labels[entry_fields_cnt], 0, entry_fields_cnt - 1, 1, 1);
-
-        gtk_widget_set_halign (ks.entry_labels[entry_fields_cnt], GTK_ALIGN_START);
 
         ks.entry_fields[entry_fields_cnt] = gtk_entry_new ();
         if (entry_fields_cnt == EXECUTE_ENTRY) {
@@ -818,6 +815,7 @@ ks.new_action_option_grid_or_table =
     g_signal_connect (ks.treeview, "key-press-event", G_CALLBACK (key_pressed), NULL);
 
     g_signal_connect (ks.treeview, "drag-motion", G_CALLBACK (drag_motion_handler), NULL);
+    g_signal_connect (ks.treeview, "drag-leave", G_CALLBACK (drag_leave_handler), NULL);
     g_signal_connect (ks.treeview, "drag_data_received", G_CALLBACK (drag_data_received_handler), NULL);
 
     g_signal_connect (ks.mb_file_menu_items[MB_NEW], "activate", G_CALLBACK (new_menu), NULL);
@@ -865,14 +863,6 @@ ks.new_action_option_grid_or_table =
     for (buttons_cnt = 0; buttons_cnt < ACTION_OR_OPTION; buttons_cnt++) {
         g_signal_connect_swapped (ks.bt_add[buttons_cnt], "clicked", G_CALLBACK (add_new), add_txts[buttons_cnt]);
     }
-    /*
-        The signal for the "Action/Option" button is always disconnected first, before it is reconnected with the 
-        currently appropriate function. This means that the function and parameter are meaningless here since the signal 
-        is an unused "dummy", but nevertheless necessary because there has to be a signal that can be disconnected before 
-        adding a new one.
-    */
-    ks.handler_id_action_option_button_clicked = g_signal_connect_swapped (ks.bt_add[ACTION_OR_OPTION], "clicked", 
-                                                                           G_CALLBACK (add_new), NULL);
 
     ks.handler_id_including_action_check_button = g_signal_connect_swapped (ks.new_action_option_widgets[INCLUDING_ACTION_CHECK_BUTTON], 
                                                                             "clicked", 
@@ -922,6 +912,7 @@ ks.new_action_option_grid_or_table =
 
     // --- Default settings ---
 
+    g_object_get (gtk_settings_get_default (), "gtk-font-name", &ks.font_desc, NULL);
     ks.font_size = get_font_size (); // Get the default font size ...
     g_object_get (gtk_settings_get_default (), "gtk-icon-theme-name", &ks.icon_theme_name, NULL); // ... and the icon theme name.
     create_invalid_icon_imgs (); // Create broken/invalid path icon images suitable for that font size.
@@ -949,6 +940,7 @@ ks.new_action_option_grid_or_table =
     /*
         By calling row_selected (), settings for menu- and toolbar are adjusted.
         The following widgets are hidden by this function:
+        * ks_change_values_label
         * ks.mandatory
         * ks.separator
         * ks.change_values_buttons_grid
@@ -977,7 +969,7 @@ ks.new_action_option_grid_or_table =
                       G_KEY_FILE_KEEP_COMMENTS, &settings_file_error))) {
             gchar *comment = NULL; // Predefinition avoids compiler warning.
             // Versions up to 0.5.7 don't have a comment in the settings file.
-            if (G_LIKELY ((comment = g_key_file_get_comment (settings_file, NULL, NULL, NULL)))) { 
+            if (G_LIKELY ((comment = g_key_file_get_comment (settings_file, NULL, NULL, NULL)))) {
                 for (view_and_opts_cnt = 0; view_and_opts_cnt < NUMBER_OF_VIEW_AND_OPTIONS; view_and_opts_cnt++) {
                     gtk_check_menu_item_set_active 
                         (GTK_CHECK_MENU_ITEM (ks.mb_view_and_options[view_and_opts_cnt]), 
@@ -1625,8 +1617,8 @@ void show_errmsg (gchar *errmsg_raw_txt)
 
 void show_msg_in_statusbar (gchar *message)
 {
-    ks.statusbar_msg_shown = TRUE;
-
     gtk_statusbar_remove_all (GTK_STATUSBAR (ks.statusbar), 1);
     gtk_statusbar_push (GTK_STATUSBAR (ks.statusbar), 1, message); // Only one context (indicated by 1) with one message.
+
+    ks.statusbar_msg_shown = TRUE;
 }

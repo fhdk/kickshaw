@@ -44,6 +44,7 @@ extern void drag_data_received_handler (G_GNUC_UNUSED GtkWidget      *widget,
                                         G_GNUC_UNUSED GdkDragContext *drag_context, 
                                                       gint            x, 
                                                       gint            y);
+extern void drag_leave_handler (void);
 extern gboolean drag_motion_handler (G_GNUC_UNUSED GtkWidget      *widget, 
                                                    GdkDragContext *drag_context, 
                                                    gint            x, 

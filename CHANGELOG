@@ -18,6 +18,14 @@
 
 ---
 
+0.5.24 2018-03-05
+  * Reintroduction of a version for GTK 2. This currently needs at least 
+    GTK 2.12. The functionality is identical to the GTK 3 version, with 
+    the exception of not being single-instance-only.
+  * When a drag and drop is abandoned and there is currently a message in 
+    the status bar, the latter is now removed.
+  * Minor/cosmetical changes.
+
 0.5.23 2018-02-20
   * If only one option (i.e. prompt, command, startupnotify, enabled, 
     name, wmclass or icon) can be added, clicking on the action/option 

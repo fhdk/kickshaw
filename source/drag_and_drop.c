@@ -33,6 +33,7 @@ gboolean drag_motion_handler (G_GNUC_UNUSED GtkWidget      *widget,
                                             gint            x, 
                                             gint            y, 
                                             guint           time);
+void drag_leave_handler (void);
 static gboolean subrows_creation_auxiliary (GtkTreeModel *filter_model, GtkTreePath *filter_path,
                                             GtkTreeIter *filter_iter, GPtrArray **subrows);
 void drag_data_received_handler (G_GNUC_UNUSED GtkWidget      *widget, 
@@ -217,6 +218,18 @@ gboolean drag_motion_handler (G_GNUC_UNUSED GtkWidget      *widget,
     else {
         return FALSE;
     }
+}
+
+/*
+
+    Resets the statusbar after dragging is abandoned.
+
+*/
+
+void drag_leave_handler (void)
+{
+    gtk_statusbar_remove_all (GTK_STATUSBAR (ks.statusbar), 1); // Only one context (indicated by 1) with one message.
+    ks.statusbar_msg_shown = FALSE;
 }
 
 /* 

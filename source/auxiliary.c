@@ -26,6 +26,7 @@
 void expand_row_from_iter (GtkTreeIter *local_iter);
 gchar *extract_substring_via_regex (gchar *string, gchar *regex_str);
 void free_elements_of_static_string_array (gchar **string_array, gint8 number_of_fields, gboolean set_to_NULL);
+gchar *get_font_name (void);
 guint get_font_size (void);
 gchar *get_modification_time_for_icon (gchar *icon_path);
 void get_toplevel_iter_from_path (GtkTreeIter *local_iter, GtkTreePath *local_path);
@@ -123,6 +124,28 @@ void free_elements_of_static_string_array (gchar    **string_array,
             string_array[number_of_fields] = NULL;
         }
     }
+}
+
+/* 
+
+    Retrieves the current font so that it can be used with a Pango font description.
+
+    This function returns a newly-allocated string that should be freed with g_free () after use.
+
+*/
+
+gchar *get_font_name (void)
+{
+    gchar *font_and_size;
+    gchar *font_name;
+
+    g_object_get (gtk_settings_get_default (), "gtk-font-name", &font_and_size, NULL);
+    font_name = extract_substring_via_regex (font_and_size, ".*(?=( .*)$)"); // e.g. Serif Bold Italic 12 -> Serif Bold Italic
+
+    // Cleanup
+    g_free (font_and_size);
+
+    return font_name;
 }
 
 /* 
@@ -250,7 +273,7 @@ void repopulate_txt_fields_array (void)
 GtkWidget *new_label_with_formattings (gchar *label_txt, gboolean wrap)
 {
     return gtk_widget_new (GTK_TYPE_LABEL, "label", label_txt, "xalign", 0.0, "use-markup", TRUE, 
-                          "wrap", wrap, "wrap-mode", PANGO_WRAP_WORD_CHAR, "max-width-chars", 40, NULL);
+                          "wrap", wrap, "wrap-mode", PANGO_WRAP_WORD_CHAR, "max-width-chars", 1, NULL);
 }
 
 /* 

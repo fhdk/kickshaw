@@ -70,7 +70,7 @@ enum { ICON_PATH_TXT, MENU_ELEMENT_TXT, TYPE_TXT, VALUE_TXT, MENU_ID_TXT,
 // renderer for treeview
 enum { TXT_RENDERER, EXCL_TXT_RENDERER, PIXBUF_RENDERER, BOOL_RENDERER, NUMBER_OF_RENDERERS };
 
-#define KICKSHAW_VERSION "0.5.23"
+#define KICKSHAW_VERSION "0.5.24"
 #define TREEVIEW_COLUMN_OFFSET NUMBER_OF_TS_ELEMENTS - NUMBER_OF_COLUMNS
 #define FREE_AND_REASSIGN(string, new_value) { g_free (string); string = new_value; }
 #define NOT_NULL_AND_NOT_EMPTY(string) (string && *string)
@@ -159,6 +159,7 @@ typedef struct {
     GtkCssProvider *cm_css_provider;
 
     gchar *icon_theme_name; // = automatically NULL
+    gchar *font_desc;
     guint font_size; // = automatically 0
 
     GdkPixbuf *invalid_icon_imgs[NUMBER_OF_INVALID_ICON_IMGS]; // = automatically NULL

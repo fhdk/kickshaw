@@ -41,8 +41,9 @@ gboolean check_for_external_file_and_settings_changes (G_GNUC_UNUSED gpointer id
     GtkTreeSelection *selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (ks.treeview));
     gint number_of_selected_rows = gtk_tree_selection_count_selected_rows (selection);
 
+    gchar *font_desc;
     guint font_size_updated;
-    gboolean recreate_icon_images;
+    gboolean recreate_icon_images = FALSE; // Default
     gboolean create_new_invalid_icon_imgs = FALSE; // Default
     gboolean replacement_done;
 
@@ -59,18 +60,31 @@ gboolean check_for_external_file_and_settings_changes (G_GNUC_UNUSED gpointer id
     gchar *icon_modification_time_txt_loop;
     gchar *icon_path_txt_loop;
 
-    // Check if font size has changed.
-    if ((recreate_icon_images = (G_UNLIKELY (ks.font_size != (font_size_updated = get_font_size ()))))) {
-        ks.font_size = font_size_updated;
-        create_new_invalid_icon_imgs = TRUE;
+    g_object_get (gtk_settings_get_default (), "gtk-font-name", &font_desc, NULL);
+    if (!(STREQ (font_desc, ks.font_desc))) {
+        FREE_AND_REASSIGN (ks.font_desc, font_desc);
+
+        // Check if font size has changed.
+        if ((recreate_icon_images = (G_UNLIKELY (ks.font_size != (font_size_updated = get_font_size ()))))) {
+            ks.font_size = font_size_updated;
+            create_new_invalid_icon_imgs = TRUE;
+        }
 
         if (gtk_widget_get_visible (ks.change_values_label)) {
+            gchar *font_name = get_font_name ();
             const gchar *label_txt = gtk_label_get_text (GTK_LABEL (ks.change_values_label));
-            gchar *label_markup = g_strdup_printf ("<span font='%i'>%s</span>", ks.font_size + 2, label_txt);
+
+            gchar *label_markup = g_strdup_printf ("<span font_desc='%s %i'>%s</span>", font_name, ks.font_size + 2, label_txt);
             gtk_label_set_markup (GTK_LABEL (ks.change_values_label), label_markup);
+
             // Cleanup
             g_free (label_markup);
+            g_free (font_name);
         }
+    }
+    else {
+        // Cleanup
+        g_free (font_desc);
     }
 
     // Check if icon theme has changed.
