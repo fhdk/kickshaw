@@ -1,6 +1,6 @@
 # Kickshaw - A Menu Editor for Openbox
 
-This is my git mirror of [Kickshaw](https://savannah.nongnu.org/projects/obladi) used for primarily for Arch packaging
+This is my git mirror of [Kickshaw](https://savannah.nongnu.org/projects/obladi) used for primarily for Manjaro packaging
 
 
 ## INSTALLATION
